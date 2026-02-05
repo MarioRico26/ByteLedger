@@ -16,15 +16,9 @@ export default function Sidebar() {
     <aside className="hidden h-screen w-64 shrink-0 border-r border-zinc-800 bg-black md:block">
       <div className="p-5">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4">
-          <div className="text-xs uppercase tracking-widest text-zinc-500">
-            Byte Networks
-          </div>
-          <div className="mt-1 text-lg font-semibold text-zinc-100">
-            ByteLedger
-          </div>
-          <div className="mt-1 text-xs text-zinc-500">
-            invoices • estimates • payments
-          </div>
+          <div className="text-xs uppercase tracking-widest text-zinc-500">Byte Networks</div>
+          <div className="mt-1 text-lg font-semibold text-zinc-100">ByteLedger</div>
+          <div className="mt-1 text-xs text-zinc-500">invoices • estimates • payments</div>
         </div>
 
         <nav className="mt-5 space-y-1">
@@ -42,9 +36,7 @@ export default function Sidebar() {
                 ].join(" ")}
               >
                 <span className="font-medium">{item.label}</span>
-                {active ? (
-                  <span className="text-xs text-zinc-400">●</span>
-                ) : null}
+                {active ? <span className="text-xs text-zinc-400">●</span> : null}
               </Link>
             )
           })}

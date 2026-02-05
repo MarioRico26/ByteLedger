@@ -9,13 +9,18 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
     const estimate = await prisma.estimate.findFirst({
       where: { id, organizationId: DEFAULT_ORG_ID },
       include: {
-        customer: true,
         items: { orderBy: { createdAt: "asc" } },
       },
     })
 
-    if (!estimate) return NextResponse.json({ error: "Estimate not found" }, { status: 404 })
-    if (estimate.saleId) return NextResponse.json({ error: "Estimate already converted" }, { status: 400 })
+    if (!estimate) {
+      return NextResponse.json({ error: "Estimate not found" }, { status: 404 })
+    }
+
+    // ✅ If already converted, treat as success (not an error)
+    if (estimate.saleId) {
+      return NextResponse.json({ saleId: estimate.saleId, alreadyConverted: true })
+    }
 
     const sale = await prisma.sale.create({
       data: {
@@ -24,19 +29,23 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
         description: estimate.title,
         status: "PENDING",
         notes: estimate.notes,
+        poNumber: estimate.poNumber,
+        serviceAddress: estimate.serviceAddress,
+
         subtotalAmount: estimate.subtotalAmount,
+        discountAmount: estimate.discountAmount,
         taxRate: estimate.taxRate,
         taxAmount: estimate.taxAmount,
-        discountAmount: estimate.discountAmount,
         totalAmount: estimate.totalAmount,
+
         items: {
           create: estimate.items.map((it) => ({
+            organization: { connect: { id: DEFAULT_ORG_ID } },
             name: it.name,
             type: it.type,
             quantity: it.quantity,
             unitPrice: it.unitPrice,
             lineTotal: it.lineTotal,
-            organization: { connect: { id: DEFAULT_ORG_ID } },
             ...(it.productId ? { product: { connect: { id: it.productId } } } : {}),
           })),
         },
@@ -53,7 +62,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
     })
 
     return NextResponse.json({ saleId: sale.id })
-  } catch (err: any) {
+  } catch (err) {
     console.error(err)
     return NextResponse.json({ error: "Failed to convert estimate" }, { status: 500 })
   }

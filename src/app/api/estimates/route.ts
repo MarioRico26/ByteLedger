@@ -1,120 +1,117 @@
-// byteledger/src/app/api/estimates/route.ts
-export const runtime = "nodejs"
-
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { DEFAULT_ORG_ID } from "@/lib/tenant"
-import { EstimateStatus, ProductType } from "@prisma/client"
+import { ProductType, EstimateStatus, Prisma } from "@prisma/client"
+
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 function asNumber(v: unknown, fallback = 0) {
-  const n = typeof v === "string" && v.trim() === "" ? NaN : Number(v)
+  if (typeof v === "number") return Number.isFinite(v) ? v : fallback
+  if (typeof v === "string") {
+    const n = Number(v)
+    return Number.isFinite(n) ? n : fallback
+  }
+  if (v && typeof v === "object" && typeof (v as any).toString === "function") {
+    const n = Number((v as any).toString())
+    return Number.isFinite(n) ? n : fallback
+  }
+  const n = Number(v as any)
   return Number.isFinite(n) ? n : fallback
 }
 
-type IncomingItem = {
-  productId?: string | null
-  name: string
-  type: ProductType
-  quantity: number
-  unitPrice: number
+function clamp(n: number, min: number, max: number) {
+  return Math.min(Math.max(n, min), max)
 }
 
-export async function GET() {
-  const rows = await prisma.estimate.findMany({
-    where: { organizationId: DEFAULT_ORG_ID },
-    orderBy: { createdAt: "desc" },
-    take: 200,
-    include: {
-      customer: { select: { id: true, fullName: true, email: true, phone: true } },
-      items: { select: { id: true } },
-    },
-  })
+function parseDateOnlyToUTC(v: unknown): Date | null {
+  const s = String(v ?? "").trim()
+  if (!s) return null
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const d = Number(m[3])
+  if (!y || !mo || !d) return null
+  return new Date(Date.UTC(y, mo - 1, d, 12, 0, 0))
+}
 
-  // JSON-safe
-  const safe = rows.map((e) => ({
-    id: e.id,
-    title: e.title,
-    status: e.status,
-    createdAt: e.createdAt.toISOString(),
-    saleId: e.saleId,
-    customer: e.customer,
-    itemsCount: e.items.length,
-    subtotalAmount: Number(e.subtotalAmount),
-    taxRate: Number(e.taxRate),
-    taxAmount: Number(e.taxAmount),
-    discountAmount: Number(e.discountAmount),
-    totalAmount: Number(e.totalAmount),
-  }))
-
-  return NextResponse.json(safe)
+type BodyItem = {
+  productId?: string | null
+  name: string
+  type: ProductType | "PRODUCT" | "SERVICE"
+  quantity: number
+  unitPrice: number
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
 
-    const title = String(body.title || "Estimate").trim()
-    const customerId = String(body.customerId || "").trim()
-    const notes = body.notes === undefined ? null : (body.notes ?? null)
-
-    const status = (body.status as EstimateStatus | undefined) ?? EstimateStatus.DRAFT
-
-    const items: IncomingItem[] = Array.isArray(body.items) ? body.items : []
+    const title = String(body.title ?? "").trim() || "Untitled Estimate"
+    const customerId = String(body.customerId ?? "").trim()
     if (!customerId) return NextResponse.json({ error: "customerId is required" }, { status: 400 })
-    if (items.length === 0) return NextResponse.json({ error: "items are required" }, { status: 400 })
 
-    // Subtotal
-    const subtotal = items.reduce((acc, it) => {
-      const qty = Math.max(asNumber(it.quantity, 0), 0)
-      const unit = Math.max(asNumber(it.unitPrice, 0), 0)
-      return acc + qty * unit
-    }, 0)
+    const notes = body.notes === undefined ? null : (body.notes ? String(body.notes) : null)
 
-    // Taxes & Discount (según tu schema: NO null)
-    const taxRate = Math.max(asNumber(body.taxRate, 0), 0)
-    const discountAmount = Math.max(asNumber(body.discountAmount, 0), 0)
+    const poNumber = String(body.poNumber ?? "").trim() || null
+    const validUntil = parseDateOnlyToUTC(body.validUntil)
 
-    const taxAmount = taxRate > 0 ? subtotal * (taxRate / 100) : 0
-    const totalAmount = Math.max(subtotal + taxAmount - discountAmount, 0)
+    const taxRateNum = clamp(asNumber(body.taxRate, 0), 0, 100)
+    const discountAmountNum = Math.max(asNumber(body.discountAmount, 0), 0)
+
+    const itemsIn: BodyItem[] = Array.isArray(body.items) ? body.items : []
+    if (itemsIn.length === 0) {
+      return NextResponse.json({ error: "At least one item is required" }, { status: 400 })
+    }
+
+    const normalizedItems = itemsIn.map((it) => {
+      const qty = Math.max(1, Math.floor(asNumber(it.quantity, 1)))
+      const unit = Math.max(0, asNumber(it.unitPrice, 0))
+      const name = String(it.name ?? "").trim() || "Item"
+      const t = String(it.type) === "SERVICE" ? ProductType.SERVICE : ProductType.PRODUCT
+      const productId = it.productId ? String(it.productId) : null
+      return { productId, name, type: t, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
+    })
+
+    const subtotal = normalizedItems.reduce((acc, it) => acc + it.lineTotal, 0)
+    const taxAmount = taxRateNum > 0 ? subtotal * (taxRateNum / 100) : 0
+    const total = Math.max(subtotal + taxAmount - discountAmountNum, 0)
+
+    const itemsCreate: Prisma.EstimateItemCreateWithoutEstimateInput[] = normalizedItems.map((it) => ({
+      name: it.name,
+      type: it.type,
+      quantity: it.quantity,
+      unitPrice: it.unitPrice,
+      lineTotal: it.lineTotal,
+      organization: { connect: { id: DEFAULT_ORG_ID } },
+      ...(it.productId ? { product: { connect: { id: it.productId } } } : {}),
+    }))
 
     const created = await prisma.estimate.create({
       data: {
         organization: { connect: { id: DEFAULT_ORG_ID } },
         customer: { connect: { id: customerId } },
         title,
-        status,
+        status: EstimateStatus.DRAFT,
         notes,
 
-        subtotalAmount: subtotal,
-        taxRate,
-        taxAmount,
-        discountAmount,
-        totalAmount,
+        poNumber,
+        validUntil,
 
-        // IMPORTANT: no uses productId directo en create normal -> usa product connect
-        items: {
-          create: items.map((it) => ({
-            organization: { connect: { id: DEFAULT_ORG_ID } },
-            name: String(it.name || "").trim(),
-            type: it.type,
-            quantity: Math.max(asNumber(it.quantity, 0), 0),
-            unitPrice: Math.max(asNumber(it.unitPrice, 0), 0),
-            lineTotal: Math.max(asNumber(it.quantity, 0), 0) * Math.max(asNumber(it.unitPrice, 0), 0),
-            ...(it.productId
-              ? { product: { connect: { id: String(it.productId) } } }
-              : {}),
-          })),
-        },
+        taxRate: taxRateNum,
+        discountAmount: discountAmountNum,
+        subtotalAmount: subtotal,
+        taxAmount,
+        totalAmount: total,
+
+        items: { create: itemsCreate },
       },
-      include: {
-        customer: true,
-        organization: true,
-        items: { orderBy: { createdAt: "asc" } },
-      },
+      include: { customer: true, organization: true, items: { orderBy: { createdAt: "asc" } } },
     })
 
     return NextResponse.json(created)
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "Failed to create estimate" }, { status: 500 })
+    return NextResponse.json({ error: e?.message || "Failed to create estimate" }, { status: 500 })
   }
 }
