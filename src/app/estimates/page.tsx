@@ -28,7 +28,7 @@ export default async function EstimatesPage() {
     take: 200,
   })
 
-  const rows: EstimateRow[] = estimates.map((e) => ({
+  const rows: EstimateRow[] = estimates.map((e: (typeof estimates)[number]) => ({
     id: e.id,
     title: e.title,
     status: e.status,
