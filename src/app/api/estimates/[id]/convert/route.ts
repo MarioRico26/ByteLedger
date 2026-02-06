@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getOrgIdOrNull } from "@/lib/auth"
-import { Prisma } from "@prisma/client"
 
 export async function POST(_: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
@@ -26,7 +25,8 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
       return NextResponse.json({ saleId: estimate.saleId, alreadyConverted: true })
     }
 
-    const itemsCreate: Prisma.SaleItemCreateWithoutSaleInput[] = estimate.items.map((it) => ({
+    type EstimateItem = (typeof estimate.items)[number]
+    const itemsCreate = estimate.items.map((it: EstimateItem) => ({
       organization: { connect: { id: orgId } },
       name: it.name,
       type: it.type,
