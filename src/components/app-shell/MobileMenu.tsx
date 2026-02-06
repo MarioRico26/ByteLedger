@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
 import { NAV_GROUPS } from "./nav"
 
 function isActive(pathname: string, href: string) {
@@ -15,6 +16,7 @@ export default function MobileMenu() {
   const pathname = usePathname() || "/"
   const [open, setOpen] = useState(false)
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -31,6 +33,10 @@ export default function MobileMenu() {
     return () => {
       active = false
     }
+  }, [])
+
+  useEffect(() => {
+    setMounted(true)
   }, [])
 
   useEffect(() => {
@@ -65,62 +71,69 @@ export default function MobileMenu() {
         Menu
       </button>
 
-      {open ? (
-        <div className="fixed inset-0 z-[80] lg:hidden" role="dialog" aria-modal="true">
-          <button
-            aria-label="Close menu"
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-black/45"
-          />
-          <div className="absolute inset-0 h-full w-full bg-white p-5 shadow-[0_25px_80px_rgba(15,23,42,0.25)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                  Byte Networks
-                </div>
-                <div className="mt-1 text-lg font-semibold text-slate-900">ByteLedger</div>
-              </div>
+      {mounted && open
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[2147483647] isolate lg:hidden"
+              role="dialog"
+              aria-modal="true"
+            >
               <button
+                aria-label="Close menu"
                 onClick={() => setOpen(false)}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="mt-6 space-y-5">
-              {groups.map((group: any) => (
-                <div key={group.label} className="space-y-2">
-                  <div className="px-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                    {group.label}
+                className="absolute inset-0 modal-overlay"
+              />
+              <div className="absolute inset-0 h-full w-full overflow-y-auto bg-white p-5 shadow-[0_25px_80px_rgba(15,23,42,0.25)]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                      Byte Networks
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-slate-900">ByteLedger</div>
                   </div>
-                  <div className="space-y-1">
-                    {group.items.map((item: any) => {
-                      const active = isActive(pathname, item.href)
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setOpen(false)}
-                          className={[
-                            "flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition",
-                            active
-                              ? "border border-blue-200 bg-blue-50 text-blue-900"
-                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-                          ].join(" ")}
-                        >
-                          <span className="font-medium">{item.label}</span>
-                          {active ? <span className="text-xs text-amber-500">●</span> : null}
-                        </Link>
-                      )
-                    })}
-                  </div>
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600"
+                  >
+                    Close
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
+
+                <div className="mt-6 space-y-5 pb-8">
+                  {groups.map((group: any) => (
+                    <div key={group.label} className="space-y-2">
+                      <div className="px-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                        {group.label}
+                      </div>
+                      <div className="space-y-1">
+                        {group.items.map((item: any) => {
+                          const active = isActive(pathname, item.href)
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => setOpen(false)}
+                              className={[
+                                "flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition",
+                                active
+                                  ? "border border-blue-200 bg-blue-50 text-blue-900"
+                                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                              ].join(" ")}
+                            >
+                              <span className="font-medium">{item.label}</span>
+                              {active ? <span className="text-xs text-amber-500">●</span> : null}
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </>
   )
 }
