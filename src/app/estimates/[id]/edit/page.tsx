@@ -96,7 +96,7 @@ export default async function EditEstimatePage({ params }: { params: any }) {
   ])
 
   // ✅ CLAVE: cleanProducts (antes NO lo hacías)
-  const cleanProducts = products.map((p) => ({
+  const cleanProducts = products.map((p: (typeof products)[number]) => ({
     ...p,
     price: priceToNumber(p.price),
   }))
