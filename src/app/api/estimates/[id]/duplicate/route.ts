@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getOrgIdOrNull } from "@/lib/auth"
-import { EstimateStatus, Prisma } from "@prisma/client"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -21,7 +20,8 @@ export async function POST(
   })
   if (!est) return NextResponse.json({ error: "Estimate not found" }, { status: 404 })
 
-  const itemsCreate: Prisma.EstimateItemCreateWithoutEstimateInput[] = est.items.map((it) => ({
+  type EstimateItem = (typeof est.items)[number]
+  const itemsCreate = est.items.map((it: EstimateItem) => ({
     name: it.name,
     type: it.type,
     quantity: it.quantity,
@@ -36,7 +36,7 @@ export async function POST(
       organization: { connect: { id: orgId } },
       customer: { connect: { id: est.customerId } },
       title: `${est.title} (Copy)`,
-      status: EstimateStatus.DRAFT,
+      status: "DRAFT",
       notes: est.notes,
       taxRate: est.taxRate,
       discountAmount: est.discountAmount,
