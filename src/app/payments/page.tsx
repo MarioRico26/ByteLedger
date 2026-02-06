@@ -21,7 +21,7 @@ export default async function PaymentsPage() {
     },
   })
 
-  const paymentsClean: PaymentRow[] = payments.map((p) => ({
+  const paymentsClean: PaymentRow[] = payments.map((p: (typeof payments)[number]) => ({
     id: p.id,
     amount: p.amount?.toString?.() ?? "0",
     method: p.method,
