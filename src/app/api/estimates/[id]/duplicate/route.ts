@@ -6,11 +6,14 @@ import { EstimateStatus, Prisma } from "@prisma/client"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-export async function POST(_: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const orgId = await getOrgIdOrNull()
   if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const id = params.id
+  const { id } = await params
 
   const est = await prisma.estimate.findFirst({
     where: { id, organizationId: orgId },
