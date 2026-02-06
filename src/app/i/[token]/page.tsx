@@ -179,7 +179,7 @@ export default async function PublicInvoicePage({
                 </tr>
               </thead>
               <tbody>
-                {sale.items.map((i) => (
+                {sale.items.map((i: (typeof sale.items)[number]) => (
                   <tr key={i.id} className="border-t border-zinc-200">
                     <td className="px-4 py-3 font-medium">{i.name}</td>
                     <td className="px-4 py-3 text-zinc-700">{i.type}</td>
