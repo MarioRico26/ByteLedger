@@ -136,7 +136,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     const totalAmount = Math.max(subtotal - discountAmount + taxAmount, 0)
 
     const paidAmount = (existing.payments || []).reduce(
-      (sum, p) => sum + asNumber(p.amount, 0),
+      (sum: number, p: { amount: unknown }) => sum + asNumber(p.amount, 0),
       0
     )
 
