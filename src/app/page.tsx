@@ -382,7 +382,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 No invoices due soon.
               </div>
             ) : (
-              upcoming.map((item) => (
+              upcoming.map((item: (typeof upcoming)[number]) => (
                 <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                   <div className="text-sm font-semibold text-slate-900">{item.description}</div>
                   <div className="mt-1 flex items-center justify-between text-xs text-slate-500">
