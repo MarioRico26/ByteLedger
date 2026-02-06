@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { getOrgId } from "@/lib/org"
+import { requireOrgId } from "@/lib/auth"
 import { getRouteId } from "@/lib/routeParam"
 import EstimateFormClient from "@/app/estimates/ui/EstimateFormClient"
 
@@ -29,7 +29,7 @@ export default async function EditEstimatePage({ params }: { params: any }) {
     redirect("/estimates")
   }
 
-  const orgId = await getOrgId()
+  const orgId = await requireOrgId()
 
   const estimate = await prisma.estimate.findFirst({
     where: { id: estimateId, organizationId: orgId },

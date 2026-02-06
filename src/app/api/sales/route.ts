@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 
 function num(x: any) {
   const v = Number(x)
@@ -13,8 +13,11 @@ function clamp(n: number, min: number, max: number) {
 
 export async function GET() {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const sales = await prisma.sale.findMany({
-      where: { organizationId: DEFAULT_ORG_ID },
+      where: { organizationId: orgId },
       include: { customer: true, items: true, payments: true },
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -29,6 +32,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const body = await req.json()
 
     const customerId = String(body.customerId || "").trim()
@@ -38,7 +44,11 @@ export async function POST(req: Request) {
     const notes = body.notes ? String(body.notes).trim() : null
     const dueDate = body.dueDate ? new Date(body.dueDate) : null
 
-    const discountAmount = Math.max(num(body.discountAmount), 0)
+    const discountRaw =
+      body.discountAmount !== undefined && body.discountAmount !== null
+        ? body.discountAmount
+        : body.discount ?? 0
+    const discountAmount = Math.max(num(discountRaw), 0)
     const taxRate = clamp(num(body.taxRate), 0, 100)
 
     const items = Array.isArray(body.items) ? body.items : []
@@ -80,7 +90,7 @@ export async function POST(req: Request) {
 
     const sale = await prisma.sale.create({
       data: {
-        organization: { connect: { id: DEFAULT_ORG_ID } },
+        organization: { connect: { id: orgId } },
         customer: { connect: { id: customerId } },
         description,
         poNumber,
@@ -99,7 +109,7 @@ export async function POST(req: Request) {
 
         items: {
           create: normalizedItems.map((i: any) => ({
-            organization: { connect: { id: DEFAULT_ORG_ID } },
+            organization: { connect: { id: orgId } },
             productId: i.productId,
             name: i.name,
             type: i.type,

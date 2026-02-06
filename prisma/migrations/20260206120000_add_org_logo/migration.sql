@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Organization" ADD COLUMN "logoUrl" TEXT;
+
+-- AlterTable
+ALTER TABLE "Sale" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

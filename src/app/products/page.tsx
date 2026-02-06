@@ -1,11 +1,12 @@
 // byteledger/src/app/products/page.tsx
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { requireOrgId } from "@/lib/auth"
 import ProductsClient from "./ui/ProductsClient"
 
 export default async function ProductsPage() {
+  const orgId = await requireOrgId()
   const products = await prisma.product.findMany({
-    where: { organizationId: DEFAULT_ORG_ID },
+    where: { organizationId: orgId },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,

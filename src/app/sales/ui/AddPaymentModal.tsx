@@ -1,13 +1,13 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import SearchableSelect from "@/components/SearchableSelect"
-
 type Props = {
   saleId: string
   saleDescription: string
   remaining: number
   onPaid: (updatedSale: any) => void
+  buttonClassName?: string
+  buttonLabel?: string
 }
 
 const METHODS = ["CASH", "ZELLE", "CARD", "CHECK", "OTHER"] as const
@@ -17,6 +17,8 @@ export default function AddPaymentModal({
   saleDescription,
   remaining,
   onPaid,
+  buttonClassName,
+  buttonLabel,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [amount, setAmount] = useState<string>("")
@@ -26,9 +28,15 @@ export default function AddPaymentModal({
   const [error, setError] = useState<string | null>(null)
 
   const remainingFixed = useMemo(() => {
-    const r = Number.isFinite(remaining) ? remaining : 0
+    const r = Number.isFinite(remaining) ? remaining : Number(remaining || 0)
     return Math.max(r, 0)
   }, [remaining])
+
+  const isPaidOff = remainingFixed <= 0
+  const triggerLabel = isPaidOff ? "Paid" : buttonLabel ?? "Add Payment"
+  const triggerClass =
+    buttonClassName ??
+    "rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900 disabled:opacity-50"
 
   async function submit() {
     setError(null)
@@ -36,6 +44,10 @@ export default function AddPaymentModal({
     const amt = Number(amount)
     if (!Number.isFinite(amt) || amt <= 0) {
       setError("Amount must be greater than 0.")
+      return
+    }
+    if (amt > remainingFixed) {
+      setError(`Amount exceeds remaining balance ($${remainingFixed.toFixed(2)}).`)
       return
     }
 
@@ -74,31 +86,32 @@ export default function AddPaymentModal({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-900/40"
+        disabled={isPaidOff}
+        className={triggerClass}
       >
-        Add Payment
+        {triggerLabel}
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-sm text-zinc-400">Add payment to</div>
-                <div className="mt-1 text-lg font-semibold text-zinc-100">
+                <div className="text-sm text-slate-500">Add payment to</div>
+                <div className="mt-1 text-lg font-semibold text-slate-900">
                   {saleDescription}
                 </div>
-                <div className="mt-1 text-sm text-zinc-500">
+                <div className="mt-1 text-sm text-slate-500">
                   Remaining:{" "}
-                  <span className="font-semibold text-zinc-200">
-                    ${remainingFixed.toFixed(2)}
+                  <span className="font-semibold text-slate-700">
+                    {remainingFixed.toLocaleString(undefined, { style: "currency", currency: "USD" })}
                   </span>
                 </div>
               </div>
 
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs text-zinc-200 hover:bg-zinc-900"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
               >
                 Close
               </button>
@@ -106,37 +119,49 @@ export default function AddPaymentModal({
 
             <div className="mt-5 grid gap-3">
               <div className="grid gap-1">
-                <label className="text-xs text-zinc-400">Amount</label>
+                <label className="text-xs text-slate-500">Amount</label>
                 <input
+                  type="number"
+                  min="0"
+                  max={remainingFixed}
+                  step="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="e.g. 100"
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-900/30 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-600"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                 />
+                <div className="text-[11px] text-slate-500">
+                  Max: {remainingFixed.toLocaleString(undefined, { style: "currency", currency: "USD" })}
+                </div>
               </div>
 
               <div className="grid gap-1">
-                <label className="text-xs text-zinc-400">Method</label>
-                <SearchableSelect
+                <label className="text-xs text-slate-500">Method</label>
+                <select
                   value={method}
-                  onChange={(v) => setMethod(v as any)}
-                  options={METHODS.map((m) => ({ value: m, label: m }))}
-                  placeholder="Select method"
-                />
+                  onChange={(e) => setMethod(e.target.value as any)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                >
+                  {METHODS.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid gap-1">
-                <label className="text-xs text-zinc-400">Notes (optional)</label>
+                <label className="text-xs text-slate-500">Notes (optional)</label>
                 <input
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="deposit / partial / etc..."
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-900/30 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-600"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                 />
               </div>
 
               {error && (
-                <div className="rounded-xl border border-red-900/50 bg-red-950/30 px-3 py-2 text-sm text-red-200">
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
                   {error}
                 </div>
               )}
@@ -144,15 +169,15 @@ export default function AddPaymentModal({
               <div className="mt-2 flex items-center justify-end gap-2">
                 <button
                   onClick={() => setOpen(false)}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/30 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
                 >
                   Cancel
                 </button>
 
                 <button
-                  disabled={loading}
+                  disabled={loading || isPaidOff}
                   onClick={submit}
-                  className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-black hover:bg-zinc-200 disabled:opacity-50"
+                  className="rounded-xl bg-teal-500 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-400 disabled:opacity-50"
                 >
                   {loading ? "Saving..." : "Save Payment"}
                 </button>

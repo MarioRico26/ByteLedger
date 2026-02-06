@@ -1,13 +1,12 @@
-//byteledger/src/app/sales/[id]/invoice/PrintButton.tsx
 "use client"
 
 export default function PrintButton() {
   return (
     <button
       onClick={() => window.print()}
-      className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
+      className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400"
     >
-      Print / Save as PDF
+      Print
     </button>
   )
 }

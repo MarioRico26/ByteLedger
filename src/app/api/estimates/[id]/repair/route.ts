@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function POST(_: Request, { params }: { params: { id: string } }) {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const id = params.id
 
     const est = await prisma.estimate.findFirst({
-      where: { id, organizationId: DEFAULT_ORG_ID },
+      where: { id, organizationId: orgId },
       select: { id: true, saleId: true, status: true },
     })
 
@@ -21,7 +24,7 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
     }
 
     const sale = await prisma.sale.findFirst({
-      where: { id: est.saleId, organizationId: DEFAULT_ORG_ID },
+      where: { id: est.saleId, organizationId: orgId },
       select: { id: true },
     })
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 import { ProductType, Prisma } from "@prisma/client"
 
 export const runtime = "nodejs"
@@ -49,11 +49,14 @@ type BodyItem = {
 type Ctx = { params: Promise<{ id: string }> } // ✅ Next params puede venir como Promise
 
 export async function GET(_: Request, ctx: Ctx) {
+  const orgId = await getOrgIdOrNull()
+  if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   const { id } = await ctx.params
   const estimateId = String(id || "").trim()
 
   const estimate = await prisma.estimate.findFirst({
-    where: { id: estimateId, organizationId: DEFAULT_ORG_ID },
+    where: { id: estimateId, organizationId: orgId },
     include: {
       customer: true,
       organization: true,
@@ -71,11 +74,14 @@ export async function GET(_: Request, ctx: Ctx) {
 
 export async function PUT(req: Request, ctx: Ctx) {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const { id } = await ctx.params
     const estimateId = String(id || "").trim()
 
     const existing = await prisma.estimate.findFirst({
-      where: { id: estimateId, organizationId: DEFAULT_ORG_ID },
+      where: { id: estimateId, organizationId: orgId },
       select: { id: true, saleId: true, sale: { select: { id: true } } },
     })
     if (!existing) return NextResponse.json({ error: "Estimate not found" }, { status: 404 })
@@ -130,7 +136,7 @@ export async function PUT(req: Request, ctx: Ctx) {
       quantity: it.quantity,
       unitPrice: it.unitPrice,
       lineTotal: it.lineTotal,
-      organization: { connect: { id: DEFAULT_ORG_ID } },
+      organization: { connect: { id: orgId } },
       ...(it.productId ? { product: { connect: { id: it.productId } } } : {}),
     }))
 

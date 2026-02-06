@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 
 export async function GET() {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const products = await prisma.product.findMany({
-      where: { organizationId: DEFAULT_ORG_ID },
+      where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
     })
 
@@ -24,6 +27,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const body = await req.json()
 
     const name = String(body?.name || "").trim()
@@ -45,7 +51,7 @@ export async function POST(req: Request) {
 
     const created = await prisma.product.create({
       data: {
-        organizationId: DEFAULT_ORG_ID,
+        organizationId: orgId,
         name,
         type,
         price,

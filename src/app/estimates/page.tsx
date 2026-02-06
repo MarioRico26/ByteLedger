@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { getOrgId } from "@/lib/org"
+import { requireOrgId } from "@/lib/auth"
 import EstimatesTableClient, { type EstimateRow } from "@/app/estimates/ui/EstimatesTableClient"
 
 export const dynamic = "force-dynamic"
@@ -15,7 +15,7 @@ function decToString(v: any) {
 }
 
 export default async function EstimatesPage() {
-  const orgId = await getOrgId()
+  const orgId = await requireOrgId()
 
   const estimates = await prisma.estimate.findMany({
     where: { organizationId: orgId },
@@ -55,14 +55,14 @@ export default async function EstimatesPage() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Estimates</h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <p className="mt-1 text-sm text-slate-500">
             Quotes you can send, print, and convert into invoices.
           </p>
         </div>
 
         <Link
           href="/estimates/new"
-          className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm text-zinc-100 hover:bg-zinc-900/40"
+          className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-teal-200 hover:bg-teal-400"
         >
           + New Estimate
         </Link>

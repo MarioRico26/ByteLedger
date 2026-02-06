@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { getOrgId } from "@/lib/org"
+import { requireOrgId } from "@/lib/auth"
 import { getRouteId } from "@/lib/routeParam"
 import EstimateFormClient from "@/app/estimates/ui/EstimateFormClient"
 
@@ -33,7 +33,7 @@ export default async function EditEstimatePage({ params }: { params: any }) {
   const estimateId = await getRouteId(params)
   if (!estimateId) redirect("/estimates")
 
-  const orgId = await getOrgId()
+  const orgId = await requireOrgId()
 
   const estimate = await prisma.estimate.findFirst({
     where: { id: estimateId, organizationId: orgId },
@@ -42,13 +42,13 @@ export default async function EditEstimatePage({ params }: { params: any }) {
 
   if (!estimate) {
     return (
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-5 text-zinc-200">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 text-slate-700">
         <div className="font-semibold">Edit Estimate</div>
-        <div className="mt-2 text-sm text-zinc-400">Estimate not found.</div>
+        <div className="mt-2 text-sm text-slate-500">Estimate not found.</div>
         <div className="mt-4">
           <Link
             href="/estimates"
-            className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm hover:bg-zinc-900/40"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
           >
             Back to Estimates
           </Link>
@@ -59,21 +59,21 @@ export default async function EditEstimatePage({ params }: { params: any }) {
 
   if (estimate.sale?.id) {
     return (
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-5 text-zinc-200">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 text-slate-700">
         <div className="font-semibold">Edit Estimate</div>
-        <div className="mt-2 text-sm text-zinc-400">
+        <div className="mt-2 text-sm text-slate-500">
           Este estimate ya fue convertido a invoice. Editar aquí rompería consistencia.
         </div>
         <div className="mt-4 flex gap-2">
           <Link
             href={`/sales/${estimate.sale.id}`}
-            className="rounded-xl bg-emerald-500/90 px-4 py-2 text-sm font-semibold text-emerald-950 hover:bg-emerald-500"
+            className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400"
           >
             View Invoice
           </Link>
           <Link
             href={`/estimates/${estimate.id}/quote`}
-            className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm hover:bg-zinc-900/40"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
           >
             Back to Quote
           </Link>
@@ -105,13 +105,13 @@ export default async function EditEstimatePage({ params }: { params: any }) {
     <div className="mx-auto max-w-5xl p-6 space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Edit Estimate</h1>
-          <div className="mt-1 text-sm text-zinc-500">#{estimate.id.slice(0, 8)}</div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Edit Estimate</h1>
+          <div className="mt-1 text-sm text-slate-500">#{estimate.id.slice(0, 8)}</div>
         </div>
 
         <Link
           href={`/estimates/${estimate.id}/quote`}
-          className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm text-zinc-100 hover:bg-zinc-900/40"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
         >
           View Quote
         </Link>

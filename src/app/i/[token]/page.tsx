@@ -58,34 +58,43 @@ export default async function PublicInvoicePage({
     <div className="min-h-screen bg-white text-black">
       <div className="mx-auto max-w-4xl p-8 print:p-0">
         <div className="flex items-start justify-between gap-6 border-b border-zinc-200 pb-6">
-          <div className="min-w-0">
-            <div className="text-xs uppercase tracking-widest text-zinc-500">
-              {orgName}
-            </div>
-            <h1 className="mt-1 text-2xl font-semibold">Invoice</h1>
+          <div className="flex items-start gap-4">
+            {sale.organization.logoUrl ? (
+              <img
+                src={sale.organization.logoUrl}
+                alt={`${orgName} logo`}
+                className="h-24 w-24 rounded-2xl border border-zinc-200 bg-white object-contain"
+              />
+            ) : null}
+            <div className="min-w-0">
+              <div className="text-xs uppercase tracking-widest text-zinc-500">
+                {orgName}
+              </div>
+              <h1 className="mt-1 text-2xl font-semibold">Invoice</h1>
 
-            <div className="mt-2 text-sm text-zinc-700">
-              Invoice #: <span className="font-semibold">{invoiceNumber}</span>
-            </div>
+              <div className="mt-2 text-sm text-zinc-700">
+                Invoice #: <span className="font-semibold">{invoiceNumber}</span>
+              </div>
 
-            <div className="text-sm text-zinc-700">
-              Date:{" "}
-              <span className="font-semibold">
-                {sale.createdAt.toLocaleDateString()}
-              </span>
-            </div>
+              <div className="text-sm text-zinc-700">
+                Date:{" "}
+                <span className="font-semibold">
+                  {sale.createdAt.toLocaleDateString()}
+                </span>
+              </div>
 
-            {/* ✅ Org contact */}
-            <div className="mt-3 text-sm text-zinc-700">
-              {orgAddr1 ? <div>{orgAddr1}</div> : null}
-              {orgAddr2 ? <div>{orgAddr2}</div> : null}
-              {orgCity || orgState || orgZip ? (
-                <div>
-                  {[orgCity, orgState, orgZip].filter(Boolean).join(", ")}
-                </div>
-              ) : null}
-              {orgPhone ? <div>Phone: {orgPhone}</div> : null}
-              {orgEmail ? <div>Email: {orgEmail}</div> : null}
+              {/* ✅ Org contact */}
+              <div className="mt-3 text-sm text-zinc-700">
+                {orgAddr1 ? <div>{orgAddr1}</div> : null}
+                {orgAddr2 ? <div>{orgAddr2}</div> : null}
+                {orgCity || orgState || orgZip ? (
+                  <div>
+                    {[orgCity, orgState, orgZip].filter(Boolean).join(", ")}
+                  </div>
+                ) : null}
+                {orgPhone ? <div>Phone: {orgPhone}</div> : null}
+                {orgEmail ? <div>Email: {orgEmail}</div> : null}
+              </div>
             </div>
           </div>
 
@@ -192,7 +201,7 @@ export default async function PublicInvoicePage({
         <div className="mt-10 border-t border-zinc-200 pt-6 text-sm text-zinc-600">
           <div className="font-semibold text-zinc-700">Thank you for your business.</div>
           <div className="mt-1">
-            Powered by <span className="font-semibold">{orgName}</span>
+            Powered by <span className="font-semibold">Byte Networks</span>
           </div>
         </div>
       </div>

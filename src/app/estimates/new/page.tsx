@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { getOrgId } from "@/lib/org"
+import { requireOrgId } from "@/lib/auth"
 import EstimateFormClient from "@/app/estimates/ui/EstimateFormClient"
 
 export const dynamic = "force-dynamic"
@@ -27,8 +27,12 @@ function priceToNumber(v: any): number | null {
   return Number.isFinite(n) ? n : null
 }
 
-export default async function NewEstimatePage() {
-  const orgId = await getOrgId()
+export default async function NewEstimatePage({
+  searchParams,
+}: {
+  searchParams?: { customerId?: string }
+}) {
+  const orgId = await requireOrgId()
 
   const [customers, products] = await Promise.all([
     prisma.customer.findMany({
@@ -50,8 +54,17 @@ export default async function NewEstimatePage() {
   }))
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <EstimateFormClient mode="create" customers={customers} products={cleanProducts as any} />
+    <div className="mx-auto max-w-5xl space-y-4 p-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">New Estimate</h1>
+        <p className="mt-1 text-sm text-slate-500">Create a premium quote and send it in seconds.</p>
+      </div>
+      <EstimateFormClient
+        mode="create"
+        customers={customers}
+        products={cleanProducts as any}
+        initialCustomerId={searchParams?.customerId}
+      />
     </div>
   )
 }

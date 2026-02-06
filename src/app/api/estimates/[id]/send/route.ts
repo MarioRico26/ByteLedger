@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 import { sendEstimateEmail } from "@/lib/email/sendEstimateEmail"
 import { sendInvoiceEmail } from "@/lib/email/sendInvoiceEmail"
 import { renderEstimatePdfBuffer } from "@/lib/pdf/renderEstimatePdf"
+import { renderInvoicePdfBuffer } from "@/lib/pdf/renderInvoicePdf"
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -16,6 +17,9 @@ export async function POST(req: Request, ctx: Ctx) {
   let to = ""
 
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const params = await ctx.params
     estimateId = String(params?.id || "").trim()
     if (!estimateId) return NextResponse.json({ error: "Missing estimate id in route params." }, { status: 400 })
@@ -37,7 +41,7 @@ export async function POST(req: Request, ctx: Ctx) {
       return NextResponse.json({ error: "Estimate not found." }, { status: 404 })
     }
 
-    if (estimate.organizationId !== DEFAULT_ORG_ID) {
+    if (estimate.organizationId !== orgId) {
       return NextResponse.json({ error: "Not authorized." }, { status: 403 })
     }
 
@@ -86,7 +90,12 @@ export async function POST(req: Request, ctx: Ctx) {
     if (estimate.saleId) {
       const sale = await prisma.sale.findUnique({
         where: { id: estimate.saleId },
-        include: { organization: true, customer: true },
+        include: {
+          organization: true,
+          customer: true,
+          items: { orderBy: { createdAt: "asc" } },
+          payments: { orderBy: { paidAt: "asc" } },
+        },
       })
 
       if (!sale) {
@@ -104,10 +113,11 @@ export async function POST(req: Request, ctx: Ctx) {
         return NextResponse.json({ error: "Invoice not found for this estimate." }, { status: 404 })
       }
 
+      const invoicePdf = await renderInvoicePdfBuffer(sale as any)
       await sendInvoiceEmail({
         sale: sale as any,
         to,
-        attachments, // ✅ attach PDF (MVP)
+        attachments: [{ filename: `invoice-${sale.id.slice(0, 8)}.pdf`, content: invoicePdf }],
       } as any)
 
       await prisma.emailLog.create({
@@ -161,7 +171,7 @@ export async function POST(req: Request, ctx: Ctx) {
         const est = await prisma.estimate.findUnique({ where: { id: estimateId }, select: { organizationId: true } })
         await prisma.emailLog.create({
           data: {
-            organizationId: est?.organizationId || DEFAULT_ORG_ID,
+            organizationId: est?.organizationId || orgId,
             estimateId,
             to: to || "(missing)",
             subject: "Estimate email",

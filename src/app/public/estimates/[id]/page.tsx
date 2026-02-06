@@ -43,38 +43,47 @@ export default async function PublicEstimatePage({
       <div className="mx-auto max-w-4xl p-8 print:p-0">
         {/* HEADER */}
         <div className="flex items-start justify-between gap-6 border-b border-zinc-200 pb-6">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-zinc-500">
-              {orgName}
-            </div>
-            <h1 className="mt-1 text-2xl font-semibold">Estimate</h1>
+          <div className="flex items-start gap-4">
+            {org.logoUrl ? (
+              <img
+                src={org.logoUrl}
+                alt={`${orgName} logo`}
+                className="h-24 w-24 rounded-2xl border border-zinc-200 bg-white object-contain"
+              />
+            ) : null}
+            <div>
+              <div className="text-xs uppercase tracking-widest text-zinc-500">
+                {orgName}
+              </div>
+              <h1 className="mt-1 text-2xl font-semibold">Estimate</h1>
 
-            <div className="mt-2 text-sm text-zinc-700">
-              Title: <span className="font-semibold">{estimate.title}</span>
-            </div>
+              <div className="mt-2 text-sm text-zinc-700">
+                Title: <span className="font-semibold">{estimate.title}</span>
+              </div>
 
-            <div className="text-sm text-zinc-700">
-              Date:{" "}
-              <span className="font-semibold">
-                {estimate.createdAt.toLocaleDateString()}
-              </span>
-            </div>
+              <div className="text-sm text-zinc-700">
+                Date:{" "}
+                <span className="font-semibold">
+                  {estimate.createdAt.toLocaleDateString()}
+                </span>
+              </div>
 
-            <div className="mt-3 text-sm text-zinc-700">
-              <div className="font-semibold">From</div>
-              <div>{org.email || "info@bytenetworks.net"}</div>
-              {org.phone && <div>{org.phone}</div>}
-              {org.addressLine1 && (
-                <div>
-                  {org.addressLine1}
-                  {org.addressLine2 ? `, ${org.addressLine2}` : ""}
-                </div>
-              )}
-              {(org.city || org.state || org.zip) && (
-                <div>
-                  {[org.city, org.state, org.zip].filter(Boolean).join(", ")}
-                </div>
-              )}
+              <div className="mt-3 text-sm text-zinc-700">
+                <div className="font-semibold">From</div>
+                <div>{org.email || "info@bytenetworks.net"}</div>
+                {org.phone && <div>{org.phone}</div>}
+                {org.addressLine1 && (
+                  <div>
+                    {org.addressLine1}
+                    {org.addressLine2 ? `, ${org.addressLine2}` : ""}
+                  </div>
+                )}
+                {(org.city || org.state || org.zip) && (
+                  <div>
+                    {[org.city, org.state, org.zip].filter(Boolean).join(", ")}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

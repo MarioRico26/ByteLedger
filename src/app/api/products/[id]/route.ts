@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 
 export async function PATCH(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const { id } = await ctx.params
     const body = await req.json().catch(() => ({}))
 
@@ -18,7 +21,7 @@ export async function PATCH(
     if (!existing) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 })
     }
-    if (existing.organizationId !== DEFAULT_ORG_ID) {
+    if (existing.organizationId !== orgId) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 })
     }
 

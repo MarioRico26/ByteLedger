@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 import { sendInvoiceEmail } from "@/lib/email/sendInvoiceEmail"
+import { renderInvoicePdfBuffer } from "@/lib/pdf/renderInvoicePdf"
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -11,6 +12,9 @@ export async function POST(req: Request) {
   let saleId = ""
   let to = ""
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const body = await req.json()
 
     saleId = String(body.saleId || "").trim()
@@ -29,6 +33,8 @@ export async function POST(req: Request) {
       include: {
         organization: true,
         customer: true,
+        items: { orderBy: { createdAt: "asc" } },
+        payments: { orderBy: { paidAt: "asc" } },
       },
     })
 
@@ -36,11 +42,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Sale not found" }, { status: 404 })
     }
 
-    if (sale.organizationId !== DEFAULT_ORG_ID) {
+    if (sale.organizationId !== orgId) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 })
     }
 
-    await sendInvoiceEmail({ sale, to } as any)
+    const pdfBuffer = await renderInvoicePdfBuffer(sale as any)
+    const attachments = [{ filename: `invoice-${sale.id.slice(0, 8)}.pdf`, content: pdfBuffer }]
+
+    await sendInvoiceEmail({ sale, to, attachments } as any)
 
     await prisma.emailLog
       .create({
@@ -64,7 +73,7 @@ export async function POST(req: Request) {
         const sale = await prisma.sale.findUnique({ where: { id: saleId }, select: { organizationId: true } })
         await prisma.emailLog.create({
           data: {
-            organizationId: sale?.organizationId || DEFAULT_ORG_ID,
+          organizationId: sale?.organizationId || orgId,
             saleId,
             to: to || "(missing)",
             subject: "Invoice email",

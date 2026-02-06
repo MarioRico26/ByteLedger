@@ -5,26 +5,32 @@ import { useMemo, useState } from "react"
 import NewProductForm from "./NewProductForm"
 import ProductCard from "./ProductCard"
 
+export type ProductType = "PRODUCT" | "SERVICE"
+
 export type Product = {
   id: string
   name: string
   description: string
-  type: "PRODUCT" | "SERVICE"
+  type: ProductType
   price: number | null
   active: boolean
   createdAt: string
 }
+
+export type ProductRow = Product
 
 // 👇 este tipo lo alineamos con tu NewProductForm.tsx (donde description puede ser null)
 type CreatedProduct = {
   id: string
   name: string
   description: string | null
-  type: "PRODUCT" | "SERVICE"
+  type: ProductType
   price: string | number | null
   active: boolean
   createdAt: string | Date
 }
+
+type GroupKey = "none" | "type" | "status" | "az"
 
 export default function ProductsClient({
   initialProducts,
@@ -36,6 +42,7 @@ export default function ProductsClient({
   const [q, setQ] = useState("")
   const [type, setType] = useState<"ALL" | Product["type"]>("ALL")
   const [status, setStatus] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL")
+  const [groupBy, setGroupBy] = useState<GroupKey>("none")
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase()
@@ -49,15 +56,48 @@ export default function ProductsClient({
       const matchesType = type === "ALL" ? true : p.type === type
 
       const matchesStatus =
-        status === "ALL"
-          ? true
-          : status === "ACTIVE"
-          ? p.active
-          : !p.active
+        status === "ALL" ? true : status === "ACTIVE" ? p.active : !p.active
 
       return matchesQuery && matchesType && matchesStatus
     })
   }, [products, q, type, status])
+
+  const metrics = useMemo(() => {
+    const total = products.length
+    const active = products.filter((p) => p.active).length
+    const inactive = total - active
+    const productsCount = products.filter((p) => p.type === "PRODUCT").length
+    const servicesCount = products.filter((p) => p.type === "SERVICE").length
+    return { total, active, inactive, productsCount, servicesCount }
+  }, [products])
+
+  const grouped = useMemo(() => {
+    if (groupBy === "none") return null
+    const map = new Map<string, Product[]>()
+    for (const row of filtered) {
+      let key = ""
+      if (groupBy === "type") {
+        key = row.type === "PRODUCT" ? "Products" : "Services"
+      } else if (groupBy === "status") {
+        key = row.active ? "Active" : "Inactive"
+      } else {
+        key = (row.name?.trim()?.[0] || "#").toUpperCase()
+      }
+      const list = map.get(key) || []
+      list.push(row)
+      map.set(key, list)
+    }
+
+    if (groupBy === "az") {
+      const letters = Array.from(map.keys()).sort((a, b) => a.localeCompare(b))
+      return letters.map((k) => ({ key: k, label: k, rows: map.get(k)! }))
+    }
+
+    const order = groupBy === "status" ? ["Active", "Inactive"] : ["Products", "Services"]
+    return order
+      .filter((k) => map.has(k))
+      .map((k) => ({ key: k, label: k, rows: map.get(k)! }))
+  }, [filtered, groupBy])
 
   function upsert(next: Product) {
     setProducts((prev) => {
@@ -92,8 +132,8 @@ export default function ProductsClient({
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Catalog</h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Catalog</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Products and services you can reuse in sales + estimates.
           </p>
         </div>
@@ -103,25 +143,51 @@ export default function ProductsClient({
         />
       </div>
 
-      {/* Filters */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4">
+      <div className="grid gap-3 md:grid-cols-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="text-xs text-slate-500">Total items</div>
+          <div className="mt-2 text-xl font-semibold text-slate-900">
+            {metrics.total.toLocaleString()}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="text-xs text-slate-500">Active</div>
+          <div className="mt-2 text-xl font-semibold text-slate-900">
+            {metrics.active.toLocaleString()}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="text-xs text-slate-500">Products</div>
+          <div className="mt-2 text-xl font-semibold text-slate-900">
+            {metrics.productsCount.toLocaleString()}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="text-xs text-slate-500">Services</div>
+          <div className="mt-2 text-xl font-semibold text-slate-900">
+            {metrics.servicesCount.toLocaleString()}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="grid gap-3 md:grid-cols-12">
           <div className="md:col-span-6">
-            <div className="text-[11px] text-zinc-400">Search</div>
+            <div className="text-[11px] text-slate-500">Search</div>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search by name or description..."
-              className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-600"
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-400"
             />
           </div>
 
-          <div className="md:col-span-3">
-            <div className="text-[11px] text-zinc-400">Type</div>
+          <div className="md:col-span-2">
+            <div className="text-[11px] text-slate-500">Type</div>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as any)}
-              className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-600"
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
             >
               <option value="ALL">All</option>
               <option value="PRODUCT">Product</option>
@@ -129,44 +195,65 @@ export default function ProductsClient({
             </select>
           </div>
 
-          <div className="md:col-span-3">
-            <div className="text-[11px] text-zinc-400">Status</div>
+          <div className="md:col-span-2">
+            <div className="text-[11px] text-slate-500">Status</div>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-600"
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
             >
               <option value="ALL">All</option>
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
             </select>
           </div>
+
+          <div className="md:col-span-2">
+            <div className="text-[11px] text-slate-500">Group by</div>
+            <select
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as GroupKey)}
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+            >
+              <option value="none">None</option>
+              <option value="type">Type</option>
+              <option value="status">Status</option>
+              <option value="az">A–Z</option>
+            </select>
+          </div>
         </div>
 
-        <div className="mt-3 text-xs text-zinc-500">
-          Showing{" "}
-          <span className="text-zinc-200 font-semibold">{filtered.length}</span>{" "}
-          of{" "}
-          <span className="text-zinc-200 font-semibold">{products.length}</span>
+        <div className="mt-3 text-xs text-slate-500">
+          Showing <span className="font-semibold text-slate-700">{filtered.length}</span> of{" "}
+          <span className="font-semibold text-slate-700">{products.length}</span>
         </div>
       </div>
 
-      {/* List */}
-      <div className="space-y-3">
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-5 text-sm text-zinc-500">
-            No catalog items match your filters.
+      <div className="space-y-4">
+        {(grouped ? grouped : [{ key: "All", label: "All", rows: filtered }]).map((group) => (
+          <div key={group.key} className="space-y-3">
+            {groupBy !== "none" ? (
+              <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                {group.label} • {group.rows.length}
+              </div>
+            ) : null}
+
+            {group.rows.length === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">
+                No catalog items match your filters.
+              </div>
+            ) : (
+              group.rows.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  onUpdated={upsert}
+                  onDeleted={() => remove(p.id)}
+                />
+              ))
+            )}
           </div>
-        ) : (
-          filtered.map((p) => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              onUpdated={upsert}
-              onDeleted={() => remove(p.id)}
-            />
-          ))
-        )}
+        ))}
       </div>
     </div>
   )

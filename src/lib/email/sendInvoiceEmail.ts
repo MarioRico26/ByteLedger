@@ -53,6 +53,8 @@ export async function sendInvoiceEmail(args: SendInvoiceEmailArgs) {
 
   const invoiceUrl = `${baseUrl}/sales/${args.sale.id}/invoice`
 
+  const hasAttachments = Boolean(args.attachments?.length)
+
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111">
       <div style="max-width:640px;margin:0 auto;padding:24px">
@@ -65,6 +67,10 @@ export async function sendInvoiceEmail(args: SendInvoiceEmailArgs) {
         <a href="${invoiceUrl}" style="display:inline-block;padding:12px 16px;border-radius:10px;background:#111;color:#fff;text-decoration:none;font-weight:600;">
           View Invoice
         </a>
+
+        <p style="margin-top:12px;font-size:12px;color:#666">
+          ${hasAttachments ? "Attachment: Invoice PDF included." : "Attachment missing (contact support)."}
+        </p>
 
         <p style="margin-top:18px;font-size:12px;color:#666">Sent via ByteLedger.</p>
       </div>

@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 import { EstimateStatus, Prisma } from "@prisma/client"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function POST(_: Request, { params }: { params: { id: string } }) {
+  const orgId = await getOrgIdOrNull()
+  if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   const id = params.id
 
   const est = await prisma.estimate.findFirst({
-    where: { id, organizationId: DEFAULT_ORG_ID },
+    where: { id, organizationId: orgId },
     include: { items: true },
   })
   if (!est) return NextResponse.json({ error: "Estimate not found" }, { status: 404 })
@@ -21,13 +24,13 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
     quantity: it.quantity,
     unitPrice: it.unitPrice,
     lineTotal: it.lineTotal,
-    organization: { connect: { id: DEFAULT_ORG_ID } },
+    organization: { connect: { id: orgId } },
     ...(it.productId ? { product: { connect: { id: it.productId } } } : {}),
   }))
 
   const created = await prisma.estimate.create({
     data: {
-      organization: { connect: { id: DEFAULT_ORG_ID } },
+      organization: { connect: { id: orgId } },
       customer: { connect: { id: est.customerId } },
       title: `${est.title} (Copy)`,
       status: EstimateStatus.DRAFT,

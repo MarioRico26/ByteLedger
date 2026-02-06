@@ -19,11 +19,13 @@ export type EstimateRow = {
 }
 
 type Props = { initialEstimates: EstimateRow[] }
+type SortKey = "date_desc" | "date_asc" | "total_desc" | "total_asc" | "customer_asc" | "status"
+type GroupKey = "none" | "status" | "customer"
 
 function money(s: string) {
   const n = Number(s)
   if (!Number.isFinite(n)) return "$0.00"
-  return `$${n.toFixed(2)}`
+  return n.toLocaleString(undefined, { style: "currency", currency: "USD" })
 }
 
 function fmtDate(iso: string) {
@@ -38,10 +40,25 @@ function go(path: string) {
   window.location.assign(path)
 }
 
+function statusBadge(status: EstimateStatus) {
+  switch (status) {
+    case "APPROVED":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700"
+    case "SENT":
+      return "border-sky-200 bg-sky-50 text-sky-700"
+    case "EXPIRED":
+      return "border-rose-200 bg-rose-50 text-rose-700"
+    default:
+      return "border-slate-200 bg-slate-50 text-slate-600"
+  }
+}
+
 export default function EstimatesTableClient({ initialEstimates }: Props) {
   const [q, setQ] = useState("")
   const [status, setStatus] = useState<EstimateStatus | "ALL">("ALL")
   const [onlyOpen, setOnlyOpen] = useState(false)
+  const [sortBy, setSortBy] = useState<SortKey>("date_desc")
+  const [groupBy, setGroupBy] = useState<GroupKey>("none")
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
@@ -65,6 +82,47 @@ export default function EstimatesTableClient({ initialEstimates }: Props) {
       return hay.includes(term)
     })
   }, [initialEstimates, q, status, onlyOpen])
+
+  const sorted = useMemo(() => {
+    const copy = [...filtered]
+    copy.sort((a, b) => {
+      if (sortBy === "date_desc") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      if (sortBy === "date_asc") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      if (sortBy === "total_desc") return Number(b.totalAmount) - Number(a.totalAmount)
+      if (sortBy === "total_asc") return Number(a.totalAmount) - Number(b.totalAmount)
+      if (sortBy === "customer_asc") {
+        return (a.customer?.fullName || "").localeCompare(b.customer?.fullName || "")
+      }
+      if (sortBy === "status") return a.status.localeCompare(b.status)
+      return 0
+    })
+    return copy
+  }, [filtered, sortBy])
+
+  const grouped = useMemo(() => {
+    if (groupBy === "none") return null
+    const map = new Map<string, EstimateRow[]>()
+    for (const row of sorted) {
+      const key =
+        groupBy === "status"
+          ? row.status
+          : row.customer?.fullName || "No customer"
+      const list = map.get(key) || []
+      list.push(row)
+      map.set(key, list)
+    }
+
+    if (groupBy === "status") {
+      const order = ["APPROVED", "SENT", "DRAFT", "EXPIRED"]
+      return order
+        .filter((k) => map.has(k))
+        .map((k) => ({ key: k, rows: map.get(k)! }))
+    }
+
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, rows]) => ({ key, rows }))
+  }, [groupBy, sorted])
 
   async function post(url: string) {
     const res = await fetch(url, { method: "POST" })
@@ -98,24 +156,24 @@ export default function EstimatesTableClient({ initialEstimates }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4">
-        <div className="grid gap-3 md:grid-cols-3">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="grid gap-3 md:grid-cols-4">
           <div className="md:col-span-2">
-            <label className="text-xs text-zinc-500">Search</label>
+            <label className="text-xs text-slate-500">Search</label>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Title, customer, email, phone, id..."
-              className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-zinc-600"
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-teal-400"
             />
           </div>
 
           <div>
-            <label className="text-xs text-zinc-500">Status</label>
+            <label className="text-xs text-slate-500">Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as EstimateStatus | "ALL")}
-              className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-600"
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
             >
               <option value="ALL">All</option>
               <option value="DRAFT">DRAFT</option>
@@ -124,18 +182,45 @@ export default function EstimatesTableClient({ initialEstimates }: Props) {
               <option value="EXPIRED">EXPIRED</option>
             </select>
 
-            <label className="mt-3 flex items-center gap-2 text-xs text-zinc-400">
+            <label className="mt-3 flex items-center gap-2 text-xs text-slate-500">
               <input type="checkbox" checked={onlyOpen} onChange={(e) => setOnlyOpen(e.target.checked)} />
               Only not converted
             </label>
           </div>
+
+          <div className="grid gap-3">
+            <label className="text-xs text-slate-500">Sort by</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortKey)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+            >
+              <option value="date_desc">Date (newest)</option>
+              <option value="date_asc">Date (oldest)</option>
+              <option value="total_desc">Total (high to low)</option>
+              <option value="total_asc">Total (low to high)</option>
+              <option value="customer_asc">Customer (A–Z)</option>
+              <option value="status">Status</option>
+            </select>
+
+            <label className="text-xs text-slate-500">Group by</label>
+            <select
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as GroupKey)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+            >
+              <option value="none">None</option>
+              <option value="status">Status</option>
+              <option value="customer">Customer</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-zinc-800">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-zinc-950/60 text-xs text-zinc-400">
+            <thead className="bg-slate-50 text-xs text-slate-500">
               <tr>
                 <th className="px-4 py-3">Estimate</th>
                 <th className="px-4 py-3">Customer</th>
@@ -147,120 +232,133 @@ export default function EstimatesTableClient({ initialEstimates }: Props) {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-zinc-800 bg-zinc-950/30">
-              {filtered.length === 0 ? (
+            <tbody className="divide-y divide-slate-200 bg-white">
+              {(grouped ? grouped.flatMap((g) => g.rows) : sorted).length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-zinc-500" colSpan={7}>
+                  <td className="px-4 py-6 text-slate-500" colSpan={7}>
                     No estimates found.
                   </td>
                 </tr>
               ) : (
-                filtered.map((e) => {
-                  const id = safeId(e.id)
-                  const locked = Boolean(e.saleId)
-
-                  return (
-                    <tr key={id || Math.random().toString(16)} className="hover:bg-zinc-950/50">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-zinc-100">{e.title}</div>
-                        <div className="text-xs text-zinc-500">
-                          #{id ? id.slice(0, 8) : "INVALID_ID"}
-                        </div>
-                        {!id ? (
-                          <div className="mt-1 text-xs text-red-400">
-                            Debug: este estimate viene con id vacío. Eso NO debería existir.
-                          </div>
-                        ) : null}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        {e.customer ? (
-                          <div className="space-y-0.5">
-                            <div className="text-zinc-200">{e.customer.fullName}</div>
-                            <div className="text-xs text-zinc-500">
-                              {[e.customer.email, e.customer.phone].filter(Boolean).join(" • ")}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-zinc-500">No customer</span>
-                        )}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <span className="rounded-full border border-zinc-800 bg-zinc-900/30 px-2 py-0.5 text-[11px] text-zinc-300">
-                          {e.status}
-                        </span>
-                        {locked ? <div className="mt-1 text-xs text-zinc-500">Converted</div> : null}
-                      </td>
-
-                      <td className="px-4 py-3 text-zinc-300">{fmtDate(e.createdAt)}</td>
-                      <td className="px-4 py-3 text-zinc-300">{e.itemsCount}</td>
-                      <td className="px-4 py-3 text-zinc-100">{money(e.totalAmount)}</td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!id) return alert("Este estimate tiene id vacío. Revisa DB/seed.")
-                              go(`/estimates/${encodeURIComponent(id)}/quote`)
-                            }}
-                            className="rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-1.5 text-xs text-zinc-100 hover:bg-zinc-900/40"
-                          >
-                            Quote
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!id) return alert("Este estimate tiene id vacío. Revisa DB/seed.")
-                              onDuplicate(id)
-                            }}
-                            className="rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-1.5 text-xs text-zinc-100 hover:bg-zinc-900/40"
-                          >
-                            Duplicate
-                          </button>
-
-                          {locked ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (!e.saleId) return
-                                go(`/sales/${encodeURIComponent(e.saleId)}`)
-                              }}
-                              className="rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-1.5 text-xs text-zinc-100 hover:bg-zinc-900/40"
-                            >
-                              Invoice
-                            </button>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (!id) return alert("Este estimate tiene id vacío. Revisa DB/seed.")
-                                  go(`/estimates/${encodeURIComponent(id)}/edit`)
-                                }}
-                                className="rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-1.5 text-xs text-zinc-100 hover:bg-zinc-900/40"
-                              >
-                                Edit
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (!id) return alert("Este estimate tiene id vacío. Revisa DB/seed.")
-                                  onConvert(id)
-                                }}
-                                className="rounded-lg border border-emerald-900/60 bg-emerald-950/30 px-3 py-1.5 text-xs text-emerald-200 hover:bg-emerald-950/50"
-                              >
-                                Convert
-                              </button>
-                            </>
-                          )}
-                        </div>
+                (grouped ? grouped : [{ key: "All", rows: sorted }]).flatMap((group) => {
+                  const rows = group.rows
+                  const groupHeader = (
+                    <tr key={`group-${group.key}`} className="bg-slate-50">
+                      <td className="px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-400" colSpan={7}>
+                        {group.key} • {rows.length}
                       </td>
                     </tr>
                   )
+
+                  const dataRows = rows.map((e) => {
+                    const id = safeId(e.id)
+                    const locked = Boolean(e.saleId)
+
+                    return (
+                      <tr key={id || Math.random().toString(16)} className="hover:bg-slate-50">
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-slate-900">{e.title}</div>
+                          <div className="text-xs text-slate-400">
+                            #{id ? id.slice(0, 8) : "INVALID_ID"}
+                          </div>
+                          {!id ? (
+                            <div className="mt-1 text-xs text-rose-500">
+                              Debug: este estimate viene con id vacío. Eso NO debería existir.
+                            </div>
+                          ) : null}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          {e.customer ? (
+                            <div className="space-y-0.5">
+                              <div className="text-slate-700">{e.customer.fullName}</div>
+                              <div className="text-xs text-slate-400">
+                                {[e.customer.email, e.customer.phone].filter(Boolean).join(" • ")}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-slate-500">No customer</span>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <span className={`rounded-full border px-2 py-0.5 text-[11px] ${statusBadge(e.status)}`}>
+                            {e.status}
+                          </span>
+                          {locked ? <div className="mt-1 text-xs text-slate-400">Converted</div> : null}
+                        </td>
+
+                        <td className="px-4 py-3 text-slate-600">{fmtDate(e.createdAt)}</td>
+                        <td className="px-4 py-3 text-slate-600">{e.itemsCount}</td>
+                        <td className="px-4 py-3 text-slate-900">{money(e.totalAmount)}</td>
+
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!id) return alert("Este estimate tiene id vacío. Revisa DB/seed.")
+                                go(`/estimates/${encodeURIComponent(id)}/quote`)
+                              }}
+                              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                            >
+                              Quote
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!id) return alert("Este estimate tiene id vacío. Revisa DB/seed.")
+                                onDuplicate(id)
+                              }}
+                              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                            >
+                              Duplicate
+                            </button>
+
+                            {locked ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!e.saleId) return
+                                  go(`/sales/${encodeURIComponent(e.saleId)}`)
+                                }}
+                                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              >
+                                Invoice
+                              </button>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!id) return alert("Este estimate tiene id vacío. Revisa DB/seed.")
+                                    go(`/estimates/${encodeURIComponent(id)}/edit`)
+                                  }}
+                                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                >
+                                  Edit
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!id) return alert("Este estimate tiene id vacío. Revisa DB/seed.")
+                                    onConvert(id)
+                                  }}
+                                  className="rounded-full bg-teal-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-400"
+                                >
+                                  Convert
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+
+                  return [groupHeader, ...dataRows]
                 })
               )}
             </tbody>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import SearchableSelect, { SearchableOption } from "@/components/SearchableSelect"
 
 type CustomerOption = { id: string; fullName: string; email?: string | null }
@@ -15,21 +15,87 @@ type Line = {
   productId: string
   name: string
   type: "PRODUCT" | "SERVICE"
-  quantity: number
-  unitPrice: string
+  quantityStr: string
+  unitPriceStr: string
+}
+
+function toMoneyNumber(v: any, fallback = 0) {
+  if (v === null || v === undefined) return fallback
+  if (typeof v === "number") return Number.isFinite(v) ? v : fallback
+  if (typeof v === "object" && typeof v.toString === "function") v = v.toString()
+  if (typeof v === "string") {
+    const s = v.trim().replace(/[$,\s]/g, "").replace(/[^\d.-]/g, "")
+    if (!s) return fallback
+    const n = Number(s)
+    return Number.isFinite(n) ? n : fallback
+  }
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
+}
+
+function fmtMoney(n: number) {
+  return Number.isFinite(n)
+    ? n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : "0.00"
+}
+
+function fmtPercent(n: number) {
+  return Number.isFinite(n)
+    ? n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 3 })
+    : "0"
+}
+
+function formatIntegerInput(raw: string) {
+  const cleaned = raw.replace(/[^\d]/g, "")
+  if (!cleaned) return ""
+  const n = Number(cleaned)
+  if (!Number.isFinite(n)) return ""
+  return n.toLocaleString(undefined)
+}
+
+function formatDecimalInput(raw: string, decimals: number) {
+  const cleaned = raw.replace(/,/g, "").replace(/[^\d.]/g, "")
+  if (!cleaned) return ""
+  const hasDot = cleaned.includes(".")
+  const [intPartRaw, fracRaw = ""] = cleaned.split(".")
+  const intPart = intPartRaw.replace(/^0+(?=\d)/, "")
+  const intNumber = intPart ? Number(intPart) : 0
+  const intFormatted = intPart ? intNumber.toLocaleString(undefined) : "0"
+  if (!hasDot) return intFormatted
+  const frac = fracRaw.replace(/[^\d]/g, "").slice(0, decimals)
+  return `${intFormatted}.${frac}`
+}
+
+function normalizeQtyInput(value: string) {
+  const n = Math.max(1, Math.floor(toMoneyNumber(value, 1)))
+  return n.toLocaleString(undefined)
+}
+
+function normalizeMoneyInput(value: string) {
+  const n = Math.max(0, toMoneyNumber(value, 0))
+  return fmtMoney(n)
+}
+
+function normalizePercentInput(value: string) {
+  const n = Math.max(0, toMoneyNumber(value, 0))
+  return fmtPercent(n)
 }
 
 export default function NewSaleForm({
   customers,
   products,
+  initialCustomerId,
+  initialOpen,
 }: {
   customers: CustomerOption[]
   products: ProductOption[]
+  initialCustomerId?: string
+  initialOpen?: boolean
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(Boolean(initialOpen))
   const [loading, setLoading] = useState(false)
 
-  const [customerId, setCustomerId] = useState("")
+  const [customerId, setCustomerId] = useState(initialCustomerId ?? "")
   const [description, setDescription] = useState("")
   const [poNumber, setPoNumber] = useState("")
   const [serviceAddress, setServiceAddress] = useState("")
@@ -37,18 +103,31 @@ export default function NewSaleForm({
   const [dueDate, setDueDate] = useState("")
 
   // Optional pricing extras
-  const [discount, setDiscount] = useState<string>("") // dollars
-  const [taxRate, setTaxRate] = useState<string>("") // percent
+  const [discount, setDiscount] = useState<string>("0.00") // dollars
+  const [taxRate, setTaxRate] = useState<string>("0") // percent
 
   const [lines, setLines] = useState<Line[]>([
     {
       productId: "",
       name: "",
       type: "SERVICE",
-      quantity: 1,
-      unitPrice: "",
+      quantityStr: "1",
+      unitPriceStr: "0.00",
     },
   ])
+
+  const didInit = useRef(false)
+
+  useEffect(() => {
+    if (didInit.current) return
+    didInit.current = true
+    if (initialCustomerId && !customerId) {
+      setCustomerId(initialCustomerId)
+    }
+    if (initialOpen) {
+      setOpen(true)
+    }
+  }, [initialCustomerId, initialOpen, customerId])
 
   const customerOptions: SearchableOption[] = useMemo(() => {
     return [
@@ -63,7 +142,7 @@ export default function NewSaleForm({
 
   const productOptions: SearchableOption[] = useMemo(() => {
     return [
-      { value: "", label: "Select catalog item" },
+      { value: "", label: "Custom item" },
       ...(products ?? []).map((p) => ({
         value: p.id,
         label: `${p.name} (${p.type === "SERVICE" ? "Service" : "Product"})`,
@@ -74,20 +153,19 @@ export default function NewSaleForm({
 
   const subtotal = useMemo(() => {
     return (lines ?? []).reduce((sum, l) => {
-      const qty = Number(l.quantity || 0)
-      const price = Number(l.unitPrice || 0)
-      if (!Number.isFinite(qty) || !Number.isFinite(price)) return sum
+      const qty = Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1)))
+      const price = Math.max(0, toMoneyNumber(l.unitPriceStr, 0))
       return sum + qty * price
     }, 0)
   }, [lines])
 
   const discountNum = useMemo(() => {
-    const d = Number(discount || 0)
+    const d = toMoneyNumber(discount || 0, 0)
     return Number.isFinite(d) ? Math.max(d, 0) : 0
   }, [discount])
 
   const taxRateNum = useMemo(() => {
-    const r = Number(taxRate || 0)
+    const r = toMoneyNumber(taxRate || 0, 0)
     return Number.isFinite(r) ? Math.max(r, 0) : 0
   }, [taxRate])
 
@@ -102,18 +180,17 @@ export default function NewSaleForm({
   function addLine() {
     setLines((prev) => [
       ...(prev ?? []),
-      { productId: "", name: "", type: "SERVICE", quantity: 1, unitPrice: "" },
+      { productId: "", name: "", type: "SERVICE", quantityStr: "1", unitPriceStr: "0.00" },
     ])
   }
 
   function removeLine(idx: number) {
-    setLines((prev) => (prev ?? []).filter((_, i) => i !== idx))
+    setLines((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)))
   }
 
   function pickProduct(idx: number, productId: string) {
     if (!productId) {
-      // clear selection, keep whatever user typed in name/unitPrice if you want.
-      updateLine(idx, { productId: "" })
+      updateLine(idx, { productId: "", type: "SERVICE", unitPriceStr: "0.00" })
       return
     }
 
@@ -124,8 +201,15 @@ export default function NewSaleForm({
       productId: p.id,
       name: p.name,
       type: p.type,
-      unitPrice: p.price ?? "",
+      unitPriceStr: p.price ? fmtMoney(Number(p.price)) : "0.00",
     })
+  }
+
+  function lineSubtotal(l: Line) {
+    return (
+      Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1))) *
+      Math.max(0, toMoneyNumber(l.unitPriceStr, 0))
+    )
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -140,8 +224,8 @@ export default function NewSaleForm({
         productId: l.productId || null,
         name: l.name.trim(),
         type: l.type,
-        quantity: Number(l.quantity || 1),
-        unitPrice: Number(l.unitPrice || 0),
+        quantity: Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1))),
+        unitPrice: Math.max(0, toMoneyNumber(l.unitPriceStr, 0)),
       }))
 
     if (prepared.length === 0) return alert("Add at least one item")
@@ -174,9 +258,9 @@ export default function NewSaleForm({
       setServiceAddress("")
       setNotes("")
       setDueDate("")
-      setDiscount("")
-      setTaxRate("")
-      setLines([{ productId: "", name: "", type: "SERVICE", quantity: 1, unitPrice: "" }])
+      setDiscount("0.00")
+      setTaxRate("0")
+      setLines([{ productId: "", name: "", type: "SERVICE", quantityStr: "1", unitPriceStr: "0.00" }])
 
       setOpen(false)
       window.location.reload()
@@ -191,222 +275,325 @@ export default function NewSaleForm({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+        className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-teal-200 hover:bg-teal-400"
       >
         + New Sale
       </button>
 
       {open ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
-          <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-xl">
-            {/* ✅ make modal scrollable */}
+          <div className="w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
             <div className="max-h-[85vh] overflow-y-auto p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-lg font-semibold">New Sale</div>
-                  <div className="mt-1 text-sm text-zinc-400">
+                  <div className="text-lg font-semibold text-slate-900">New Sale</div>
+                  <div className="mt-1 text-sm text-slate-500">
                     Create a job with catalog items and automatic totals.
                   </div>
                 </div>
 
                 <button
                   onClick={() => setOpen(false)}
-                  className="rounded-lg px-2 py-1 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+                  className="rounded-lg px-2 py-1 text-sm text-slate-500 hover:bg-slate-100"
                 >
                   ✕
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="Customer *">
-                    <SearchableSelect
-                      value={customerId}
-                      onChange={setCustomerId}
-                      options={customerOptions}
-                      placeholder="Search customer..."
+              <form onSubmit={handleSubmit} className="mt-5 space-y-6">
+                <div className="space-y-5">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Customer *">
+                      <SearchableSelect
+                        value={customerId}
+                        onChange={setCustomerId}
+                        options={customerOptions}
+                        placeholder="Search customer..."
+                      />
+                    </Field>
+
+                    <Field label="Description *">
+                      <input
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Camera install at office"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-teal-400"
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="PO Number">
+                      <input
+                        value={poNumber}
+                        onChange={(e) => setPoNumber(e.target.value)}
+                        placeholder="Optional"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-teal-400"
+                      />
+                    </Field>
+
+                    <Field label="Due date">
+                      <input
+                        type="date"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                      />
+                    </Field>
+                  </div>
+
+                  <Field label="Service address">
+                    <input
+                      value={serviceAddress}
+                      onChange={(e) => setServiceAddress(e.target.value)}
+                      placeholder="Job site address"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-teal-400"
                     />
                   </Field>
 
-                  <Field label="Description *">
-                    <input
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Camera install at office"
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                  {/* ITEMS */}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs text-slate-500">Items</label>
+                      <button
+                        type="button"
+                        onClick={addLine}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                      >
+                        + Add item
+                      </button>
+                    </div>
+
+                    {/* Desktop table */}
+                    <div className="mt-2 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-[900px] w-full border-collapse text-sm">
+                          <thead className="bg-slate-50">
+                            <tr className="text-left text-xs text-slate-500">
+                              <th className="px-3 py-2 min-w-[190px]">Catalog</th>
+                              <th className="px-3 py-2 min-w-[240px]">Name</th>
+                              <th className="px-3 py-2 w-[110px]">Qty</th>
+                              <th className="px-3 py-2 w-[140px]">Price</th>
+                              <th className="px-3 py-2 w-[160px]">Subtotal</th>
+                              <th className="px-3 py-2 w-[110px]"></th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {lines.map((l, idx) => {
+                              const line = lineSubtotal(l)
+                              return (
+                                <tr key={idx} className="border-t border-slate-200">
+                                  <td className="px-3 py-2">
+                                    <SearchableSelect
+                                      value={l.productId}
+                                      onChange={(v) => pickProduct(idx, v)}
+                                      options={productOptions}
+                                      placeholder="Search catalog..."
+                                      portal
+                                    />
+                                  </td>
+
+                                  <td className="px-3 py-2">
+                                    <input
+                                      value={l.name}
+                                      onChange={(e) => updateLine(idx, { name: e.target.value })}
+                                      placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                    />
+                                  </td>
+
+                                  <td className="px-3 py-2">
+                                    <input
+                                      inputMode="numeric"
+                                      value={l.quantityStr}
+                                      onFocus={(e) => e.currentTarget.select()}
+                                      onChange={(e) => updateLine(idx, { quantityStr: formatIntegerInput(e.target.value) })}
+                                      onBlur={(e) => updateLine(idx, { quantityStr: normalizeQtyInput(e.target.value) })}
+                                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                    />
+                                  </td>
+
+                                  <td className="px-3 py-2">
+                                    <input
+                                      inputMode="decimal"
+                                      value={l.unitPriceStr}
+                                      onFocus={(e) => e.currentTarget.select()}
+                                      onChange={(e) =>
+                                        updateLine(idx, { unitPriceStr: formatDecimalInput(e.target.value, 2) })
+                                      }
+                                      onBlur={(e) => updateLine(idx, { unitPriceStr: normalizeMoneyInput(e.target.value) })}
+                                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                    />
+                                  </td>
+
+                                  <td className="px-3 py-2">
+                                    <div className="flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-slate-700">
+                                      {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
+                                    </div>
+                                  </td>
+
+                                  <td className="px-3 py-2 text-right">
+                                    <button
+                                      type="button"
+                                      onClick={() => removeLine(idx)}
+                                      className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                    >
+                                      Remove
+                                    </button>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Mobile cards */}
+                    <div className="mt-3 grid gap-3 md:hidden">
+                      {lines.map((l, idx) => {
+                        const line = lineSubtotal(l)
+                        return (
+                          <div key={idx} className="rounded-2xl border border-slate-200 bg-white p-3">
+                            <div className="grid gap-3">
+                              <div>
+                                <label className="text-xs text-slate-500">Catalog</label>
+                                <div className="mt-1">
+                                  <SearchableSelect
+                                    value={l.productId}
+                                    onChange={(v) => pickProduct(idx, v)}
+                                    options={productOptions}
+                                    placeholder="Search catalog..."
+                                    portal
+                                  />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="text-xs text-slate-500">Name</label>
+                                <input
+                                  value={l.name}
+                                  onChange={(e) => updateLine(idx, { name: e.target.value })}
+                                  placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                  className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-xs text-slate-500">Qty</label>
+                                  <input
+                                    inputMode="numeric"
+                                    value={l.quantityStr}
+                                    onFocus={(e) => e.currentTarget.select()}
+                                    onChange={(e) => updateLine(idx, { quantityStr: formatIntegerInput(e.target.value) })}
+                                    onBlur={(e) => updateLine(idx, { quantityStr: normalizeQtyInput(e.target.value) })}
+                                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-slate-500">Price</label>
+                                  <input
+                                    inputMode="decimal"
+                                    value={l.unitPriceStr}
+                                    onFocus={(e) => e.currentTarget.select()}
+                                    onChange={(e) => updateLine(idx, { unitPriceStr: formatDecimalInput(e.target.value, 2) })}
+                                    onBlur={(e) => updateLine(idx, { unitPriceStr: normalizeMoneyInput(e.target.value) })}
+                                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                <span>Subtotal</span>
+                                <span>{line.toLocaleString(undefined, { style: "currency", currency: "USD" })}</span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => removeLine(idx)}
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              >
+                                Remove item
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <Field label="Notes">
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Optional notes for this job"
+                      rows={4}
+                      className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-teal-400"
                     />
                   </Field>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="PO Number">
-                    <input
-                      value={poNumber}
-                      onChange={(e) => setPoNumber(e.target.value)}
-                      placeholder="Optional"
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    />
-                  </Field>
+                {/* Summary */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="text-xs uppercase tracking-widest text-slate-400">Summary</div>
+                  <div className="mt-5 grid gap-5 md:grid-cols-[1fr_1.1fr]">
+                    <div className="grid gap-3">
+                      <div>
+                        <label className="text-xs text-slate-500">Tax rate (%)</label>
+                        <input
+                          inputMode="decimal"
+                          value={taxRate}
+                          onFocus={(e) => e.currentTarget.select()}
+                          onChange={(e) => setTaxRate(formatDecimalInput(e.target.value, 3))}
+                          onBlur={(e) => setTaxRate(normalizePercentInput(e.target.value))}
+                          className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                        />
+                      </div>
 
-                  <Field label="Due date">
-                    <input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    />
-                  </Field>
-                </div>
+                      <div>
+                        <label className="text-xs text-slate-500">Discount ($)</label>
+                        <input
+                          inputMode="decimal"
+                          value={discount}
+                          onFocus={(e) => e.currentTarget.select()}
+                          onChange={(e) => setDiscount(formatDecimalInput(e.target.value, 2))}
+                          onBlur={(e) => setDiscount(normalizeMoneyInput(e.target.value))}
+                          className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                        />
+                      </div>
+                    </div>
 
-                <Field label="Service address">
-                  <input
-                    value={serviceAddress}
-                    onChange={(e) => setServiceAddress(e.target.value)}
-                    placeholder="Job site address"
-                    className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                  />
-                </Field>
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                      <Row label="Subtotal" value={subtotal.toLocaleString(undefined, { style: "currency", currency: "USD" })} />
+                      <Row label="Tax" value={taxAmount.toLocaleString(undefined, { style: "currency", currency: "USD" })} />
+                      <Row label="Discount" value={`-${discountNum.toLocaleString(undefined, { style: "currency", currency: "USD" })}`} />
+                      <div className="mt-2 flex justify-between text-sm font-semibold text-slate-900">
+                        <span>Total</span>
+                        <span>{total.toLocaleString(undefined, { style: "currency", currency: "USD" })}</span>
+                      </div>
+                    </div>
+                  </div>
 
-                {/* Optional: discounts & taxes */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="Discount (optional, $)">
-                    <input
-                      value={discount}
-                      onChange={(e) => setDiscount(e.target.value)}
-                      placeholder="0"
-                      inputMode="decimal"
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    />
-                  </Field>
-
-                  <Field label="Tax rate (optional, %)">
-                    <input
-                      value={taxRate}
-                      onChange={(e) => setTaxRate(e.target.value)}
-                      placeholder="0"
-                      inputMode="decimal"
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    />
-                  </Field>
-                </div>
-
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/20 p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">Items</div>
+                  <div className="mt-4 flex items-center justify-end gap-3">
                     <button
                       type="button"
-                      onClick={addLine}
-                      className="rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1 text-xs text-zinc-200 hover:bg-zinc-900"
+                      onClick={() => setOpen(false)}
+                      className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
                     >
-                      + Add item
+                      Cancel
+                    </button>
+
+                    <button
+                      disabled={loading}
+                      type="submit"
+                      className="rounded-xl bg-teal-500 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-400 disabled:opacity-60"
+                    >
+                      {loading ? "Saving..." : "Create Sale"}
                     </button>
                   </div>
-
-                  <div className="mt-3 space-y-3">
-                    {(lines ?? []).map((l, idx) => (
-                      <div
-                        key={idx}
-                        className="grid gap-3 rounded-xl border border-zinc-800 bg-zinc-950/40 p-3 md:grid-cols-12"
-                      >
-                        <div className="md:col-span-5">
-                          <div className="text-[11px] text-zinc-400">Catalog item</div>
-                          <div className="mt-1">
-                            <SearchableSelect
-                              value={l.productId}
-                              onChange={(v) => pickProduct(idx, v)}
-                              options={productOptions}
-                              placeholder="Search catalog..."
-                            />
-                          </div>
-                        </div>
-
-                        <div className="md:col-span-3">
-                          <div className="text-[11px] text-zinc-400">Name</div>
-                          <input
-                            value={l.name}
-                            onChange={(e) => updateLine(idx, { name: e.target.value })}
-                            placeholder="Custom name"
-                            className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-900/40 px-2 py-2 text-sm text-zinc-100"
-                          />
-                        </div>
-
-                        <div className="md:col-span-2">
-                          <div className="text-[11px] text-zinc-400">Qty</div>
-                          <input
-                            type="number"
-                            min={1}
-                            value={l.quantity}
-                            onChange={(e) => updateLine(idx, { quantity: Number(e.target.value) })}
-                            className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-900/40 px-2 py-2 text-sm text-zinc-100"
-                          />
-                        </div>
-
-                        <div className="md:col-span-2">
-                          <div className="text-[11px] text-zinc-400">Unit price</div>
-                          <input
-                            value={l.unitPrice}
-                            onChange={(e) => updateLine(idx, { unitPrice: e.target.value })}
-                            placeholder="0.00"
-                            className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-900/40 px-2 py-2 text-sm text-zinc-100"
-                          />
-                        </div>
-
-                        <div className="md:col-span-12 flex items-center justify-between">
-                          <div className="text-xs text-zinc-500">
-                            Line total:{" "}
-                            <span className="text-zinc-200">
-                              ${Number(l.quantity || 0) * Number(l.unitPrice || 0) || 0}
-                            </span>
-                          </div>
-
-                          {(lines ?? []).length > 1 ? (
-                            <button
-                              type="button"
-                              onClick={() => removeLine(idx)}
-                              className="rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1 text-xs text-zinc-300 hover:bg-zinc-900"
-                            >
-                              Remove
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 grid gap-2 rounded-xl border border-zinc-800 bg-zinc-950/40 p-3 text-sm text-zinc-300 sm:max-w-sm sm:ml-auto">
-                    <Row label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
-                    <Row label="Discount" value={`-$${discountNum.toFixed(2)}`} />
-                    <Row label={`Tax (${taxRateNum.toFixed(2)}%)`} value={`$${taxAmount.toFixed(2)}`} />
-                    <div className="h-px bg-zinc-800" />
-                    <Row label="Total" value={`$${total.toFixed(2)}`} strong />
-                  </div>
-                </div>
-
-                <Field label="Notes">
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Optional notes for this job"
-                    className="h-20 w-full resize-none rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                  />
-                </Field>
-
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setOpen(false)}
-                    className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    disabled={loading}
-                    type="submit"
-                    className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-100 disabled:opacity-60"
-                  >
-                    {loading ? "Saving..." : "Create Sale"}
-                  </button>
                 </div>
               </form>
             </div>
@@ -420,7 +607,7 @@ export default function NewSaleForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-2">
-      <div className="text-xs text-zinc-400">{label}</div>
+      <div className="text-xs text-slate-500">{label}</div>
       {children}
     </label>
   )
@@ -428,9 +615,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-zinc-500">{label}</span>
-      <span className={strong ? "font-semibold text-zinc-100" : "text-zinc-300"}>{value}</span>
+    <div className="flex items-center justify-between text-sm text-slate-600">
+      <span>{label}</span>
+      <span className={strong ? "font-semibold text-slate-900" : "text-slate-700"}>{value}</span>
     </div>
   )
 }

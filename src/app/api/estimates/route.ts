@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 import { ProductType, EstimateStatus, Prisma } from "@prisma/client"
 
 export const runtime = "nodejs"
@@ -46,6 +46,9 @@ type BodyItem = {
 
 export async function POST(req: Request) {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const body = await req.json()
 
     const title = String(body.title ?? "").trim() || "Untitled Estimate"
@@ -84,13 +87,13 @@ export async function POST(req: Request) {
       quantity: it.quantity,
       unitPrice: it.unitPrice,
       lineTotal: it.lineTotal,
-      organization: { connect: { id: DEFAULT_ORG_ID } },
+      organization: { connect: { id: orgId } },
       ...(it.productId ? { product: { connect: { id: it.productId } } } : {}),
     }))
 
     const created = await prisma.estimate.create({
       data: {
-        organization: { connect: { id: DEFAULT_ORG_ID } },
+        organization: { connect: { id: orgId } },
         customer: { connect: { id: customerId } },
         title,
         status: EstimateStatus.DRAFT,

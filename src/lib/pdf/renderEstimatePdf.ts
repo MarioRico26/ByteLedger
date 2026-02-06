@@ -7,6 +7,7 @@ type Org = {
   email: string | null
   phone: string | null
   website: string | null
+  logoUrl?: string | null
   addressLine1: string | null
   addressLine2: string | null
   city: string | null
@@ -106,6 +107,17 @@ function wrapText(text: string, maxChars: number) {
   return lines
 }
 
+async function embedLogo(pdf: PDFDocument, logoUrl?: string | null) {
+  if (!logoUrl) return null
+  const match = logoUrl.match(/^data:(image\/png|image\/jpeg);base64,(.+)$/)
+  if (!match) return null
+  const bytes = Buffer.from(match[2], "base64")
+  if (match[1] === "image/png") {
+    return pdf.embedPng(bytes)
+  }
+  return pdf.embedJpg(bytes)
+}
+
 export async function renderEstimatePdfBuffer(estimate: EstimateForPdf): Promise<Buffer> {
   const pdf = await PDFDocument.create()
 
@@ -167,8 +179,22 @@ export async function renderEstimatePdfBuffer(estimate: EstimateForPdf): Promise
 
   const org = estimate.organization
   const cust = estimate.customer
+  const logoImage = await embedLogo(pdf, org.logoUrl)
 
   // Header
+  if (logoImage) {
+    const maxW = 200
+    const maxH = 80
+    const scale = Math.min(maxW / logoImage.width, maxH / logoImage.height, 1)
+    const w = logoImage.width * scale
+    const h = logoImage.height * scale
+    page.drawImage(logoImage, {
+      x: LETTER.w - margin - w,
+      y: LETTER.h - margin - h + 6,
+      width: w,
+      height: h,
+    })
+  }
   text(page, (org.name || "ORGANIZATION").toUpperCase(), margin, y, 9, false, rgb(0.45, 0.45, 0.45))
   y -= 18
   text(page, orgDisplayName(org) || "ByteLedger", margin, y, 18, true)

@@ -1,26 +1,39 @@
+"use client"
+
 import Sidebar from "./Sidebar"
 import Topbar from "./Topbar"
+import MobileNav from "./MobileNav"
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
-      <div className="flex">
-        <Sidebar />
+    <div className="relative min-h-screen bg-slate-50 text-slate-900 print:bg-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_55%_at_20%_-10%,rgba(14,165,233,0.12),transparent_60%)] print:hidden" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_90%_10%,rgba(16,185,129,0.12),transparent_60%)] print:hidden" />
+
+      <div className="relative z-10 flex">
+        <div className="print:hidden">
+          <Sidebar />
+        </div>
 
         <div className="min-w-0 flex-1">
-          <Topbar />
+          <div className="print:hidden">
+            <Topbar />
+          </div>
 
-          <main className="mx-auto max-w-6xl p-4 md:p-6">
-            {/* fondo “Byte Networks vibe” */}
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-950/40 p-4 md:p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          <main className="mx-auto max-w-6xl p-4 pb-24 md:p-6 md:pb-6 print:p-0">
+            <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0 print:shadow-none">
               {children}
             </div>
 
-            <div className="mx-auto mt-6 max-w-6xl px-1 text-xs text-zinc-500">
-              Powered by <span className="font-semibold text-zinc-300">Byte Networks</span>
+            <div className="mx-auto mt-6 max-w-6xl px-1 text-xs text-slate-500 print:hidden">
+              Powered by <span className="font-semibold text-slate-700">Byte Networks</span>
             </div>
           </main>
         </div>
+      </div>
+
+      <div className="print:hidden">
+        <MobileNav />
       </div>
     </div>
   )

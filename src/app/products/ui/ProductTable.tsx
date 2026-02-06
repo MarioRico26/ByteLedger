@@ -52,7 +52,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
 
   if (!products || products.length === 0) {
     return (
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-5 text-sm text-zinc-500">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">
         No catalog items yet. Create your first product/service.
       </div>
     )
@@ -61,7 +61,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
   return (
     <div className="space-y-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-zinc-400">
+        <div className="text-sm text-slate-500">
           {filtered.length} item(s)
         </div>
 
@@ -69,13 +69,13 @@ export default function ProductTable({ products }: { products: Product[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search products/services..."
-          className="w-full rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-zinc-600 sm:max-w-md"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-400 sm:max-w-md"
         />
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/40">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-900/40 text-xs text-zinc-500">
+          <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Type</th>
@@ -87,31 +87,31 @@ export default function ProductTable({ products }: { products: Product[] }) {
 
           <tbody>
             {filtered.map((p) => (
-              <tr key={p.id} className="border-t border-zinc-800">
+              <tr key={p.id} className="border-t border-slate-200">
                 <td className="px-4 py-3">
-                  <div className="font-medium text-zinc-100">{p.name}</div>
+                  <div className="font-medium text-slate-900">{p.name}</div>
                   {p.description ? (
-                    <div className="mt-0.5 text-xs text-zinc-500 line-clamp-1">
+                    <div className="mt-0.5 text-xs text-slate-500 line-clamp-1">
                       {p.description}
                     </div>
                   ) : null}
                 </td>
 
-                <td className="px-4 py-3 text-zinc-300">{p.type}</td>
+                <td className="px-4 py-3 text-slate-600">{p.type}</td>
 
                 <td className="px-4 py-3">
                   <span
                     className={
                       p.active
-                        ? "rounded-full border border-emerald-900/40 bg-emerald-950/30 px-2 py-0.5 text-[10px] text-emerald-200"
-                        : "rounded-full border border-zinc-800 bg-zinc-900/30 px-2 py-0.5 text-[10px] text-zinc-400"
+                        ? "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] text-emerald-700"
+                        : "rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-500"
                     }
                   >
                     {p.active ? "ACTIVE" : "INACTIVE"}
                   </span>
                 </td>
 
-                <td className="px-4 py-3 text-right text-zinc-200">
+                <td className="px-4 py-3 text-right text-slate-700">
                   {p.price ? `$${money(p.price).toFixed(2)}` : "—"}
                 </td>
 
@@ -120,15 +120,12 @@ export default function ProductTable({ products }: { products: Product[] }) {
                     <button
                       disabled={busyId === p.id}
                       onClick={() => toggleActive(p)}
-                      className="rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-900/40 disabled:opacity-60"
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900 disabled:opacity-60"
                     >
                       {busyId === p.id ? "..." : p.active ? "Deactivate" : "Activate"}
                     </button>
 
-                    <EditProductModal
-                      product={p}
-                      onSaved={() => window.location.reload()}
-                    />
+                    <EditProductModal product={p} onUpdated={() => window.location.reload()} />
                   </div>
                 </td>
               </tr>

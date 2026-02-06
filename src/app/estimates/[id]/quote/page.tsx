@@ -1,7 +1,7 @@
 // src/app/estimates/[id]/quote/page.tsx
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { getOrgId } from "@/lib/org"
+import { requireOrgId } from "@/lib/auth"
 import { getRouteId } from "@/lib/routeParam"
 import QuoteDoc from "@/app/estimates/ui/QuoteDoc"
 import QuoteActions from "@/app/estimates/quote/QuoteActions"
@@ -11,7 +11,7 @@ export const revalidate = 0
 
 export default async function EstimateQuotePage({ params }: { params: any }) {
   const estimateId = await getRouteId(params)
-  const orgId = await getOrgId()
+  const orgId = await requireOrgId()
 
   if (!estimateId) {
     return (
@@ -29,8 +29,8 @@ export default async function EstimateQuotePage({ params }: { params: any }) {
     )
   }
 
-  const estimate = await prisma.estimate.findUnique({
-    where: { id: estimateId },
+  const estimate = await prisma.estimate.findFirst({
+    where: { id: estimateId, organizationId: orgId },
     include: {
       organization: true,
       customer: true,
@@ -66,33 +66,34 @@ export default async function EstimateQuotePage({ params }: { params: any }) {
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-4">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="no-print flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Quote</h1>
-          <div className="mt-1 text-sm text-zinc-500">#{estimate.id.slice(0, 8)}</div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Quote</h1>
+          <div className="mt-1 text-sm text-slate-500">#{estimate.id.slice(0, 8)}</div>
         </div>
 
         {/* ✅ Actions ALWAYS (even if converted) */}
         <QuoteActions
           estimateId={estimate.id}
           estimateTitle={estimate.title}
-          publicToken={estimate.publicToken ?? null}
           saleId={saleId}
           defaultTo={estimate.customer?.email ?? null}
+          editHref={!saleId ? `/estimates/${estimate.id}/edit` : null}
+          className="no-print"
         />
       </div>
 
       {/* ✅ Banner when converted, but don't block actions */}
       {saleId ? (
-        <div className="rounded-2xl border border-amber-900/50 bg-amber-950/20 p-4 text-amber-100">
+        <div className="no-print rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
           <div className="font-semibold">Converted to Invoice</div>
-          <div className="mt-1 text-sm text-amber-200/80">
+          <div className="mt-1 text-sm text-amber-700">
             Este estimate ya fue convertido. Puedes reenviar, pero el sistema enviará la <b>Invoice</b>.
           </div>
           <div className="mt-3">
             <Link
               href={`/sales/${saleId}`}
-              className="inline-flex rounded-xl bg-amber-400/90 px-4 py-2 text-sm font-semibold text-amber-950 hover:bg-amber-400"
+              className="inline-flex rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-amber-950 hover:bg-amber-300"
             >
               View Invoice
             </Link>
@@ -103,15 +104,10 @@ export default async function EstimateQuotePage({ params }: { params: any }) {
       {/* Quote document */}
       <QuoteDoc estimate={estimate as any} />
 
-      <div className="flex justify-between pt-2">
-        <Link href="/estimates" className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm text-zinc-100 hover:bg-zinc-900/40">
+      <div className="no-print flex justify-between pt-2">
+        <Link href="/estimates" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900">
           Back to Estimates
         </Link>
-        {!saleId ? (
-          <Link href={`/estimates/${estimate.id}/edit`} className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm text-zinc-100 hover:bg-zinc-900/40">
-            Edit
-          </Link>
-        ) : null}
       </div>
     </div>
   )

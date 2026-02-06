@@ -1,4 +1,3 @@
-
 //byteledger/src/app/sales/ui/SaleCard.tsx:
 "use client"
 
@@ -22,6 +21,10 @@ type Props = {
     paidAmount: string
     balanceAmount: string
     createdAt: string
+    saleDate: string | null
+    dueDate: string | null
+    poNumber: string | null
+    serviceAddress: string | null
     customerName: string
     itemsCount: number
     payments: Payment[]
@@ -33,6 +36,28 @@ function money(n: any) {
   return Number.isFinite(v) ? v : 0
 }
 
+function formatDate(value?: string | null) {
+  if (!value) return ""
+  try {
+    const d = new Date(value)
+    if (Number.isNaN(d.valueOf())) return ""
+    return d.toLocaleDateString()
+  } catch {
+    return ""
+  }
+}
+
+function DetailItem({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <div className="text-[11px] text-slate-500">{label}</div>
+      <div className="mt-1 text-sm text-slate-700">
+        {value ? value : <span className="text-slate-400">N/A</span>}
+      </div>
+    </div>
+  )
+}
+
 export default function SaleCard({ sale }: Props) {
   const [state, setState] = useState({
     ...sale,
@@ -42,52 +67,52 @@ export default function SaleCard({ sale }: Props) {
   const total = useMemo(() => money(state.totalAmount), [state.totalAmount])
   const paid = useMemo(() => money(state.paidAmount), [state.paidAmount])
   const balance = useMemo(() => money(state.balanceAmount), [state.balanceAmount])
+  const progress = useMemo(() => {
+    if (total <= 0) return 0
+    return Math.min(paid / total, 1)
+  }, [paid, total])
 
   const createdLabel = useMemo(() => {
-    try {
-      return new Date(state.createdAt).toLocaleDateString()
-    } catch {
-      return ""
-    }
-  }, [state.createdAt])
+    return formatDate(state.saleDate || state.createdAt)
+  }, [state.saleDate, state.createdAt])
+
+  const dueLabel = useMemo(() => {
+    return formatDate(state.dueDate)
+  }, [state.dueDate])
 
   const statusStyle =
     state.status === "PAID"
-      ? "border-emerald-900/40 bg-emerald-950/30 text-emerald-200"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : state.status === "OVERDUE"
-      ? "border-red-900/40 bg-red-950/30 text-red-200"
-      : "border-zinc-800 bg-zinc-900/30 text-zinc-300"
+      ? "border-rose-200 bg-rose-50 text-rose-700"
+      : "border-slate-200 bg-slate-50 text-slate-600"
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4">
-      <div className="flex items-start justify-between gap-4">
-        {/* Left */}
-        <div className="min-w-0">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="truncate text-sm font-semibold text-zinc-100">
-              {state.description}
-            </div>
+            <div className="truncate text-sm font-semibold text-slate-900">{state.description}</div>
 
             <span className={`rounded-full border px-2 py-0.5 text-[10px] ${statusStyle}`}>
-              {state.status}
+              Status: {state.status}
             </span>
 
-            <span className="rounded-full border border-zinc-800 bg-zinc-900/30 px-2 py-0.5 text-[10px] text-zinc-400">
-              {state.itemsCount} item(s)
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-500">
+              Items: {state.itemsCount}
             </span>
-
-            {createdLabel && (
-              <span className="rounded-full border border-zinc-800 bg-zinc-900/30 px-2 py-0.5 text-[10px] text-zinc-500">
-                {createdLabel}
-              </span>
-            )}
           </div>
 
-          <div className="mt-1 text-xs text-zinc-500">{state.customerName}</div>
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <DetailItem label="Customer" value={state.customerName} />
+            <DetailItem label="Sale date" value={createdLabel || null} />
+            <DetailItem label="Due date" value={dueLabel || null} />
+            <DetailItem label="PO number" value={state.poNumber} />
+            <DetailItem label="Service address" value={state.serviceAddress} />
+          </div>
         </div>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 lg:justify-end">
           <AddPaymentModal
             saleId={state.id}
             saleDescription={state.description}
@@ -114,63 +139,91 @@ export default function SaleCard({ sale }: Props) {
             href={`/sales/${state.id}/invoice`}
             target="_blank"
             rel="noreferrer"
-            className="rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-900/40"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900"
           >
             View Invoice
           </a>
         </div>
       </div>
 
-      {/* Totals */}
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3">
-          <div className="text-[11px] text-zinc-500">Total</div>
-          <div className="mt-1 text-sm font-semibold text-zinc-100">
-            ${total.toFixed(2)}
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="text-[11px] text-slate-500">Total</div>
+          <div className="mt-1 text-sm font-semibold text-slate-900">
+            {total.toLocaleString(undefined, { style: "currency", currency: "USD" })}
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3">
-          <div className="text-[11px] text-zinc-500">Paid</div>
-          <div className="mt-1 text-sm font-semibold text-zinc-100">
-            ${paid.toFixed(2)}
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="text-[11px] text-slate-500">Paid</div>
+          <div className="mt-1 text-sm font-semibold text-slate-900">
+            {paid.toLocaleString(undefined, { style: "currency", currency: "USD" })}
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3">
-          <div className="text-[11px] text-zinc-500">Remaining</div>
-          <div className="mt-1 text-sm font-semibold text-zinc-100">
-            ${balance.toFixed(2)}
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="text-[11px] text-slate-500">Remaining</div>
+          <div className="mt-1 text-sm font-semibold text-slate-900">
+            {balance.toLocaleString(undefined, { style: "currency", currency: "USD" })}
           </div>
         </div>
       </div>
 
-      {/* Payments list */}
-      <div className="mt-4">
-        <div className="text-xs font-medium text-zinc-300">Payments</div>
+      <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+        <div className="flex items-center justify-between text-[11px] text-slate-500">
+          <span>Payment progress</span>
+          <span>{Math.round(progress * 100)}%</span>
+        </div>
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+          <div
+            className="h-full rounded-full bg-emerald-500"
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
+      </div>
 
-        <div className="mt-2 space-y-2">
+      <div className="mt-4">
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-medium text-slate-600">Payments</div>
+          <div className="text-xs text-slate-500">{state.payments.length} total</div>
+        </div>
+
+        <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
           {state.payments.length === 0 ? (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3 text-sm text-zinc-500">
-              No payments yet.
-            </div>
+            <div className="p-3 text-sm text-slate-500">No payments yet.</div>
           ) : (
-            state.payments.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/20 px-3 py-2"
-              >
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold text-zinc-100">
-                    ${money(p.amount).toFixed(2)}
+            <>
+              <div className="hidden grid-cols-[1.2fr_1fr_1.2fr_2fr_auto] gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500 sm:grid">
+                <div>Amount</div>
+                <div>Method</div>
+                <div>Date</div>
+                <div>Notes</div>
+                <div className="text-right">Receipt</div>
+              </div>
+              {state.payments.map((p) => (
+                <div
+                  key={p.id}
+                  className="grid grid-cols-1 gap-2 border-t border-slate-200 px-3 py-2 sm:grid-cols-[1.2fr_1fr_1.2fr_2fr_auto] sm:items-center"
+                >
+                  <div className="text-sm font-semibold text-slate-900">
+                    {money(p.amount).toLocaleString(undefined, { style: "currency", currency: "USD" })}
                   </div>
-                  <div className="mt-0.5 text-xs text-zinc-500">
-                    {p.method} • {new Date(p.paidAt).toLocaleDateString()}
-                    {p.notes ? ` • ${p.notes}` : ""}
+                  <div className="text-xs text-slate-500">{p.method}</div>
+                  <div className="text-xs text-slate-500">{formatDate(p.paidAt) || "—"}</div>
+                  <div className="text-xs text-slate-500">{p.notes || "—"}</div>
+                  <div className="flex sm:justify-end">
+                    <a
+                      href={`/payments/${p.id}/receipt`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                    >
+                      View receipt
+                    </a>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </>
           )}
         </div>
       </div>

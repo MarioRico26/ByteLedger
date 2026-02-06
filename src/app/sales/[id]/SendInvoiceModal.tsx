@@ -48,7 +48,7 @@ export default function SendInvoiceModal({
           setMsg(null)
           setOpen(true)
         }}
-        className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-100"
+        className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
       >
         Send Invoice
       </button>
@@ -56,18 +56,18 @@ export default function SendInvoiceModal({
       {open ? (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 p-4">
           <div className="mx-auto w-full max-w-md py-10">
-            <div className="max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 text-black">
+            <div className="max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 text-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-lg font-semibold">Send Invoice</div>
-                  <div className="mt-1 text-sm text-zinc-600">
+                  <div className="mt-1 text-sm text-slate-600">
                     Email the invoice link to your customer.
                   </div>
                 </div>
 
                 <button
                   onClick={() => setOpen(false)}
-                  className="rounded-lg px-2 py-1 text-sm text-zinc-600 hover:bg-zinc-100"
+                  className="rounded-lg px-2 py-1 text-sm text-slate-600 hover:bg-slate-100"
                 >
                   ✕
                 </button>
@@ -75,18 +75,18 @@ export default function SendInvoiceModal({
 
               <div className="mt-4">
                 <label className="space-y-1">
-                  <div className="text-xs font-medium text-zinc-600">To</div>
+                  <div className="text-xs font-medium text-slate-600">To</div>
                   <input
                     value={to}
                     onChange={(e) => setTo(e.target.value)}
                     placeholder="customer@email.com"
-                    className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-400"
                   />
                 </label>
               </div>
 
               {msg ? (
-                <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700">
+                <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
                   {msg}
                 </div>
               ) : null}
@@ -94,7 +94,7 @@ export default function SendInvoiceModal({
               <div className="mt-6 flex items-center justify-end gap-2">
                 <button
                   onClick={() => setOpen(false)}
-                  className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
                 >
                   Cancel
                 </button>
@@ -102,7 +102,7 @@ export default function SendInvoiceModal({
                 <button
                   disabled={loading || !to.trim()}
                   onClick={send}
-                  className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
+                  className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400 disabled:opacity-60"
                 >
                   {loading ? "Sending..." : "Send"}
                 </button>

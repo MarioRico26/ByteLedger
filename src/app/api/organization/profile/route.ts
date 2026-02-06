@@ -1,12 +1,14 @@
 //byteledger/src/app/api/organization/profile/route.ts"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 
 export async function GET() {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     const org = await prisma.organization.findUnique({
-      where: { id: DEFAULT_ORG_ID },
+      where: { id: orgId },
     })
 
     if (!org) {
@@ -23,6 +25,8 @@ export async function GET() {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json()
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const data = {
       businessName: body.businessName ? String(body.businessName).trim() : null,
@@ -39,7 +43,7 @@ export async function PATCH(req: Request) {
     }
 
     const updated = await prisma.organization.update({
-      where: { id: DEFAULT_ORG_ID },
+      where: { id: orgId },
       data,
     })
 

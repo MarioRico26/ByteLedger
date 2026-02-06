@@ -6,6 +6,7 @@ type Org = {
   email: string | null
   phone: string | null
   website: string | null
+  logoUrl: string | null
   addressLine1: string | null
   addressLine2: string | null
   city: string | null
@@ -124,37 +125,46 @@ export default function QuoteDoc({ estimate }: { estimate: QuoteDocEstimate }) {
         {/* Header */}
         <div className="quote-head quote-border flex flex-col gap-6 border-b p-6 sm:flex-row sm:items-start sm:justify-between">
           {/* Org */}
-          <div className="min-w-0">
-            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-              {org.name}
-            </div>
-            <div className="mt-1 text-2xl font-semibold leading-tight">
-              {orgDisplayName(org)}
-            </div>
-
-            <div className="quote-muted mt-3 space-y-1 text-sm text-zinc-600">
-              {orgLines.length > 0 ? (
-                <div className="whitespace-pre-line">{orgLines.join("\n")}</div>
-              ) : null}
-
-              <div>
-                {joinParts(
-                  [
-                    org.email ? `Email: ${org.email}` : null,
-                    org.phone ? `Phone: ${org.phone}` : null,
-                  ],
-                  "  •  "
-                )}
+          <div className="flex items-start gap-4">
+            {org.logoUrl ? (
+              <img
+                src={org.logoUrl}
+                alt={`${orgDisplayName(org) || "Organization"} logo`}
+                className="h-24 w-24 rounded-2xl border border-zinc-200 bg-white object-contain"
+              />
+            ) : null}
+            <div className="min-w-0">
+              <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+                {org.name}
+              </div>
+              <div className="mt-1 text-2xl font-semibold leading-tight">
+                {orgDisplayName(org)}
               </div>
 
-              {org.website ? (
+              <div className="quote-muted mt-3 space-y-1 text-sm text-zinc-600">
+                {orgLines.length > 0 ? (
+                  <div className="whitespace-pre-line">{orgLines.join("\n")}</div>
+                ) : null}
+
                 <div>
-                  Website:{" "}
-                  <a className="underline" href={org.website} target="_blank" rel="noreferrer">
-                    {org.website}
-                  </a>
+                  {joinParts(
+                    [
+                      org.email ? `Email: ${org.email}` : null,
+                      org.phone ? `Phone: ${org.phone}` : null,
+                    ],
+                    "  •  "
+                  )}
                 </div>
-              ) : null}
+
+                {org.website ? (
+                  <div>
+                    Website:{" "}
+                    <a className="underline" href={org.website} target="_blank" rel="noreferrer">
+                      {org.website}
+                    </a>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
 
@@ -309,7 +319,7 @@ export default function QuoteDoc({ estimate }: { estimate: QuoteDocEstimate }) {
 
         {/* Footer */}
         <div className="quote-border border-t px-6 py-4 text-center text-xs text-zinc-500">
-          Powered by {orgDisplayName(org)}
+          Powered by Byte Networks
         </div>
       </div>
     </div>

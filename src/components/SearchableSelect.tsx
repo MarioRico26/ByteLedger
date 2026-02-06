@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import type { CSSProperties } from "react"
+import { createPortal } from "react-dom"
 
 export type SearchableOption = {
   value: string
@@ -15,6 +17,7 @@ type Props = {
   placeholder?: string
   disabled?: boolean
   className?: string
+  portal?: boolean
 }
 
 /**
@@ -30,9 +33,11 @@ export default function SearchableSelect({
   placeholder = "Select...",
   disabled,
   className,
+  portal = false,
 }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const blurTimer = useRef<any>(null)
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({})
 
   const selected = useMemo(
     () => options.find((o) => o.value === value) || null,
@@ -66,6 +71,21 @@ export default function SearchableSelect({
     setQuery(opt.label)
     // keep focus nice
     requestAnimationFrame(() => inputRef.current?.blur())
+  }
+
+  function updateMenuPosition() {
+    if (!inputRef.current || typeof window === "undefined") return
+    const rect = inputRef.current.getBoundingClientRect()
+    const top = rect.bottom + 6
+    const left = rect.left
+    const width = rect.width
+    setMenuStyle({
+      position: "fixed",
+      top,
+      left,
+      width,
+      zIndex: 50,
+    })
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -105,6 +125,7 @@ export default function SearchableSelect({
     if (disabled) return
     if (blurTimer.current) clearTimeout(blurTimer.current)
     setOpen(true)
+    if (portal) requestAnimationFrame(updateMenuPosition)
   }
 
   function onBlur() {
@@ -116,6 +137,18 @@ export default function SearchableSelect({
       setQuery(selected?.label ?? "")
     }, 120)
   }
+
+  useEffect(() => {
+    if (!open || !portal) return
+    updateMenuPosition()
+    const handle = () => updateMenuPosition()
+    window.addEventListener("scroll", handle, true)
+    window.addEventListener("resize", handle)
+    return () => {
+      window.removeEventListener("scroll", handle, true)
+      window.removeEventListener("resize", handle)
+    }
+  }, [open, portal])
 
   return (
     <div className={`relative ${className ?? ""}`}>
@@ -132,40 +165,74 @@ export default function SearchableSelect({
         onKeyDown={onKeyDown}
         disabled={disabled}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-zinc-600 disabled:opacity-60"
+        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-400 disabled:opacity-60"
       />
 
-      {open ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-xl">
-          <div className="max-h-60 overflow-auto">
-            {filtered.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-zinc-500">
-                No results
+      {open
+        ? (portal && typeof document !== "undefined"
+            ? createPortal(
+                <div
+                  style={menuStyle}
+                  className="z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
+                >
+                  <div className="max-h-60 overflow-auto">
+                    {filtered.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-slate-500">No results</div>
+                    ) : (
+                      filtered.map((opt, idx) => {
+                        const active = idx === activeIndex
+                        return (
+                          <button
+                            key={`${opt.value}-${idx}`}
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => choose(opt)}
+                            className={`w-full px-3 py-2 text-left text-sm ${
+                              active ? "bg-slate-100" : "bg-transparent"
+                            } hover:bg-slate-100`}
+                          >
+                            <div className="text-slate-900">{opt.label}</div>
+                            {opt.subLabel ? (
+                              <div className="text-xs text-slate-500">{opt.subLabel}</div>
+                            ) : null}
+                          </button>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>,
+                document.body
+              )
+            : (
+              <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+                <div className="max-h-60 overflow-auto">
+                  {filtered.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-slate-500">No results</div>
+                  ) : (
+                    filtered.map((opt, idx) => {
+                      const active = idx === activeIndex
+                      return (
+                        <button
+                          key={`${opt.value}-${idx}`}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => choose(opt)}
+                          className={`w-full px-3 py-2 text-left text-sm ${
+                            active ? "bg-slate-100" : "bg-transparent"
+                          } hover:bg-slate-100`}
+                        >
+                          <div className="text-slate-900">{opt.label}</div>
+                          {opt.subLabel ? (
+                            <div className="text-xs text-slate-500">{opt.subLabel}</div>
+                          ) : null}
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
               </div>
-            ) : (
-              filtered.map((opt, idx) => {
-                const active = idx === activeIndex
-                return (
-                  <button
-                    key={`${opt.value}-${idx}`}
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => choose(opt)}
-                    className={`w-full px-3 py-2 text-left text-sm ${
-                      active ? "bg-zinc-900/60" : "bg-transparent"
-                    } hover:bg-zinc-900/60`}
-                  >
-                    <div className="text-zinc-100">{opt.label}</div>
-                    {opt.subLabel ? (
-                      <div className="text-xs text-zinc-500">{opt.subLabel}</div>
-                    ) : null}
-                  </button>
-                )
-              })
-            )}
-          </div>
-        </div>
-      ) : null}
+            ))
+        : null}
     </div>
   )
 }

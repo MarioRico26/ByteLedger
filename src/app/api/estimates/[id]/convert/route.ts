@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { DEFAULT_ORG_ID } from "@/lib/tenant"
+import { getOrgIdOrNull } from "@/lib/auth"
 
 export async function POST(_: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
+    const orgId = await getOrgIdOrNull()
+    if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const { id } = await ctx.params
 
     const estimate = await prisma.estimate.findFirst({
-      where: { id, organizationId: DEFAULT_ORG_ID },
+      where: { id, organizationId: orgId },
       include: {
         items: { orderBy: { createdAt: "asc" } },
       },
@@ -24,7 +27,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
 
     const sale = await prisma.sale.create({
       data: {
-        organizationId: DEFAULT_ORG_ID,
+        organizationId: orgId,
         customerId: estimate.customerId,
         description: estimate.title,
         status: "PENDING",
@@ -40,7 +43,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
 
         items: {
           create: estimate.items.map((it) => ({
-            organization: { connect: { id: DEFAULT_ORG_ID } },
+            organization: { connect: { id: orgId } },
             name: it.name,
             type: it.type,
             quantity: it.quantity,

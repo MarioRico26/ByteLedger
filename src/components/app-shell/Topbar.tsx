@@ -2,31 +2,47 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import MobileMenu from "./MobileMenu"
 
 export default function Topbar() {
   const router = useRouter()
 
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {})
+    router.push("/login")
+    router.refresh()
+  }
+
   return (
-    <div className="sticky top-0 z-40 border-b border-zinc-800 bg-black/70 backdrop-blur">
+    <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
+          <MobileMenu />
           <button
             onClick={() => router.back()}
-            className="rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-900/40"
+            className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
           >
             ← Back
           </button>
 
           <Link
             href="/"
-            className="rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-900/40"
+            className="hidden rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900 sm:inline-flex"
           >
-            Home
+            Dashboard
           </Link>
         </div>
 
-        <div className="text-sm text-zinc-400">
-          <span className="font-semibold text-zinc-200">ByteLedger</span>
+        <div className="flex items-center gap-3 text-xs text-slate-500">
+          <div className="hidden text-[11px] uppercase tracking-[0.28em] text-slate-400 md:block">
+            ByteLedger
+          </div>
+          <button
+            onClick={logout}
+            className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>
