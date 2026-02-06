@@ -36,8 +36,8 @@ export default async function SalesPage({
   ])
 
   const productsClean = products
-    .filter((p) => p.active)
-    .map((p: any) => ({
+    .filter((p: (typeof products)[number]) => p.active)
+    .map((p: (typeof products)[number]) => ({
       id: p.id,
       name: p.name,
       type: p.type,
