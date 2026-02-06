@@ -47,12 +47,6 @@ export async function sendInvoiceEmail(args: SendInvoiceEmailArgs) {
 
   const invoiceNumber = `INV-${args.sale.createdAt.getFullYear()}-${args.sale.id.slice(-6).toUpperCase()}`
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
-
-  const invoiceUrl = `${baseUrl}/sales/${args.sale.id}/invoice`
-
   const hasAttachments = Boolean(args.attachments?.length)
 
   const html = `
@@ -63,10 +57,6 @@ export async function sendInvoiceEmail(args: SendInvoiceEmailArgs) {
         ${args.sale.description ? `<p style="margin:0 0 6px;"><b>Description:</b> ${args.sale.description}</p>` : ""}
         <p style="margin:0 0 6px;"><b>Total:</b> $${money(args.sale.totalAmount)}</p>
         <p style="margin:0 0 14px;"><b>Balance:</b> $${money(args.sale.balanceAmount)}</p>
-
-        <a href="${invoiceUrl}" style="display:inline-block;padding:12px 16px;border-radius:10px;background:#111;color:#fff;text-decoration:none;font-weight:600;">
-          View Invoice
-        </a>
 
         <p style="margin-top:12px;font-size:12px;color:#666">
           ${hasAttachments ? "Attachment: Invoice PDF included." : "Attachment missing (contact support)."}
