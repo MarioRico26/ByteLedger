@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     const body = await req.json()
 
     const customerId = String(body.customerId || "").trim()
-    const description = String(body.description || "").trim()
+    const descriptionRaw = String(body.description || "").trim()
     const poNumber = body.poNumber ? String(body.poNumber).trim() : null
     const serviceAddress = body.serviceAddress ? String(body.serviceAddress).trim() : null
     const notes = body.notes ? String(body.notes).trim() : null
@@ -55,9 +55,6 @@ export async function POST(req: Request) {
 
     if (!customerId) {
       return NextResponse.json({ error: "customerId is required" }, { status: 400 })
-    }
-    if (!description) {
-      return NextResponse.json({ error: "description is required" }, { status: 400 })
     }
     if (items.length === 0) {
       return NextResponse.json({ error: "At least one item is required" }, { status: 400 })
@@ -82,6 +79,16 @@ export async function POST(req: Request) {
         lineTotal,
       }
     })
+
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, organizationId: orgId },
+      select: { fullName: true },
+    })
+    const description =
+      descriptionRaw ||
+      (customer?.fullName
+        ? `Invoice for ${customer.fullName}`
+        : `Invoice (${normalizedItems.length} items)`)
 
     const subtotal = normalizedItems.reduce((sum: number, i: any) => sum + num(i.lineTotal), 0)
     const taxableBase = Math.max(subtotal - discountAmount, 0)

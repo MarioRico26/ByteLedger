@@ -220,7 +220,6 @@ export default function SaleEditClient({
   async function save() {
     if (!saleId) return alert("Missing sale id.")
     if (!customerId) return alert("Select a customer.")
-    if (!description.trim()) return alert("Description is required.")
     if (items.some((it) => !String(it.name).trim())) return alert("All items must have a name.")
     if (totalTooLow) return alert("Total cannot be less than already paid amount.")
 

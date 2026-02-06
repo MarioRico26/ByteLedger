@@ -243,8 +243,6 @@ export default function NewSaleForm({
     e.preventDefault()
 
     if (!customerId) return alert("Select a customer")
-    if (!description.trim()) return alert("Description is required")
-
     const prepared = (lines ?? [])
       .filter((l: any) => l.name.trim())
       .map((l: any) => ({
@@ -257,6 +255,12 @@ export default function NewSaleForm({
 
     if (prepared.length === 0) return alert("Add at least one item")
 
+    const customerName =
+      (customers ?? []).find((c: any) => c.id === customerId)?.fullName?.trim() || ""
+    const descriptionValue =
+      description.trim() ||
+      (customerName ? `Invoice for ${customerName}` : `Invoice (${prepared.length} items)`)
+
     setLoading(true)
     try {
       const res = await fetch("/api/sales", {
@@ -264,7 +268,7 @@ export default function NewSaleForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerId,
-          description,
+          description: descriptionValue,
           poNumber: poNumber.trim() ? poNumber.trim() : null,
           serviceAddress: serviceAddress.trim() ? serviceAddress.trim() : null,
           notes: notes.trim() ? notes.trim() : null,
@@ -340,11 +344,11 @@ export default function NewSaleForm({
                       />
                     </Field>
 
-                    <Field label="Description *">
+                    <Field label="Description">
                       <input
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Camera install at office"
+                        placeholder="Optional description"
                         className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-teal-400"
                       />
                     </Field>

@@ -99,9 +99,8 @@ export async function PUT(req: Request, ctx: Ctx) {
     const body = await req.json()
 
     const customerId = String(body.customerId ?? "").trim()
-    const description = String(body.description ?? "").trim()
     if (!customerId) return NextResponse.json({ error: "customerId is required" }, { status: 400 })
-    if (!description) return NextResponse.json({ error: "description is required" }, { status: 400 })
+    const descriptionRaw = String(body.description ?? "").trim()
 
     const poNumber = body.poNumber === undefined ? undefined : (String(body.poNumber ?? "").trim() || null)
     const serviceAddress =
@@ -129,6 +128,16 @@ export async function PUT(req: Request, ctx: Ctx) {
       const productId = it.productId ? String(it.productId) : null
       return { productId, name, type: t, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
     })
+
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, organizationId: orgId },
+      select: { fullName: true },
+    })
+    const description =
+      descriptionRaw ||
+      (customer?.fullName
+        ? `Invoice for ${customer.fullName}`
+        : `Invoice (${normalizedItems.length} items)`)
 
     const subtotal = normalizedItems.reduce((acc: any, it: any) => acc + it.lineTotal, 0)
     const taxableBase = Math.max(subtotal - discountAmount, 0)
