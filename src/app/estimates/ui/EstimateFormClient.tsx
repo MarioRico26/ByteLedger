@@ -26,6 +26,7 @@ type Props = {
   customers: Customer[]
   products: Product[]
   initialCustomerId?: string
+  defaultTaxRate?: string | number | null
 }
 
 function uid() {
@@ -118,6 +119,7 @@ export default function EstimateFormClient({
   customers,
   products,
   initialCustomerId,
+  defaultTaxRate,
 }: Props) {
   const isCreate = mode === "create"
   const estimateId = estimate?.id as string | undefined
@@ -132,11 +134,12 @@ export default function EstimateFormClient({
   const [poNumber, setPoNumber] = useState<string>(estimate?.poNumber ?? "")
   const [validUntil, setValidUntil] = useState<string>(toDateOnlyInput(estimate?.validUntil ?? null))
 
-  const [taxRateStr, setTaxRateStr] = useState<string>(
-    estimate?.taxRate !== undefined && estimate?.taxRate !== null
-      ? fmtPercent(toMoneyNumber(estimate.taxRate, 0))
-      : "0"
-  )
+  const [taxRateStr, setTaxRateStr] = useState<string>(() => {
+    if (estimate?.taxRate !== undefined && estimate?.taxRate !== null) {
+      return fmtPercent(toMoneyNumber(estimate.taxRate, 0))
+    }
+    return fmtPercent(toMoneyNumber(defaultTaxRate ?? 0, 0))
+  })
   const [discountType, setDiscountType] = useState<"amount" | "percent">("amount")
   const [discountStr, setDiscountStr] = useState<string>(
     estimate?.discountAmount !== undefined && estimate?.discountAmount !== null

@@ -10,7 +10,7 @@ export default async function SalesPage({
   searchParams?: { customerId?: string; new?: string }
 }) {
   const orgId = await requireOrgId()
-  const [customers, products, sales] = await Promise.all([
+  const [customers, products, sales, organization] = await Promise.all([
     prisma.customer.findMany({
       where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
@@ -32,6 +32,10 @@ export default async function SalesPage({
       },
       orderBy: { createdAt: "desc" },
       take: 50,
+    }),
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { defaultTaxRate: true },
     }),
   ])
 
@@ -85,6 +89,7 @@ export default async function SalesPage({
           products={productsClean}
           initialCustomerId={searchParams?.customerId}
           initialOpen={searchParams?.new === "1" || searchParams?.new === "true"}
+          defaultTaxRate={organization?.defaultTaxRate?.toString?.() ?? "0"}
         />
       </div>
 

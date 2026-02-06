@@ -23,6 +23,7 @@ model Organization {
   recurringFrequency    String?
   recurringDueDays      Int?
   recurringReminderDays String?
+  defaultTaxRate        Decimal? @default(0)
   addressLine1 String?
   addressLine2 String?
   city         String?

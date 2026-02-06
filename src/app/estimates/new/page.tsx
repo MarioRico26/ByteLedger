@@ -34,7 +34,7 @@ export default async function NewEstimatePage({
 }) {
   const orgId = await requireOrgId()
 
-  const [customers, products] = await Promise.all([
+  const [customers, products, organization] = await Promise.all([
     prisma.customer.findMany({
       where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
@@ -44,6 +44,10 @@ export default async function NewEstimatePage({
       where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
       select: { id: true, name: true, type: true, price: true },
+    }),
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { defaultTaxRate: true },
     }),
   ])
 
@@ -64,6 +68,7 @@ export default async function NewEstimatePage({
         customers={customers}
         products={cleanProducts as any}
         initialCustomerId={searchParams?.customerId}
+        defaultTaxRate={organization?.defaultTaxRate?.toString?.() ?? "0"}
       />
     </div>
   )

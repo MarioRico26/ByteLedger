@@ -86,11 +86,13 @@ export default function NewSaleForm({
   products,
   initialCustomerId,
   initialOpen,
+  defaultTaxRate,
 }: {
   customers: CustomerOption[]
   products: ProductOption[]
   initialCustomerId?: string
   initialOpen?: boolean
+  defaultTaxRate?: string | number | null
 }) {
   const [open, setOpen] = useState(Boolean(initialOpen))
   const [loading, setLoading] = useState(false)
@@ -105,7 +107,10 @@ export default function NewSaleForm({
   // Optional pricing extras
   const [discountType, setDiscountType] = useState<"amount" | "percent">("amount")
   const [discount, setDiscount] = useState<string>("0.00") // dollars
-  const [taxRate, setTaxRate] = useState<string>("0") // percent
+  const [taxRate, setTaxRate] = useState<string>(() => {
+    const base = toMoneyNumber(defaultTaxRate ?? 0, 0)
+    return fmtPercent(base)
+  }) // percent
 
   const [lines, setLines] = useState<Line[]>([
     {
@@ -637,22 +642,21 @@ export default function NewSaleForm({
                 </div>
 
                 <div className="mt-4 flex items-center justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setOpen(false)}
-                      className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                    >
-                      Cancel
-                    </button>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                  >
+                    Cancel
+                  </button>
 
-                    <button
-                      disabled={loading}
-                      type="submit"
-                      className="rounded-xl bg-teal-500 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-400 disabled:opacity-60"
-                    >
-                      {loading ? "Saving..." : "Create Sale"}
-                    </button>
-                  </div>
+                  <button
+                    disabled={loading}
+                    type="submit"
+                    className="rounded-xl bg-teal-500 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-400 disabled:opacity-60"
+                  >
+                    {loading ? "Saving..." : "Create Sale"}
+                  </button>
                 </div>
               </form>
             </div>

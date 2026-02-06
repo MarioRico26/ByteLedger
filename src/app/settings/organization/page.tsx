@@ -13,6 +13,7 @@ type Org = {
   recurringFrequency: string | null
   recurringDueDays: number | null
   recurringReminderDays: string | null
+  defaultTaxRate: string | null
   addressLine1: string | null
   addressLine2: string | null
   city: string | null
@@ -55,6 +56,7 @@ export default function OrganizationSettingsPage() {
           recurringFrequency: null,
           recurringDueDays: null,
           recurringReminderDays: null,
+          defaultTaxRate: "0",
           addressLine1: null,
           addressLine2: null,
           city: null,
@@ -384,6 +386,22 @@ export default function OrganizationSettingsPage() {
                   Recurring defaults
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <label className="grid gap-1">
+                    <span className="text-xs text-slate-500">Default tax rate (%)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.001"
+                      value={org.defaultTaxRate ?? "0"}
+                      onChange={(e) =>
+                        setOrg((prev) =>
+                          prev ? { ...prev, defaultTaxRate: e.target.value } : prev
+                        )
+                      }
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                    />
+                  </label>
+
                   <label className="grid gap-1">
                     <span className="text-xs text-slate-500">Frequency</span>
                     <select
