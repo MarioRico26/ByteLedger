@@ -92,7 +92,7 @@ export default async function EditEstimatePage({ params }: { params: any }) {
     }),
   ])
 
-  const cleanProducts = products.map((p) => ({
+  const cleanProducts = products.map((p: (typeof products)[number]) => ({
     ...p,
     price: priceToNumber(p.price),
   }))
