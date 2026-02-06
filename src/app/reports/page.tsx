@@ -182,7 +182,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
 
   return (
     <div className="space-y-8">
-      <div className="card card-stripe rounded-3xl p-6">
+      <div className="card card-stripe card-animate rounded-3xl p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="text-xs uppercase tracking-widest text-slate-400">Reports</div>
@@ -241,26 +241,26 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "40ms" }}>
           <div className="text-xs uppercase tracking-widest text-slate-400">Invoiced</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">{toMoney(totalInvoiced)}</div>
           <div className="mt-1 text-xs text-slate-500">
             {sales.length} invoices • {pctChange(totalInvoiced, prevInvoiced).toFixed(1)}% vs prior
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "90ms" }}>
           <div className="text-xs uppercase tracking-widest text-slate-400">Collected</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">{toMoney(totalPayments)}</div>
           <div className="mt-1 text-xs text-slate-500">
             {payments.length} payments • {pctChange(totalPayments, prevPaymentsTotal).toFixed(1)}% vs prior
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "140ms" }}>
           <div className="text-xs uppercase tracking-widest text-slate-400">Outstanding</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">{toMoney(outstanding)}</div>
           <div className="mt-1 text-xs text-slate-500">Open balances</div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "190ms" }}>
           <div className="text-xs uppercase tracking-widest text-slate-400">Avg Invoice</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">{toMoney(avgInvoice)}</div>
           <div className="mt-1 text-xs text-slate-500">Avg size per invoice</div>
@@ -268,23 +268,29 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "80ms" }}>
           <div className="text-sm font-semibold text-slate-900">Revenue vs Payments</div>
           <div className="mt-1 text-xs text-slate-500">Monthly trend</div>
           <div className="mt-6 grid grid-cols-3 gap-3 md:grid-cols-6">
-            {chartRows.map((row: any) => {
+            {chartRows.map((row: any, idx: number) => {
               const salesPct = Math.round((row.sales / chartMax) * 100)
               const payPct = Math.round((row.payments / chartMax) * 100)
               return (
                 <div key={row.label} className="flex flex-col items-center gap-2">
                   <div className="flex h-24 w-full items-end gap-1 md:h-32">
                     <div
-                      className="w-1/2 rounded-lg bg-emerald-400/80"
-                      style={{ height: `${Math.max(6, salesPct)}%` }}
+                      className="bar-animate w-1/2 rounded-lg bg-blue-500/80"
+                      style={{
+                        height: `${Math.max(6, salesPct)}%`,
+                        animationDelay: `${idx * 35}ms`,
+                      }}
                     />
                     <div
-                      className="w-1/2 rounded-lg bg-sky-400/80"
-                      style={{ height: `${Math.max(6, payPct)}%` }}
+                      className="bar-animate w-1/2 rounded-lg bg-amber-400/80"
+                      style={{
+                        height: `${Math.max(6, payPct)}%`,
+                        animationDelay: `${idx * 35 + 110}ms`,
+                      }}
                     />
                   </div>
                   <div className="text-[11px] text-slate-500">{row.label}</div>
@@ -294,15 +300,15 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
           </div>
           <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400/80" /> Invoiced
+              <span className="h-2 w-2 rounded-full bg-blue-500/80" /> Invoiced
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-sky-400/80" /> Payments
+              <span className="h-2 w-2 rounded-full bg-amber-400/80" /> Payments
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "140ms" }}>
           <div className="text-sm font-semibold text-slate-900">Tax collected</div>
           <div className="mt-1 text-xs text-slate-500">Based on invoices</div>
           <div className="mt-4 text-2xl font-semibold text-amber-600">{toMoney(totalTax)}</div>
@@ -314,7 +320,10 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
             <div className="text-xs uppercase tracking-widest text-slate-400">A/R aging</div>
             <div className="mt-3 space-y-2 text-sm">
               {Object.entries(aging).map(([bucket, amount]) => (
-                <div key={bucket} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <div
+                  key={bucket}
+                  className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_20px_rgba(15,23,42,0.08)]"
+                >
                   <span className="text-slate-600">{bucket} days</span>
                   <span className="font-semibold text-slate-900">{toMoney(amount)}</span>
                 </div>
@@ -325,7 +334,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "100ms" }}>
           <div className="text-sm font-semibold text-slate-900">Top customers</div>
           <div className="mt-1 text-xs text-slate-500">Highest revenue in range</div>
           <div className="mt-4 space-y-3">
@@ -335,7 +344,10 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
               </div>
             ) : (
               topCustomers.map((c: any) => (
-                <div key={c.name} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div
+                  key={c.name}
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_20px_rgba(15,23,42,0.08)]"
+                >
                   <div className="text-sm text-slate-700">{c.name}</div>
                   <div className="text-sm font-semibold text-slate-900">{toMoney(c.total)}</div>
                 </div>
@@ -344,7 +356,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "160ms" }}>
           <div className="text-sm font-semibold text-slate-900">Payment methods</div>
           <div className="mt-1 text-xs text-slate-500">Distribution by method</div>
           <div className="mt-4 space-y-3">
@@ -354,7 +366,10 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
               </div>
             ) : (
               paymentMethods.map((m: any) => (
-                <div key={m.method} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div
+                  key={m.method}
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_20px_rgba(15,23,42,0.08)]"
+                >
                   <div className="text-sm text-slate-700">{m.method}</div>
                   <div className="text-sm font-semibold text-slate-900">{toMoney(m.amount)}</div>
                 </div>

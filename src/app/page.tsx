@@ -256,7 +256,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const Card = ({ href, title, desc }: { href: string; title: string; desc: string }) => (
     <Link
       href={href}
-      className="card card-stripe p-5 transition hover:shadow-[0_14px_30px_rgba(15,23,42,0.12)]"
+      className="card card-stripe card-animate p-5 transition hover:shadow-[0_14px_30px_rgba(15,23,42,0.12)]"
     >
       <div className="text-lg font-semibold text-slate-900">{title}</div>
       <div className="mt-1 text-sm text-slate-500">{desc}</div>
@@ -303,28 +303,28 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="card card-stripe p-5">
+        <div className="card card-stripe card-animate p-5" style={{ animationDelay: "40ms" }}>
           <div className="text-xs uppercase tracking-widest text-slate-400">Invoiced</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">
             {toMoney(Number(salesRangeAgg._sum.totalAmount || 0))}
           </div>
           <div className="mt-1 text-xs text-slate-500">Revenue in selected range</div>
         </div>
-        <div className="card card-stripe p-5">
+        <div className="card card-stripe card-animate p-5" style={{ animationDelay: "90ms" }}>
           <div className="text-xs uppercase tracking-widest text-slate-400">Collected</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">
             {toMoney(Number(paymentsRangeAgg._sum.amount || 0))}
           </div>
           <div className="mt-1 text-xs text-slate-500">Payments in selected range</div>
         </div>
-        <div className="card card-stripe p-5">
+        <div className="card card-stripe card-animate p-5" style={{ animationDelay: "140ms" }}>
           <div className="text-xs uppercase tracking-widest text-slate-400">Outstanding</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">
             {toMoney(Number(openBalances._sum.balanceAmount || 0))}
           </div>
           <div className="mt-1 text-xs text-slate-500">Open balances today</div>
         </div>
-        <div className="card card-stripe p-5">
+        <div className="card card-stripe card-animate p-5" style={{ animationDelay: "190ms" }}>
           <div className="text-xs uppercase tracking-widest text-slate-400">Overdue</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">{overdueCount}</div>
           <div className="mt-1 text-xs text-slate-500">Past due invoices</div>
@@ -332,7 +332,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="card card-stripe p-5">
+        <div className="card card-stripe card-animate p-5" style={{ animationDelay: "80ms" }}>
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-semibold text-slate-900">Revenue vs Payments</div>
@@ -342,19 +342,25 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-3 md:grid-cols-6">
-            {chartRows.map((row: any) => {
+            {chartRows.map((row: any, idx: number) => {
               const salesPct = Math.round((row.sales / chartMax) * 100)
               const payPct = Math.round((row.payments / chartMax) * 100)
               return (
                 <div key={row.label} className="flex flex-col items-center gap-2">
                   <div className="flex h-24 w-full items-end gap-1 md:h-32">
                     <div
-                      className="w-1/2 rounded-lg bg-emerald-400/80"
-                      style={{ height: `${Math.max(6, salesPct)}%` }}
+                      className="bar-animate w-1/2 rounded-lg bg-blue-500/80"
+                      style={{
+                        height: `${Math.max(6, salesPct)}%`,
+                        animationDelay: `${idx * 40}ms`,
+                      }}
                     />
                     <div
-                      className="w-1/2 rounded-lg bg-sky-400/80"
-                      style={{ height: `${Math.max(6, payPct)}%` }}
+                      className="bar-animate w-1/2 rounded-lg bg-amber-400/80"
+                      style={{
+                        height: `${Math.max(6, payPct)}%`,
+                        animationDelay: `${idx * 40 + 120}ms`,
+                      }}
                     />
                   </div>
                   <div className="text-xs text-slate-500">{row.label}</div>
@@ -365,15 +371,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
           <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400/80" /> Invoiced
+              <span className="h-2 w-2 rounded-full bg-blue-500/80" /> Invoiced
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-sky-400/80" /> Payments
+              <span className="h-2 w-2 rounded-full bg-amber-400/80" /> Payments
             </div>
           </div>
         </div>
 
-        <div className="card card-stripe p-5">
+        <div className="card card-stripe card-animate p-5" style={{ animationDelay: "140ms" }}>
           <div className="text-sm font-semibold text-slate-900">Upcoming due</div>
           <div className="mt-1 text-xs text-slate-500">Next 14 days</div>
           <div className="mt-4 space-y-3">
@@ -383,7 +389,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               </div>
             ) : (
               upcoming.map((item: (typeof upcoming)[number]) => (
-                <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div
+                  key={item.id}
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_20px_rgba(15,23,42,0.08)]"
+                >
                   <div className="text-sm font-semibold text-slate-900">{item.description}</div>
                   <div className="mt-1 flex items-center justify-between text-xs text-slate-500">
                     <span>{item.customer.fullName}</span>
@@ -400,7 +409,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "60ms" }}>
           <div className="text-sm font-semibold text-slate-900">Recent activity</div>
           <div className="mt-1 text-xs text-slate-500">Latest movements in your account</div>
           <div className="mt-4 space-y-3">
@@ -410,7 +419,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               </div>
             ) : (
               activity.map((a: any) => (
-                <div key={a.id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_20px_rgba(15,23,42,0.08)]"
+                >
                   <div>
                     <div className="text-sm font-semibold text-slate-900">{a.title}</div>
                     <div className="text-xs text-slate-500">{a.subtitle}</div>
@@ -428,7 +440,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "120ms" }}>
             <div className="text-sm font-semibold text-slate-900">A/R aging</div>
             <div className="mt-1 text-xs text-slate-500">Open balances by days overdue</div>
             <div className="mt-4 space-y-2 text-sm">
@@ -444,7 +456,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "180ms" }}>
             <div className="text-sm font-semibold text-slate-900">Top customers</div>
             <div className="mt-1 text-xs text-slate-500">Highest revenue in selected range</div>
             <div className="mt-4 space-y-2 text-sm">
@@ -470,7 +482,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+      <div className="card card-stripe card-animate rounded-2xl p-5" style={{ animationDelay: "140ms" }}>
         <div className="text-sm font-semibold text-slate-900">Quick access</div>
         <div className="mt-1 text-xs text-slate-500">Go straight to a module</div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
