@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     }
 
     const currentPaid = (sale.payments || []).reduce(
-      (sum, p) => sum + Number(p.amount),
+      (sum: number, p: { amount: unknown }) => sum + Number(p.amount),
       0
     )
     const totalAmount = Number(sale.totalAmount)
@@ -74,7 +74,10 @@ export async function POST(req: Request) {
       where: { saleId, organizationId: orgId },
     })
 
-    const paidAmount = payments.reduce((sum, p) => sum + Number(p.amount), 0)
+    const paidAmount = payments.reduce(
+      (sum: number, p: { amount: unknown }) => sum + Number(p.amount),
+      0
+    )
     const balanceAmount = Math.max(totalAmount - paidAmount, 0)
 
     const newStatus = balanceAmount <= 0 ? "PAID" : "PENDING"
