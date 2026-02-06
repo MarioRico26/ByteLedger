@@ -15,9 +15,10 @@ type Ctx = { params: { id: string } | Promise<{ id: string }> }
 export async function POST(req: Request, ctx: Ctx) {
   let estimateId = ""
   let to = ""
+  let orgId: string | null = null
 
   try {
-    const orgId = await getOrgIdOrNull()
+    orgId = await getOrgIdOrNull()
     if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const params = await ctx.params
@@ -172,7 +173,7 @@ export async function POST(req: Request, ctx: Ctx) {
         const est = await prisma.estimate.findUnique({ where: { id: estimateId }, select: { organizationId: true } })
         await prisma.emailLog.create({
           data: {
-            organizationId: est?.organizationId || orgId,
+            organizationId: est?.organizationId || orgId || "",
             estimateId,
             to: to || "(missing)",
             subject: "Estimate email",
