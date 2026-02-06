@@ -124,13 +124,13 @@ body[data-mobile-menu="open"] #mobile-nav {
 
 /* Theme overrides: teal -> blue */
 .bg-teal-500 { background-color: #2563eb !important; }
-.hover\\:bg-teal-400:hover { background-color: #3b82f6 !important; }
+.hover\:bg-teal-400:hover { background-color: #3b82f6 !important; }
 .text-teal-700 { color: #1d4ed8 !important; }
 .text-teal-800 { color: #1e3a8a !important; }
 .text-teal-500 { color: #2563eb !important; }
 .bg-teal-50 { background-color: #eff6ff !important; }
 .border-teal-200 { border-color: #bfdbfe !important; }
-.border-teal-400\\/60 { border-color: rgba(59, 130, 246, 0.6) !important; }
+.border-teal-400\/60 { border-color: rgba(59, 130, 246, 0.6) !important; }
 .ring-teal-200 { --tw-ring-color: #bfdbfe !important; }
 
 .app-shell-bg {
