@@ -11,8 +11,9 @@ function isValidEmail(email: string) {
 export async function POST(req: Request) {
   let paymentId = ""
   let to = ""
+  let orgId: string | null = null
   try {
-    const orgId = await getOrgIdOrNull()
+    orgId = await getOrgIdOrNull()
     if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const body = await req.json()
@@ -109,7 +110,7 @@ export async function POST(req: Request) {
         })
         await prisma.emailLog.create({
           data: {
-            organizationId: payment?.organizationId || orgId,
+            organizationId: payment?.organizationId || orgId || "",
             saleId: payment?.saleId ?? null,
             to: to || "(missing)",
             subject: "Receipt email",

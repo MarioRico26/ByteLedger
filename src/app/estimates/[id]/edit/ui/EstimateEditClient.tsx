@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { ProductType } from "@prisma/client"
+
+type ProductType = "PRODUCT" | "SERVICE"
 
 function asNumber(v: any, fallback = 0) {
   const n = typeof v === "number" ? v : Number(v)
@@ -35,11 +36,11 @@ export default function EstimateEditClient({
           _key: uid(),
           productId: it.productId ?? null,
           name: String(it.name ?? ""),
-          type: (it.type as ProductType) ?? ProductType.PRODUCT,
+          type: (it.type as ProductType) ?? "PRODUCT",
           quantity: asNumber(it.quantity, 1),
           unitPrice: asNumber(it.unitPrice, 0),
         }))
-      : [{ _key: uid(), productId: null, name: "", type: ProductType.PRODUCT, quantity: 1, unitPrice: 0 }]
+      : [{ _key: uid(), productId: null, name: "", type: "PRODUCT", quantity: 1, unitPrice: 0 }]
   })
 
   function updateItem(key: string, patch: any) {

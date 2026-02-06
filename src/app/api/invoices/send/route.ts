@@ -11,8 +11,9 @@ function isValidEmail(email: string) {
 export async function POST(req: Request) {
   let saleId = ""
   let to = ""
+  let orgId: string | null = null
   try {
-    const orgId = await getOrgIdOrNull()
+    orgId = await getOrgIdOrNull()
     if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const body = await req.json()
@@ -73,7 +74,7 @@ export async function POST(req: Request) {
         const sale = await prisma.sale.findUnique({ where: { id: saleId }, select: { organizationId: true } })
         await prisma.emailLog.create({
           data: {
-          organizationId: sale?.organizationId || orgId,
+          organizationId: sale?.organizationId || orgId || "",
             saleId,
             to: to || "(missing)",
             subject: "Invoice email",

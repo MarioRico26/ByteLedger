@@ -2,8 +2,9 @@
 
 import { Fragment, useMemo, useState, useEffect } from "react"
 import { createPortal } from "react-dom"
-import type { SaleStatus } from "@prisma/client"
 import AddPaymentModal from "./AddPaymentModal"
+
+type SaleStatus = "PENDING" | "PAID" | "OVERDUE"
 
 export type SaleRow = {
   id: string

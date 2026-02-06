@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import type { EstimateStatus } from "@prisma/client"
+type EstimateStatus = "DRAFT" | "SENT" | "APPROVED" | "EXPIRED"
 
 export type EstimateRow = {
   id: string

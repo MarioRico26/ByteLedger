@@ -1,7 +1,8 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ProductType } from "@prisma/client"
+
+type ProductType = "PRODUCT" | "SERVICE"
 
 type Customer = { id: string; fullName: string; email: string | null; phone: string | null }
 type Product = { id: string; name: string; type: ProductType; price: number | null }
