@@ -253,7 +253,7 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
                 <div key={p.key} className="flex flex-1 flex-col items-center gap-2">
                   <div className="relative group flex h-24 w-full items-end rounded-full bg-slate-100 p-1">
                     <div
-                      className="w-full rounded-full bg-gradient-to-b from-teal-400 to-teal-600"
+                      className="w-full rounded-full bg-gradient-to-b from-blue-600 to-amber-400"
                       style={{ height: `${Math.max(p.height, 6)}%` }}
                     />
                     <div className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded-full bg-slate-900 px-2 py-0.5 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
@@ -437,7 +437,7 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
                                 href={`/payments/${p.id}/receipt`}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="rounded-full bg-teal-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-teal-400"
+                                className="btn-primary rounded-full px-3 py-1.5 text-[11px]"
                               >
                                 Receipt
                               </a>
