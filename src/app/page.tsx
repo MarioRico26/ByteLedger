@@ -128,21 +128,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     ])
 
   const activity = [
-    ...recentSales.map((s) => ({
+    ...recentSales.map((s: (typeof recentSales)[number]) => ({
       id: `sale-${s.id}`,
       at: s.createdAt,
       title: "Invoice created",
       subtitle: `${s.description} • ${s.customer.fullName}`,
       amount: Number(s.totalAmount || 0),
     })),
-    ...recentPayments.map((p) => ({
+    ...recentPayments.map((p: (typeof recentPayments)[number]) => ({
       id: `pay-${p.id}`,
       at: p.paidAt,
       title: "Payment received",
       subtitle: `${p.sale?.description || "Invoice"} • ${p.method}`,
       amount: Number(p.amount || 0),
     })),
-    ...recentEmails.map((e) => ({
+    ...recentEmails.map((e: (typeof recentEmails)[number]) => ({
       id: `email-${e.id}`,
       at: e.createdAt,
       title: e.status === "FAILED" ? "Email failed" : "Email sent",
