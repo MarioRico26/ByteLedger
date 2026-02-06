@@ -3,16 +3,9 @@
 
 import { useMemo, useState } from "react"
 import EditProductModal from "./EditProductModal"
+import type { ProductRow as ProductRowType } from "./ProductsClient"
 
-type ProductRowModel = {
-  id: string
-  name: string
-  type: "PRODUCT" | "SERVICE"
-  description: string | null
-  price: string | null
-  active: boolean
-  createdAt: string
-}
+type ProductRowModel = ProductRowType
 
 function money(n: any) {
   const v = Number(n)

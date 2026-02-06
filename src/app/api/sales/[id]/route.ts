@@ -180,7 +180,7 @@ export async function PUT(req: Request, ctx: Ctx) {
         paidAmount,
         balanceAmount,
         status,
-        items: { deleteMany: {}, create: itemsCreate },
+        items: { deleteMany: {}, create: itemsCreate as any },
       },
       include: {
         customer: true,

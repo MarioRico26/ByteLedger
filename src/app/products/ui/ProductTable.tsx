@@ -2,16 +2,7 @@
 
 import { useMemo, useState } from "react"
 import EditProductModal from "./EditProductModal"
-
-type Product = {
-  id: string
-  name: string
-  type: "PRODUCT" | "SERVICE"
-  description: string | null
-  price: string | null
-  active: boolean
-  createdAt: string
-}
+import type { Product } from "./ProductsClient"
 
 function money(n: any) {
   const v = Number(n)

@@ -107,7 +107,7 @@ export async function POST(req: Request) {
         taxAmount,
         totalAmount: total,
 
-        items: { create: itemsCreate },
+        items: { create: itemsCreate as any },
       },
       include: { customer: true, organization: true, items: { orderBy: { createdAt: "asc" } } },
     })
