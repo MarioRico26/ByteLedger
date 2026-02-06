@@ -13,7 +13,7 @@ export async function GET() {
     })
 
     return NextResponse.json(
-      products.map((p) => ({
+      products.map((p: (typeof products)[number]) => ({
         ...p,
         price: p.price ? p.price.toString() : null,
         createdAt: p.createdAt.toISOString(),
