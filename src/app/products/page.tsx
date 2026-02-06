@@ -19,7 +19,7 @@ export default async function ProductsPage() {
     },
   })
 
-  const clean = products.map((p) => ({
+  const clean = products.map((p: (typeof products)[number]) => ({
     id: p.id,
     name: p.name,
     description: p.description ?? "",
