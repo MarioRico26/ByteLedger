@@ -586,7 +586,7 @@ export default function NewSaleForm({
                               const v = e.target.value
                               if (v !== "custom") setTaxRate(v)
                             }}
-                            className="h-10 rounded-xl border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600"
+                            className="h-10 w-24 rounded-xl border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600"
                           >
                             <option value="0">0%</option>
                             <option value="5">5%</option>
@@ -620,7 +620,7 @@ export default function NewSaleForm({
                           <select
                             value={discountType}
                             onChange={(e) => handleDiscountTypeChange(e.target.value as "amount" | "percent")}
-                            className="h-10 rounded-xl border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600"
+                            className="h-10 w-24 rounded-xl border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600"
                           >
                             <option value="amount">$</option>
                             <option value="percent">%</option>
