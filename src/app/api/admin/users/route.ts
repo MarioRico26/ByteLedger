@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireSuperAdmin } from "@/lib/auth"
-import { Role } from "@prisma/client"
 import crypto from "crypto"
 import { hashPassword } from "@/lib/password"
 import { sendUserWelcomeEmail } from "@/lib/email/sendUserWelcomeEmail"
@@ -15,10 +14,13 @@ export async function POST(req: Request) {
     await requireSuperAdmin()
     const body = await req.json().catch(() => ({}))
 
+    const ROLE_VALUES = ["OWNER", "ADMIN", "STAFF"] as const
+    type Role = (typeof ROLE_VALUES)[number]
+
     const email = String(body.email || "").trim().toLowerCase()
     const name = String(body.name || "").trim() || null
     const organizationId = String(body.organizationId || "").trim()
-    const role = Object.values(Role).includes(body.role) ? (body.role as Role) : Role.STAFF
+    const role = ROLE_VALUES.includes(body.role) ? (body.role as Role) : "STAFF"
 
     if (!email || !isValidEmail(email)) {
       return NextResponse.json({ error: "Valid email is required" }, { status: 400 })

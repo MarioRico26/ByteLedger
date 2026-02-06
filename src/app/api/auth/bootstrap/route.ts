@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { Role } from "@prisma/client"
 import { hashPassword, isStrongEnough } from "@/lib/password"
 
 function isValidEmail(email: string) {
@@ -9,6 +8,7 @@ function isValidEmail(email: string) {
 
 export async function POST(req: Request) {
   try {
+    const ROLE_OWNER = "OWNER" as const
     const userCount = await prisma.user.count()
     if (userCount > 0) {
       return NextResponse.json({ error: "Bootstrap already completed" }, { status: 409 })
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
         memberships: {
           create: {
             organizationId: org.id,
-            role: Role.OWNER,
+            role: ROLE_OWNER,
           },
         },
       },
