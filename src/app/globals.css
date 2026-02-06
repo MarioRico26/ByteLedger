@@ -30,6 +30,8 @@ body {
   color: var(--foreground);
   font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif;
   letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
@@ -40,6 +42,29 @@ h5,
 h6 {
   font-family: var(--font-heading), var(--font-body), "Helvetica Neue", Arial, sans-serif;
   letter-spacing: -0.02em;
+}
+
+a,
+button {
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+input,
+select,
+textarea {
+  background-color: var(--surface-soft);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.05);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 ::selection {
