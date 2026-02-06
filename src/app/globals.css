@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f7fa;
+  --background: #f6f7fb;
   --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --border: rgba(148, 163, 184, 0.35);
+  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-strong: 0 30px 70px rgba(15, 23, 42, 0.14);
+  --accent: #0ea5a4;
+  --accent-2: #38bdf8;
 }
 
 @theme inline {
@@ -38,6 +45,37 @@ h6 {
 ::selection {
   background: rgba(14, 165, 233, 0.2);
   color: #0f172a;
+}
+
+body[data-mobile-menu="open"] {
+  overflow: hidden;
+}
+
+body[data-mobile-menu="open"] #mobile-nav {
+  display: none;
+}
+
+.app-shell-bg {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 45%, #eef2f7 100%);
+}
+
+.app-shell-grid {
+  background-image:
+    radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
+  background-size: 22px 22px, 120px 120px;
+  opacity: 0.45;
+  mask-image: radial-gradient(70% 60% at 50% 0%, #000 0%, transparent 72%);
+}
+
+.app-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.app-panel-strong {
+  box-shadow: var(--shadow-strong);
 }
 
 @media print {

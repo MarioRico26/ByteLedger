@@ -20,7 +20,10 @@ export default function MobileNav() {
   const pathname = usePathname() || "/"
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/90 backdrop-blur lg:hidden">
+    <nav
+      id="mobile-nav"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200/70 bg-white/92 shadow-[0_-8px_20px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden"
+    >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2">
         {MOBILE_ITEMS.map((item: any) => {
           const active = isActive(pathname, item.href)

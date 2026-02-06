@@ -56,7 +56,7 @@ export default function Sidebar() {
   }, [activeGroupLabel])
 
   return (
-    <aside className="hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white/80 backdrop-blur lg:block">
+    <aside className="hidden h-screen w-72 shrink-0 border-r border-slate-200/70 bg-white/85 shadow-[12px_0_30px_rgba(15,23,42,0.04)] backdrop-blur lg:block">
       <div className="flex h-full flex-col p-5">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Byte Networks</div>

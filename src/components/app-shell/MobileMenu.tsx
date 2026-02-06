@@ -33,6 +33,20 @@ export default function MobileMenu() {
     }
   }, [])
 
+  useEffect(() => {
+    if (open) {
+      document.body.dataset.mobileMenu = "open"
+      document.body.style.overflow = "hidden"
+    } else {
+      delete document.body.dataset.mobileMenu
+      document.body.style.overflow = ""
+    }
+    return () => {
+      delete document.body.dataset.mobileMenu
+      document.body.style.overflow = ""
+    }
+  }, [open])
+
   const groups = useMemo(() => {
     return NAV_GROUPS.map((group: any) => ({
       ...group,
@@ -52,13 +66,13 @@ export default function MobileMenu() {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true">
           <button
             aria-label="Close menu"
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-black/40"
           />
-          <div className="absolute left-0 top-0 h-full w-80 max-w-[85%] bg-white p-5 shadow-2xl">
+          <div className="absolute left-0 top-0 h-full w-80 max-w-[85%] bg-white p-5 shadow-[0_25px_80px_rgba(15,23,42,0.25)]">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.3em] text-slate-400">

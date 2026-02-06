@@ -25,9 +25,10 @@ export default function RouteShell({ children }: { children: React.ReactNode }) 
 
   if (standalone) {
     return (
-      <div className="relative min-h-screen bg-slate-50 text-slate-900">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_45%_at_50%_-10%,rgba(14,165,233,0.16),transparent_60%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_45%_at_90%_10%,rgba(16,185,129,0.14),transparent_55%)]" />
+      <div className="app-shell-bg relative min-h-screen text-slate-900">
+        <div className="pointer-events-none absolute inset-0 app-shell-grid" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_45%_at_50%_-10%,rgba(14,165,233,0.18),transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_45%_at_90%_10%,rgba(16,185,129,0.16),transparent_55%)]" />
 
         <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10">
           <div className="w-full max-w-md">{children}</div>

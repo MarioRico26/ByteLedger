@@ -14,7 +14,7 @@ export default function Topbar() {
   }
 
   return (
-    <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur">
+    <div className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/85 shadow-[0_6px_20px_rgba(15,23,42,0.06)] backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           <MobileMenu />
