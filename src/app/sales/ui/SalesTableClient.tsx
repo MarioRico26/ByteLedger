@@ -161,7 +161,7 @@ export default function SalesTableClient({ initialSales }: Props) {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
 
-    return rows.filter((r) => {
+    return rows.filter((r: any) => {
       if (status !== "ALL" && r.status !== status) return false
 
       const balance = calcBalance(r.totalAmount, r.paidAmount, r.balanceAmount)

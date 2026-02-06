@@ -47,15 +47,15 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
   const metrics = useMemo(() => {
     const totalOrgs = orgList.length
     const totalUsers = userList.length
-    const superAdmins = userList.filter((u) => u.isSuperAdmin).length
-    const orgsWithEmail = orgList.filter((o) => o.email).length
+    const superAdmins = userList.filter((u: any) => u.isSuperAdmin).length
+    const orgsWithEmail = orgList.filter((o: any) => o.email).length
     return { totalOrgs, totalUsers, superAdmins, orgsWithEmail }
   }, [orgList, userList])
 
   const filteredOrgs = useMemo(() => {
     const q = orgSearch.trim().toLowerCase()
     if (!q) return orgList
-    return orgList.filter((o) =>
+    return orgList.filter((o: any) =>
       `${o.name} ${o.businessName ?? ""} ${o.email ?? ""}`.toLowerCase().includes(q)
     )
   }, [orgList, orgSearch])
@@ -63,7 +63,7 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
   const filteredUsers = useMemo(() => {
     const q = userSearch.trim().toLowerCase()
     if (!q) return userList
-    return userList.filter((u) =>
+    return userList.filter((u: any) =>
       `${u.email} ${u.name ?? ""}`.toLowerCase().includes(q)
     )
   }, [userList, userSearch])

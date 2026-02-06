@@ -57,7 +57,7 @@ export default function SearchableSelect({
     const q = query.trim().toLowerCase()
     if (!open) return options
     if (!q) return options
-    return options.filter((o) => {
+    return options.filter((o: any) => {
       const hay = `${o.label} ${o.subLabel ?? ""}`.toLowerCase()
       return hay.includes(q)
     })

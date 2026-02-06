@@ -35,7 +35,7 @@ export default function Combobox({
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase()
     if (!query) return options
-    return options.filter((o) => {
+    return options.filter((o: any) => {
       const hay = `${o.label} ${o.hint || ""}`.toLowerCase()
       return hay.includes(query)
     })

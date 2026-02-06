@@ -185,7 +185,7 @@ export default function NewSaleForm({
   }
 
   function removeLine(idx: number) {
-    setLines((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)))
+    setLines((prev) => (prev.length <= 1 ? prev : prev.filter((_: any, i: number) => i !== idx)))
   }
 
   function pickProduct(idx: number, productId: string) {
@@ -219,7 +219,7 @@ export default function NewSaleForm({
     if (!description.trim()) return alert("Description is required")
 
     const prepared = (lines ?? [])
-      .filter((l) => l.name.trim())
+      .filter((l: any) => l.name.trim())
       .map((l: any) => ({
         productId: l.productId || null,
         name: l.name.trim(),

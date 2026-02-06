@@ -42,7 +42,7 @@ export default function CustomersClient({
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase()
-    return customers.filter((c) => {
+    return customers.filter((c: any) => {
       if (onlyWithEmail && !c.email) return false
       if (onlyWithPhone && !c.phone) return false
 
@@ -86,16 +86,16 @@ export default function CustomersClient({
 
     const ordered = groupBy === "email" ? ["Has email", "No email"] : ["Has phone", "No phone"]
     return ordered
-      .filter((k) => map.has(k))
+      .filter((k: any) => map.has(k))
       .map((k: any) => ({ key: k, label: k, rows: map.get(k)! }))
   }, [filtered, groupBy])
 
   const metrics = useMemo(() => {
     const total = customers.length
-    const withEmail = customers.filter((c) => c.email).length
-    const withPhone = customers.filter((c) => c.phone).length
+    const withEmail = customers.filter((c: any) => c.email).length
+    const withPhone = customers.filter((c: any) => c.phone).length
     const now = new Date()
-    const newThisMonth = customers.filter((c) => {
+    const newThisMonth = customers.filter((c: any) => {
       const d = new Date(c.createdAt)
       if (Number.isNaN(d.valueOf())) return false
       return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
@@ -209,7 +209,7 @@ export default function CustomersClient({
                     setCustomers((prev) => prev.map((x: any) => (x.id === next.id ? next : x)))
                   }}
                   onDeleted={(id) => {
-                    setCustomers((prev) => prev.filter((x) => x.id !== id))
+                    setCustomers((prev) => prev.filter((x: any) => x.id !== id))
                   }}
                 />
               ))}

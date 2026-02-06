@@ -77,7 +77,7 @@ function joinParts(parts: (string | null | undefined)[], sep = " • ") {
 function orgAddress(org: Org) {
   const cityStateZip = [org.city, org.state, org.zip].filter(Boolean).join(", ").replace(", ,", ", ")
   return [org.addressLine1, org.addressLine2, cityStateZip || null, org.country]
-    .filter((x) => (x ?? "").toString().trim().length > 0)
+    .filter((x: any) => (x ?? "").toString().trim().length > 0)
     .map((x: any) => String(x))
 }
 

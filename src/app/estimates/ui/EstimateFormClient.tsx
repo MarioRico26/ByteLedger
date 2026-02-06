@@ -252,7 +252,7 @@ export default function EstimateFormClient({
   }
 
   function removeItem(key: string) {
-    setItems((prev) => (prev.length <= 1 ? prev : prev.filter((it) => it._key !== key)))
+    setItems((prev) => (prev.length <= 1 ? prev : prev.filter((it: any) => it._key !== key)))
   }
 
   function lineSubtotal(it: FormItem) {

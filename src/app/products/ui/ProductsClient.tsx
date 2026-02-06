@@ -47,7 +47,7 @@ export default function ProductsClient({
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase()
 
-    return products.filter((p) => {
+    return products.filter((p: any) => {
       const matchesQuery =
         !query ||
         p.name.toLowerCase().includes(query) ||
@@ -64,10 +64,10 @@ export default function ProductsClient({
 
   const metrics = useMemo(() => {
     const total = products.length
-    const active = products.filter((p) => p.active).length
+    const active = products.filter((p: any) => p.active).length
     const inactive = total - active
-    const productsCount = products.filter((p) => p.type === "PRODUCT").length
-    const servicesCount = products.filter((p) => p.type === "SERVICE").length
+    const productsCount = products.filter((p: any) => p.type === "PRODUCT").length
+    const servicesCount = products.filter((p: any) => p.type === "SERVICE").length
     return { total, active, inactive, productsCount, servicesCount }
   }, [products])
 
@@ -95,7 +95,7 @@ export default function ProductsClient({
 
     const order = groupBy === "status" ? ["Active", "Inactive"] : ["Products", "Services"]
     return order
-      .filter((k) => map.has(k))
+      .filter((k: any) => map.has(k))
       .map((k: any) => ({ key: k, label: k, rows: map.get(k)! }))
   }, [filtered, groupBy])
 
@@ -110,7 +110,7 @@ export default function ProductsClient({
   }
 
   function remove(id: string) {
-    setProducts((prev) => prev.filter((x) => x.id !== id))
+    setProducts((prev) => prev.filter((x: any) => x.id !== id))
   }
 
   function normalizeCreated(p: CreatedProduct): Product {

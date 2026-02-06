@@ -35,10 +35,10 @@ export default function Sidebar() {
   const visibleGroups = useMemo(() => {
     return NAV_GROUPS.map((group: any) => ({
       ...group,
-      items: group.items.filter((item) =>
+      items: group.items.filter((item: any) =>
         item.requiresSuperAdmin ? Boolean(isSuperAdmin) : true
       ),
-    })).filter((group) => group.items.length > 0)
+    })).filter((group: any) => group.items.length > 0)
   }, [isSuperAdmin])
 
   const activeGroupLabel = useMemo(() => {

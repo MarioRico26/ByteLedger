@@ -16,7 +16,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase()
     if (!s) return products
-    return products.filter((p) => {
+    return products.filter((p: any) => {
       const hay = `${p.name} ${p.type} ${p.description ?? ""}`.toLowerCase()
       return hay.includes(s)
     })

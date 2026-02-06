@@ -61,7 +61,7 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
 
-    return initialPayments.filter((p) => {
+    return initialPayments.filter((p: any) => {
       if (method !== "ALL" && p.method !== method) return false
 
       if (from || to) {

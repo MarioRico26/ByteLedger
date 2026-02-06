@@ -63,7 +63,7 @@ export default function EstimatesTableClient({ initialEstimates }: Props) {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
 
-    return initialEstimates.filter((e) => {
+    return initialEstimates.filter((e: any) => {
       if (onlyOpen && e.saleId) return false
       if (status !== "ALL" && e.status !== status) return false
       if (!term) return true
@@ -115,7 +115,7 @@ export default function EstimatesTableClient({ initialEstimates }: Props) {
     if (groupBy === "status") {
       const order = ["APPROVED", "SENT", "DRAFT", "EXPIRED"]
       return order
-        .filter((k) => map.has(k))
+        .filter((k: any) => map.has(k))
         .map((k: any) => ({ key: k, rows: map.get(k)! }))
     }
 
