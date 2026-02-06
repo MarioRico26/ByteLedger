@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getOrgIdOrNull } from "@/lib/auth"
-import { ProductType, Prisma } from "@prisma/client"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -41,7 +40,7 @@ function parseDateOnlyToUTC(v: unknown): Date | null {
 type BodyItem = {
   productId?: string | null
   name: string
-  type: ProductType | "PRODUCT" | "SERVICE"
+  type: "PRODUCT" | "SERVICE"
   quantity: number
   unitPrice: number
 }
@@ -121,7 +120,7 @@ export async function PUT(req: Request, ctx: Ctx) {
       const qty = Math.max(1, Math.floor(asNumber(it.quantity, 1)))
       const unit = Math.max(0, asNumber(it.unitPrice, 0))
       const name = String(it.name ?? "").trim() || "Item"
-      const t = String(it.type) === "SERVICE" ? ProductType.SERVICE : ProductType.PRODUCT
+      const t = String(it.type) === "SERVICE" ? "SERVICE" : "PRODUCT"
       const productId = it.productId ? String(it.productId) : null
       return { productId, name, type: t, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
     })
@@ -130,7 +129,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     const taxAmount = taxRateNum > 0 ? subtotal * (taxRateNum / 100) : 0
     const total = Math.max(subtotal + taxAmount - discountAmountNum, 0)
 
-    const itemsCreate: Prisma.EstimateItemCreateWithoutEstimateInput[] = normalizedItems.map((it) => ({
+    const itemsCreate = normalizedItems.map((it) => ({
       name: it.name,
       type: it.type,
       quantity: it.quantity,

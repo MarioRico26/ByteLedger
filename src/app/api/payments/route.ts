@@ -2,7 +2,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getOrgIdOrNull } from "@/lib/auth"
-import { PaymentMethod } from "@prisma/client"
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +12,9 @@ export async function POST(req: Request) {
 
     const saleId = String(body.saleId || "").trim()
     const amount = Number(body.amount || 0)
-    const method: PaymentMethod = body.method || "CASH"
+    const PAYMENT_METHODS = ["CASH", "ZELLE", "CARD", "CHECK", "OTHER"] as const
+    type PaymentMethod = (typeof PAYMENT_METHODS)[number]
+    const method: PaymentMethod = PAYMENT_METHODS.includes(body.method) ? body.method : "CASH"
     const notes = body.notes ? String(body.notes).trim() : null
     const paidAt = body.paidAt ? new Date(body.paidAt) : new Date()
 
