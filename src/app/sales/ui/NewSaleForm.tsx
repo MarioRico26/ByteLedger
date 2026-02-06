@@ -103,6 +103,7 @@ export default function NewSaleForm({
   const [dueDate, setDueDate] = useState("")
 
   // Optional pricing extras
+  const [discountType, setDiscountType] = useState<"amount" | "percent">("amount")
   const [discount, setDiscount] = useState<string>("0.00") // dollars
   const [taxRate, setTaxRate] = useState<string>("0") // percent
 
@@ -159,7 +160,7 @@ export default function NewSaleForm({
     }, 0)
   }, [lines])
 
-  const discountNum = useMemo(() => {
+  const discountInputNum = useMemo(() => {
     const d = toMoneyNumber(discount || 0, 0)
     return Number.isFinite(d) ? Math.max(d, 0) : 0
   }, [discount])
@@ -169,7 +170,15 @@ export default function NewSaleForm({
     return Number.isFinite(r) ? Math.max(r, 0) : 0
   }, [taxRate])
 
-  const taxableBase = useMemo(() => Math.max(subtotal - discountNum, 0), [subtotal, discountNum])
+  const discountAmount = useMemo(() => {
+    if (discountType === "percent") {
+      const pct = Math.min(discountInputNum, 100)
+      return Math.min(subtotal, (subtotal * pct) / 100)
+    }
+    return Math.min(subtotal, discountInputNum)
+  }, [discountInputNum, discountType, subtotal])
+
+  const taxableBase = useMemo(() => Math.max(subtotal - discountAmount, 0), [subtotal, discountAmount])
   const taxAmount = useMemo(() => taxableBase * (taxRateNum / 100), [taxableBase, taxRateNum])
   const total = useMemo(() => taxableBase + taxAmount, [taxableBase, taxAmount])
 
@@ -212,6 +221,19 @@ export default function NewSaleForm({
     )
   }
 
+  function handleDiscountTypeChange(next: "amount" | "percent") {
+    if (next === discountType) return
+    const current = toMoneyNumber(discount || 0, 0)
+    if (next === "percent") {
+      const pct = subtotal > 0 ? Math.min(100, (current / subtotal) * 100) : 0
+      setDiscount(fmtPercent(pct))
+    } else {
+      const amount = Math.min(subtotal, (subtotal * current) / 100)
+      setDiscount(fmtMoney(amount))
+    }
+    setDiscountType(next)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -242,7 +264,7 @@ export default function NewSaleForm({
           serviceAddress: serviceAddress.trim() ? serviceAddress.trim() : null,
           notes: notes.trim() ? notes.trim() : null,
           dueDate: dueDate || null,
-          discount: discountNum || 0,
+          discountAmount: discountAmount || 0,
           taxRate: taxRateNum || 0,
           items: prepared,
         }),
@@ -258,6 +280,7 @@ export default function NewSaleForm({
       setServiceAddress("")
       setNotes("")
       setDueDate("")
+      setDiscountType("amount")
       setDiscount("0.00")
       setTaxRate("0")
       setLines([{ productId: "", name: "", type: "SERVICE", quantityStr: "1", unitPriceStr: "0.00" }])
@@ -543,41 +566,77 @@ export default function NewSaleForm({
                     <div className="grid gap-3">
                       <div>
                         <label className="text-xs text-slate-500">Tax rate (%)</label>
-                        <input
-                          inputMode="decimal"
-                          value={taxRate}
-                          onFocus={(e) => e.currentTarget.select()}
-                          onChange={(e) => setTaxRate(formatDecimalInput(e.target.value, 3))}
-                          onBlur={(e) => setTaxRate(normalizePercentInput(e.target.value))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                        />
+                        <div className="mt-1 flex items-center gap-2">
+                          <input
+                            inputMode="decimal"
+                            value={taxRate}
+                            onFocus={(e) => e.currentTarget.select()}
+                            onChange={(e) => setTaxRate(formatDecimalInput(e.target.value, 3))}
+                            onBlur={(e) => setTaxRate(normalizePercentInput(e.target.value))}
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                          />
+                          <select
+                            value={["0", "5", "7.5", "8.25", "10"].includes(taxRate) ? taxRate : "custom"}
+                            onChange={(e) => {
+                              const v = e.target.value
+                              if (v !== "custom") setTaxRate(v)
+                            }}
+                            className="h-10 rounded-xl border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600"
+                          >
+                            <option value="0">0%</option>
+                            <option value="5">5%</option>
+                            <option value="7.5">7.5%</option>
+                            <option value="8.25">8.25%</option>
+                            <option value="10">10%</option>
+                            <option value="custom">Custom</option>
+                          </select>
+                        </div>
                       </div>
 
                       <div>
-                        <label className="text-xs text-slate-500">Discount ($)</label>
-                        <input
-                          inputMode="decimal"
-                          value={discount}
-                          onFocus={(e) => e.currentTarget.select()}
-                          onChange={(e) => setDiscount(formatDecimalInput(e.target.value, 2))}
-                          onBlur={(e) => setDiscount(normalizeMoneyInput(e.target.value))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                        />
+                        <label className="text-xs text-slate-500">Discount</label>
+                        <div className="mt-1 flex items-center gap-2">
+                          <input
+                            inputMode="decimal"
+                            value={discount}
+                            onFocus={(e) => e.currentTarget.select()}
+                            onChange={(e) =>
+                              setDiscount(formatDecimalInput(e.target.value, discountType === "percent" ? 3 : 2))
+                            }
+                            onBlur={(e) =>
+                              setDiscount(
+                                discountType === "percent"
+                                  ? normalizePercentInput(e.target.value)
+                                  : normalizeMoneyInput(e.target.value)
+                              )
+                            }
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                          />
+                          <select
+                            value={discountType}
+                            onChange={(e) => handleDiscountTypeChange(e.target.value as "amount" | "percent")}
+                            className="h-10 rounded-xl border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600"
+                          >
+                            <option value="amount">$</option>
+                            <option value="percent">%</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
 
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                       <Row label="Subtotal" value={subtotal.toLocaleString(undefined, { style: "currency", currency: "USD" })} />
                       <Row label="Tax" value={taxAmount.toLocaleString(undefined, { style: "currency", currency: "USD" })} />
-                      <Row label="Discount" value={`-${discountNum.toLocaleString(undefined, { style: "currency", currency: "USD" })}`} />
+                      <Row label="Discount" value={`-${discountAmount.toLocaleString(undefined, { style: "currency", currency: "USD" })}`} />
                       <div className="mt-2 flex justify-between text-sm font-semibold text-slate-900">
                         <span>Total</span>
                         <span>{total.toLocaleString(undefined, { style: "currency", currency: "USD" })}</span>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="mt-4 flex items-center justify-end gap-3">
+                <div className="mt-4 flex items-center justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => setOpen(false)}

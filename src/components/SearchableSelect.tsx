@@ -40,7 +40,7 @@ export default function SearchableSelect({
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({})
 
   const selected = useMemo(
-    () => options.find((o) => o.value === value) || null,
+    () => (value ? options.find((o) => o.value === value) || null : null),
     [options, value]
   )
 
@@ -68,7 +68,7 @@ export default function SearchableSelect({
     setOpen(false)
     setActiveIndex(0)
     // Ensure input shows label (in case same value)
-    setQuery(opt.label)
+    setQuery(opt.value ? opt.label : "")
     // keep focus nice
     requestAnimationFrame(() => inputRef.current?.blur())
   }
@@ -125,6 +125,7 @@ export default function SearchableSelect({
     if (disabled) return
     if (blurTimer.current) clearTimeout(blurTimer.current)
     setOpen(true)
+    if (!value) setQuery("")
     if (portal) requestAnimationFrame(updateMenuPosition)
   }
 
@@ -154,7 +155,7 @@ export default function SearchableSelect({
     <div className={`relative ${className ?? ""}`}>
       <input
         ref={inputRef}
-        value={open ? query : (selected?.label ?? query)}
+        value={open ? query : (selected?.label ?? "")}
         onChange={(e) => {
           setQuery(e.target.value)
           setOpen(true)
