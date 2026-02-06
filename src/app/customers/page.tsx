@@ -54,18 +54,22 @@ export default async function CustomersPage() {
     reference: c.reference,
     notes: c.notes,
     createdAt: c.createdAt.toISOString(),
-    recentEstimates: (estimatesByCustomer.get(c.id) || []).map((e) => ({
+    recentEstimates: (estimatesByCustomer.get(c.id) || []).map(
+      (e: (typeof estimates)[number]) => ({
       id: e.id,
       createdAt: e.createdAt.toISOString(),
       totalAmount: e.totalAmount?.toString?.() ?? "0",
       status: e.status,
-    })),
-    recentSales: (salesByCustomer.get(c.id) || []).map((s) => ({
+    })
+    ),
+    recentSales: (salesByCustomer.get(c.id) || []).map(
+      (s: (typeof sales)[number]) => ({
       id: s.id,
       createdAt: s.createdAt.toISOString(),
       totalAmount: s.totalAmount?.toString?.() ?? "0",
       status: s.status,
-    })),
+    })
+    ),
   }))
 
   return (
