@@ -110,7 +110,7 @@ export async function POST(req: Request) {
         items: {
           create: normalizedItems.map((i: any) => ({
             organization: { connect: { id: orgId } },
-            productId: i.productId,
+            ...(i.productId ? { product: { connect: { id: i.productId } } } : {}),
             name: i.name,
             type: i.type,
             quantity: i.quantity,
