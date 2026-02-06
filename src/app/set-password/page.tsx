@@ -22,7 +22,7 @@ export default function SetPasswordPage() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.error || "Failed to update password")
       setMsg("Password updated. Redirecting...")
-      setTimeout(() => router.push("/sales"), 1000)
+      setTimeout(() => router.push("/"), 1000)
     } catch (e: any) {
       setMsg(e?.message || "Failed to update password")
     } finally {

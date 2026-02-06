@@ -135,7 +135,7 @@ export default function QuoteDoc({ estimate }: { estimate: QuoteDocEstimate }) {
             ) : null}
             <div className="min-w-0">
               <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-                {org.name}
+                {orgDisplayName(org) || org.name}
               </div>
               <div className="mt-1 text-2xl font-semibold leading-tight">
                 {orgDisplayName(org)}

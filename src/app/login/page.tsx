@@ -30,7 +30,7 @@ function LoginContent() {
       if (data?.mustChangePassword) {
         router.push("/set-password")
       } else {
-        router.push("/sales")
+        router.push("/")
       }
     } catch (e: any) {
       setMsg(e?.message || "Login failed")

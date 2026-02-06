@@ -203,7 +203,7 @@ export async function renderReceiptPdfBuffer(receipt: ReceiptForPdf): Promise<Bu
       height: h,
     })
   }
-  text(page, (org.name || "ORGANIZATION").toUpperCase(), margin, y, 9, false, rgb(0.45, 0.45, 0.45))
+  text(page, (orgDisplayName(org) || "ORGANIZATION").toUpperCase(), margin, y, 9, false, rgb(0.45, 0.45, 0.45))
   y -= 18
   text(page, orgDisplayName(org) || "ByteLedger", margin, y, 18, true)
   y -= 18
