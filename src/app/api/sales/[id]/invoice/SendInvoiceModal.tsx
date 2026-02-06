@@ -41,7 +41,7 @@ export default function SendInvoiceModal({
     <div className="inline-flex items-center gap-2">
       <button
         onClick={() => setOpen(true)}
-        className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
+        className="btn-primary px-4 py-2 text-sm"
       >
         Send Invoice
       </button>
@@ -51,27 +51,27 @@ export default function SendInvoiceModal({
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-5 text-black shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+          <div className="modal-panel card-stripe w-full max-w-md p-5 text-slate-900">
             <div className="text-lg font-semibold">Send invoice</div>
             <div className="mt-1 text-sm text-zinc-600">
               Enter the email address to send this invoice.
             </div>
 
             <label className="mt-4 block">
-              <div className="text-xs font-medium text-zinc-600">To</div>
+              <div className="text-xs font-medium text-slate-600">To</div>
               <input
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
                 placeholder="customer@email.com"
-                className="mt-1 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500"
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-400"
               />
             </label>
 
             <div className="mt-5 flex items-center justify-end gap-2">
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
               >
                 Cancel
               </button>
@@ -79,7 +79,7 @@ export default function SendInvoiceModal({
               <button
                 disabled={loading || !to.trim()}
                 onClick={send}
-                className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
+                className="btn-primary px-4 py-2 text-sm disabled:opacity-60"
               >
                 {loading ? "Sending..." : "Send"}
               </button>

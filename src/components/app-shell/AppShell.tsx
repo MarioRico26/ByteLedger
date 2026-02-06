@@ -23,7 +23,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           <main className="mx-auto max-w-6xl p-4 pb-24 md:p-6 md:pb-6 print:p-0">
             <div className="app-panel app-panel-strong relative rounded-3xl p-4 md:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0 print:shadow-none">
-              <div className="pointer-events-none absolute left-6 right-6 top-0 h-1 rounded-b-full bg-gradient-to-r from-blue-600 via-sky-400 to-amber-400 opacity-85 print:hidden" />
+              <div className="pointer-events-none absolute left-6 right-6 top-0 h-1 rounded-b-full bg-gradient-to-r from-blue-600 via-sky-400 via-amber-400 to-orange-400 opacity-85 print:hidden" />
               <div className="relative">{children}</div>
             </div>
 

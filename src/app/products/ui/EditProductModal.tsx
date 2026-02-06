@@ -80,8 +80,8 @@ export default function EditProductModal({ product, onUpdated }: Props) {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="max-h-[85vh] w-full max-w-lg overflow-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+          <div className="modal-panel card-stripe max-h-[85vh] w-full max-w-lg overflow-auto p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-lg font-semibold text-slate-900">Edit item</div>

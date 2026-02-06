@@ -176,24 +176,24 @@ export default function QuoteActions({
       )}
 
       {showSend && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 modal-overlay">
           <div
-            className="absolute inset-0 bg-black/70"
+            className="absolute inset-0"
             onClick={() => !sending && setShowSend(false)}
           />
 
-          <div className="relative w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5 text-zinc-100 shadow-2xl">
+          <div className="relative w-full max-w-lg modal-panel card-stripe p-5 text-slate-900">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-lg font-semibold">Send Estimate</div>
-                <div className="mt-1 text-sm text-zinc-400">
+                <div className="mt-1 text-sm text-slate-500">
                   We’ll send a PDF attachment. Replies go to your org email (Reply-To).
                 </div>
               </div>
 
               <button
                 onClick={() => !sending && setShowSend(false)}
-                className="rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-1.5 text-sm hover:bg-zinc-900/40"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900"
               >
                 Close
               </button>
@@ -201,31 +201,31 @@ export default function QuoteActions({
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="text-xs font-semibold text-zinc-400">To</label>
+                <label className="text-xs font-semibold text-slate-500">To</label>
                 <input
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
                   placeholder="customer@email.com"
-                  className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-400"
                 />
-                <div className="mt-1 text-xs text-zinc-500">
+                <div className="mt-1 text-xs text-slate-500">
                   Pre-filled from customer record. Editable “just in case”.
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-400">Notes (optional)</label>
+                <label className="text-xs font-semibold text-slate-500">Notes (optional)</label>
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={4}
                   placeholder="Any note you want to include..."
-                  className="mt-1 w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                  className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-400"
                 />
               </div>
 
               {error ? (
-                <div className="rounded-xl border border-red-900/50 bg-red-950/40 p-3 text-sm text-red-200">
+                <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                   {error}
                 </div>
               ) : null}
@@ -233,7 +233,7 @@ export default function QuoteActions({
               <div className="mt-2 flex items-center justify-end gap-2">
                 <button
                   onClick={() => !sending && setShowSend(false)}
-                  className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm hover:bg-zinc-900/40"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900"
                   disabled={sending}
                 >
                   Cancel

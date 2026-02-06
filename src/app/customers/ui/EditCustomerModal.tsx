@@ -91,8 +91,8 @@ export default function EditCustomerModal({
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+          <div className="w-full max-w-2xl modal-panel card-stripe p-6 text-slate-900">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-lg font-semibold">Edit customer</div>

@@ -109,8 +109,20 @@ body[data-mobile-menu="open"] #mobile-nav {
   top: 0;
   height: 4px;
   border-radius: 0 0 9999px 9999px;
-  background: linear-gradient(90deg, #2563eb 0%, #38bdf8 55%, #f59e0b 100%);
+  background: linear-gradient(90deg, #2563eb 0%, #38bdf8 45%, #f59e0b 70%, #f97316 100%);
   opacity: 0.85;
+}
+
+.modal-overlay {
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(6px);
+}
+
+.modal-panel {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-strong);
 }
 
 .badge-strong {

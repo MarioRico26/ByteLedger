@@ -93,8 +93,8 @@ export default function AddPaymentModal({
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto modal-overlay">
+          <div className="modal-panel card-stripe w-full max-w-lg max-h-[90vh] overflow-y-auto p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-sm text-slate-500">Add payment to</div>

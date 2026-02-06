@@ -63,9 +63,9 @@ export default function NewCustomerForm() {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 p-4">
+        <div className="fixed inset-0 z-50 overflow-y-auto p-4 modal-overlay">
           <div className="mx-auto w-full max-w-2xl py-10">
-            <div className="max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div className="modal-panel card-stripe max-h-[85vh] overflow-y-auto p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-lg font-semibold">New Customer</div>
