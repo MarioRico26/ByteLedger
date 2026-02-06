@@ -54,15 +54,15 @@ export default async function EstimatesPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Estimates</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="page-title">Estimates</h1>
+          <p className="page-subtitle">
             Quotes you can send, print, and convert into invoices.
           </p>
         </div>
 
         <Link
           href="/estimates/new"
-          className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-teal-200 hover:bg-teal-400"
+          className="btn-primary px-4 py-2 text-sm shadow-sm ring-1 ring-blue-200"
         >
           + New Estimate
         </Link>

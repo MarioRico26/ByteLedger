@@ -74,8 +74,8 @@ export default async function SalesPage({
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Sales</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="page-title">Sales</h1>
+          <p className="page-subtitle">
             Track jobs, POs, service addresses, and payments.
           </p>
         </div>
@@ -89,7 +89,7 @@ export default async function SalesPage({
       </div>
 
       {salesClean.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">
+        <div className="card card-stripe p-5 text-sm text-slate-500">
           No sales yet. Create your first job to start tracking.
         </div>
       ) : (

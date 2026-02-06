@@ -124,11 +124,11 @@ function dueBadge(dueDate: string | null, balance: number) {
 function statusBadge(status: SaleStatus) {
   switch (status) {
     case "PAID":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700"
+      return "border-emerald-600/20 bg-emerald-600 text-white"
     case "OVERDUE":
-      return "border-rose-200 bg-rose-50 text-rose-700"
+      return "border-rose-600/20 bg-rose-600 text-white"
     default:
-      return "border-slate-200 bg-slate-50 text-slate-600"
+      return "border-amber-400/40 bg-amber-200 text-amber-900"
   }
 }
 
@@ -364,7 +364,7 @@ export default function SalesTableClient({ initialSales }: Props) {
                         </td>
 
                         <td className="px-4 py-4">
-                          <span className={`rounded-full border px-2 py-0.5 text-[11px] ${statusBadge(r.status)}`}>
+                          <span className={`badge-strong border ${statusBadge(r.status)}`}>
                             {r.status}
                           </span>
                           <div className="mt-1 text-[11px] text-slate-400">

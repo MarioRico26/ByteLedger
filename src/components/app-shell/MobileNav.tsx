@@ -33,10 +33,10 @@ export default function MobileNav() {
               href={item.href}
               className={[
                 "flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-semibold",
-                active ? "text-teal-700" : "text-slate-500 hover:text-slate-700",
+                active ? "text-blue-700" : "text-slate-500 hover:text-slate-700",
               ].join(" ")}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-teal-500" : "bg-slate-300"}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-amber-400" : "bg-slate-300"}`} />
               {item.label}
             </Link>
           )

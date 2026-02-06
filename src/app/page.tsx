@@ -256,7 +256,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const Card = ({ href, title, desc }: { href: string; title: string; desc: string }) => (
     <Link
       href={href}
-      className="rounded-2xl border border-slate-200 bg-slate-50 p-5 transition hover:border-slate-300 hover:bg-white"
+      className="card card-stripe p-5 transition hover:shadow-[0_14px_30px_rgba(15,23,42,0.12)]"
     >
       <div className="text-lg font-semibold text-slate-900">{title}</div>
       <div className="mt-1 text-sm text-slate-500">{desc}</div>
@@ -267,14 +267,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
-          <div className="mt-1 text-sm text-slate-500">
+          <h1 className="page-title">Dashboard</h1>
+          <div className="page-subtitle">
             Snapshot of sales, payments, and cash position.
           </div>
         </div>
         <Link
           href="/reports"
-          className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:text-slate-900"
+          className="btn-accent inline-flex items-center justify-center px-4 py-2 text-sm"
         >
           Open Reports
         </Link>
@@ -303,28 +303,28 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-white p-5">
+        <div className="card card-stripe p-5">
           <div className="text-xs uppercase tracking-widest text-slate-400">Invoiced</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">
             {toMoney(Number(salesRangeAgg._sum.totalAmount || 0))}
           </div>
           <div className="mt-1 text-xs text-slate-500">Revenue in selected range</div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe p-5">
           <div className="text-xs uppercase tracking-widest text-slate-400">Collected</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">
             {toMoney(Number(paymentsRangeAgg._sum.amount || 0))}
           </div>
           <div className="mt-1 text-xs text-slate-500">Payments in selected range</div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe p-5">
           <div className="text-xs uppercase tracking-widest text-slate-400">Outstanding</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">
             {toMoney(Number(openBalances._sum.balanceAmount || 0))}
           </div>
           <div className="mt-1 text-xs text-slate-500">Open balances today</div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe p-5">
           <div className="text-xs uppercase tracking-widest text-slate-400">Overdue</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">{overdueCount}</div>
           <div className="mt-1 text-xs text-slate-500">Past due invoices</div>
@@ -332,7 +332,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe p-5">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-semibold text-slate-900">Revenue vs Payments</div>
@@ -373,7 +373,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="card card-stripe p-5">
           <div className="text-sm font-semibold text-slate-900">Upcoming due</div>
           <div className="mt-1 text-xs text-slate-500">Next 14 days</div>
           <div className="mt-4 space-y-3">

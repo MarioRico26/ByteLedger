@@ -182,12 +182,12 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
 
   return (
     <div className="space-y-8">
-      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-white p-6">
+      <div className="card card-stripe rounded-3xl p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="text-xs uppercase tracking-widest text-slate-400">Reports</div>
-            <h1 className="mt-1 text-2xl font-semibold text-slate-900">Financial overview</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="page-title mt-1">Financial overview</h1>
+            <p className="page-subtitle">
               Drill into revenue, payments, aging, and customer performance.
             </p>
           </div>

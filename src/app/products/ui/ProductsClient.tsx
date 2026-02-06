@@ -132,8 +132,8 @@ export default function ProductsClient({
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Catalog</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="page-title">Catalog</h1>
+          <p className="page-subtitle">
             Products and services you can reuse in sales + estimates.
           </p>
         </div>
@@ -144,25 +144,25 @@ export default function ProductsClient({
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="card card-stripe p-4">
           <div className="text-xs text-slate-500">Total items</div>
           <div className="mt-2 text-xl font-semibold text-slate-900">
             {metrics.total.toLocaleString()}
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="card card-stripe p-4">
           <div className="text-xs text-slate-500">Active</div>
           <div className="mt-2 text-xl font-semibold text-slate-900">
             {metrics.active.toLocaleString()}
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="card card-stripe p-4">
           <div className="text-xs text-slate-500">Products</div>
           <div className="mt-2 text-xl font-semibold text-slate-900">
             {metrics.productsCount.toLocaleString()}
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="card card-stripe p-4">
           <div className="text-xs text-slate-500">Services</div>
           <div className="mt-2 text-xl font-semibold text-slate-900">
             {metrics.servicesCount.toLocaleString()}
