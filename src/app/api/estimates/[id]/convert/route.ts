@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getOrgIdOrNull } from "@/lib/auth"
+import { Prisma } from "@prisma/client"
 
 export async function POST(_: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
@@ -25,6 +26,16 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
       return NextResponse.json({ saleId: estimate.saleId, alreadyConverted: true })
     }
 
+    const itemsCreate: Prisma.SaleItemCreateWithoutSaleInput[] = estimate.items.map((it) => ({
+      organization: { connect: { id: orgId } },
+      name: it.name,
+      type: it.type,
+      quantity: it.quantity,
+      unitPrice: it.unitPrice,
+      lineTotal: it.lineTotal,
+      ...(it.productId ? { product: { connect: { id: it.productId } } } : {}),
+    }))
+
     const sale = await prisma.sale.create({
       data: {
         organizationId: orgId,
@@ -41,17 +52,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
         taxAmount: estimate.taxAmount,
         totalAmount: estimate.totalAmount,
 
-        items: {
-          create: estimate.items.map((it) => ({
-            organization: { connect: { id: orgId } },
-            name: it.name,
-            type: it.type,
-            quantity: it.quantity,
-            unitPrice: it.unitPrice,
-            lineTotal: it.lineTotal,
-            ...(it.productId ? { product: { connect: { id: it.productId } } } : {}),
-          })),
-        },
+        items: { create: itemsCreate },
       },
       select: { id: true },
     })
