@@ -48,7 +48,7 @@ export default async function NewEstimatePage({
   ])
 
   // ✅ CLAVE: aquí conviertes a number/null, nada de Decimal en el client
-  const cleanProducts = products.map((p) => ({
+  const cleanProducts = products.map((p: (typeof products)[number]) => ({
     ...p,
     price: priceToNumber(p.price),
   }))
