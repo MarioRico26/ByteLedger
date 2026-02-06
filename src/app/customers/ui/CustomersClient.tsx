@@ -81,13 +81,13 @@ export default function CustomersClient({
 
     if (groupBy === "az") {
       const letters = Array.from(map.keys()).sort((a, b) => a.localeCompare(b))
-      return letters.map((k) => ({ key: k, label: k, rows: map.get(k)! }))
+      return letters.map((k: any) => ({ key: k, label: k, rows: map.get(k)! }))
     }
 
     const ordered = groupBy === "email" ? ["Has email", "No email"] : ["Has phone", "No phone"]
     return ordered
       .filter((k) => map.has(k))
-      .map((k) => ({ key: k, label: k, rows: map.get(k)! }))
+      .map((k: any) => ({ key: k, label: k, rows: map.get(k)! }))
   }, [filtered, groupBy])
 
   const metrics = useMemo(() => {
@@ -194,19 +194,19 @@ export default function CustomersClient({
         </div>
       ) : (
         <div className="space-y-4">
-          {(grouped ? grouped : [{ key: "All", label: "All", rows: filtered }]).map((group) => (
+          {(grouped ? grouped : [{ key: "All", label: "All", rows: filtered }]).map((group: any) => (
             <div key={group.key} className="space-y-3">
               {groupBy !== "none" ? (
                 <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
                   {group.label} • {group.rows.length}
                 </div>
               ) : null}
-              {group.rows.map((c) => (
+              {group.rows.map((c: any) => (
                 <CustomerCard
                   key={c.id}
                   customer={c}
                   onUpdated={(next) => {
-                    setCustomers((prev) => prev.map((x) => (x.id === next.id ? next : x)))
+                    setCustomers((prev) => prev.map((x: any) => (x.id === next.id ? next : x)))
                   }}
                   onDeleted={(id) => {
                     setCustomers((prev) => prev.filter((x) => x.id !== id))

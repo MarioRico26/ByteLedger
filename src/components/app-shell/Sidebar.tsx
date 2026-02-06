@@ -33,7 +33,7 @@ export default function Sidebar() {
   }, [])
 
   const visibleGroups = useMemo(() => {
-    return NAV_GROUPS.map((group) => ({
+    return NAV_GROUPS.map((group: any) => ({
       ...group,
       items: group.items.filter((item) =>
         item.requiresSuperAdmin ? Boolean(isSuperAdmin) : true
@@ -65,7 +65,7 @@ export default function Sidebar() {
         </div>
 
         <nav className="mt-6 flex-1 space-y-5">
-          {visibleGroups.map((group) => (
+          {visibleGroups.map((group: any) => (
             <div key={group.label} className="space-y-2">
               <button
                 type="button"
@@ -82,7 +82,7 @@ export default function Sidebar() {
                   openGroup === group.label ? "max-h-40 opacity-100" : "max-h-0 opacity-0",
                 ].join(" ")}
               >
-                {group.items.map((item) => {
+                {group.items.map((item: any) => {
                   const active = isActive(pathname, item.href)
                   return (
                     <Link

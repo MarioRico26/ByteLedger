@@ -77,7 +77,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
           </thead>
 
           <tbody>
-            {filtered.map((p) => (
+            {filtered.map((p: any) => (
               <tr key={p.id} className="border-t border-slate-200">
                 <td className="px-4 py-3">
                   <div className="font-medium text-slate-900">{p.name}</div>

@@ -98,13 +98,13 @@ export default async function InvoicePage({
           },
         ]
       : []),
-    ...(sale.emailLogs || []).map((log) => ({
+    ...(sale.emailLogs || []).map((log: any) => ({
       id: `email-${log.id}`,
       at: log.createdAt,
       title: log.status === "FAILED" ? "Email failed" : "Invoice email sent",
       detail: `${log.subject || "Invoice email"} • ${log.to}`,
     })),
-    ...(sale.payments || []).map((p) => ({
+    ...(sale.payments || []).map((p: any) => ({
       id: `pay-${p.id}`,
       at: p.paidAt,
       title: "Payment received",
@@ -270,7 +270,7 @@ export default async function InvoicePage({
                 </tr>
               </thead>
               <tbody>
-                {sale.items.map((i) => (
+                {sale.items.map((i: any) => (
                   <tr key={i.id} className="border-t border-slate-200">
                     <td className="px-4 py-3 font-medium">{i.name}</td>
                     <td className="px-4 py-3 text-slate-700">{i.type}</td>
@@ -293,7 +293,7 @@ export default async function InvoicePage({
                 No activity yet.
               </div>
             ) : (
-              activity.map((evt) => (
+              activity.map((evt: any) => (
                 <div key={evt.id} className="flex gap-3">
                   <div className="mt-2 h-2 w-2 rounded-full bg-slate-400" />
                   <div className="flex-1 rounded-xl border border-slate-200 bg-white p-4">

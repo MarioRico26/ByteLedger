@@ -78,7 +78,7 @@ function orgAddress(org: Org) {
   const cityStateZip = [org.city, org.state, org.zip].filter(Boolean).join(", ").replace(", ,", ", ")
   return [org.addressLine1, org.addressLine2, cityStateZip || null, org.country]
     .filter((x) => (x ?? "").toString().trim().length > 0)
-    .map((x) => String(x))
+    .map((x: any) => String(x))
 }
 
 type LabeledLine = { label: string; value: string }
@@ -214,7 +214,7 @@ export default function QuoteDoc({ estimate }: { estimate: QuoteDocEstimate }) {
               {/* Addresses */}
               {custBlocks.length ? (
                 <div className="space-y-2">
-                  {custBlocks.map((b) => (
+                  {custBlocks.map((b: any) => (
                     <div key={b.label}>
                       <div className="text-xs text-zinc-500">{b.label}</div>
                       <div className="whitespace-pre-line text-zinc-800">{b.value}</div>
@@ -281,7 +281,7 @@ export default function QuoteDoc({ estimate }: { estimate: QuoteDocEstimate }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200">
-                {estimate.items.map((it) => (
+                {estimate.items.map((it: any) => (
                   <tr key={it.id}>
                     <td className="px-3 py-2 font-medium text-zinc-900">{it.name}</td>
                     <td className="px-3 py-2 text-zinc-600">{it.type}</td>

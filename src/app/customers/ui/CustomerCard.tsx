@@ -109,7 +109,7 @@ export default function CustomerCard({
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:col-span-1 lg:col-span-2">
             <div className="text-[11px] text-slate-500">Recent activity</div>
             <div className="mt-2 flex flex-wrap gap-2">
-              {customer.recentEstimates.map((e) => (
+              {customer.recentEstimates.map((e: any) => (
                 <a
                   key={e.id}
                   href={`/estimates/${e.id}/quote`}
@@ -119,7 +119,7 @@ export default function CustomerCard({
                   {Number(e.totalAmount).toLocaleString(undefined, { style: "currency", currency: "USD" })}
                 </a>
               ))}
-              {customer.recentSales.map((s) => (
+              {customer.recentSales.map((s: any) => (
                 <a
                   key={s.id}
                   href={`/sales/${s.id}/invoice`}

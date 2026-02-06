@@ -117,7 +117,7 @@ export default function Combobox({
               </div>
             ) : (
               <div className="space-y-1">
-                {filtered.map((o) => (
+                {filtered.map((o: any) => (
                   <button
                     key={o.value}
                     type="button"

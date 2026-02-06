@@ -77,7 +77,7 @@ export async function sendInvoiceEmail(args: SendInvoiceEmailArgs) {
     </div>
   `
 
-  const attachments = (args.attachments || []).map((a) => ({
+  const attachments = (args.attachments || []).map((a: any) => ({
     filename: a.filename,
     content: a.content.toString("base64"),
   }))

@@ -203,7 +203,7 @@ export default function SalesTableClient({ initialSales }: Props) {
 
   function onPaid(updatedSale: any) {
     setRows((prev) =>
-      prev.map((r) => {
+      prev.map((r: any) => {
         if (r.id !== updatedSale.id) return r
         const updatedPayments = Array.isArray(updatedSale.payments)
           ? updatedSale.payments.map((p: any) => ({
@@ -334,7 +334,7 @@ export default function SalesTableClient({ initialSales }: Props) {
                   </td>
                 </tr>
               ) : (
-                filtered.map((r) => {
+                filtered.map((r: any) => {
                   const saleDate = fmtDate(r.saleDate || r.createdAt)
                   const balance = calcBalance(r.totalAmount, r.paidAmount, r.balanceAmount)
                   const dueLabel = fmtDate(r.dueDate)
@@ -448,7 +448,7 @@ export default function SalesTableClient({ initialSales }: Props) {
                                 </div>
                               ) : (
                                 <div className="divide-y divide-slate-200">
-                                  {payments.map((p) => (
+                                  {payments.map((p: any) => (
                                     <div
                                       key={p.id}
                                       className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"

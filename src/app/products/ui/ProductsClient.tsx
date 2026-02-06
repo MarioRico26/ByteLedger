@@ -90,13 +90,13 @@ export default function ProductsClient({
 
     if (groupBy === "az") {
       const letters = Array.from(map.keys()).sort((a, b) => a.localeCompare(b))
-      return letters.map((k) => ({ key: k, label: k, rows: map.get(k)! }))
+      return letters.map((k: any) => ({ key: k, label: k, rows: map.get(k)! }))
     }
 
     const order = groupBy === "status" ? ["Active", "Inactive"] : ["Products", "Services"]
     return order
       .filter((k) => map.has(k))
-      .map((k) => ({ key: k, label: k, rows: map.get(k)! }))
+      .map((k: any) => ({ key: k, label: k, rows: map.get(k)! }))
   }, [filtered, groupBy])
 
   function upsert(next: Product) {
@@ -230,7 +230,7 @@ export default function ProductsClient({
       </div>
 
       <div className="space-y-4">
-        {(grouped ? grouped : [{ key: "All", label: "All", rows: filtered }]).map((group) => (
+        {(grouped ? grouped : [{ key: "All", label: "All", rows: filtered }]).map((group: any) => (
           <div key={group.key} className="space-y-3">
             {groupBy !== "none" ? (
               <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
@@ -243,7 +243,7 @@ export default function ProductsClient({
                 No catalog items match your filters.
               </div>
             ) : (
-              group.rows.map((p) => (
+              group.rows.map((p: any) => (
                 <ProductCard
                   key={p.id}
                   product={p}

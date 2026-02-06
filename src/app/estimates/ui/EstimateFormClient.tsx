@@ -179,7 +179,7 @@ export default function EstimateFormClient({
   const discountAmount = Math.max(toMoneyNumber(discountStr, 0), 0)
 
   const totals = useMemo(() => {
-    const subtotal = items.reduce((acc, it) => {
+    const subtotal = items.reduce((acc: any, it: any) => {
       const qty = Math.max(1, Math.floor(toMoneyNumber(it.quantityStr, 1)))
       const unit = Math.max(0, toMoneyNumber(it.unitPriceStr, 0))
       return acc + qty * unit
@@ -192,7 +192,7 @@ export default function EstimateFormClient({
   }, [items, taxRate, discountAmount])
 
   function updateItem(key: string, patch: Partial<FormItem>) {
-    setItems((prev) => prev.map((it) => (it._key === key ? { ...it, ...patch } : it)))
+    setItems((prev) => prev.map((it: any) => (it._key === key ? { ...it, ...patch } : it)))
   }
 
   /**
@@ -203,7 +203,7 @@ export default function EstimateFormClient({
   function onPickProduct(key: string, productId: string) {
     if (!productId) {
       setItems((prev) =>
-        prev.map((it) => {
+        prev.map((it: any) => {
           if (it._key !== key) return it
           return {
             ...it,
@@ -223,7 +223,7 @@ export default function EstimateFormClient({
     const parsed = p.price !== null && p.price !== undefined ? Number(p.price) : NaN
 
     setItems((prev) =>
-      prev.map((it) => {
+      prev.map((it: any) => {
         if (it._key !== key) return it
         return {
           ...it,
@@ -279,7 +279,7 @@ export default function EstimateFormClient({
       validUntil: validUntil.trim() || null,
       taxRate,
       discountAmount,
-      items: items.map((it) => ({
+      items: items.map((it: any) => ({
         productId: it.productId,
         name: it.name,
         type: it.type,
@@ -334,7 +334,7 @@ export default function EstimateFormClient({
                 className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
               >
                 <option value="">Select customer…</option>
-                {customers.map((c) => (
+                {customers.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.fullName}
                   </option>
@@ -395,7 +395,7 @@ export default function EstimateFormClient({
                   </thead>
 
                   <tbody>
-                    {items.map((it, idx) => {
+                    {items.map((it: any, idx: number) => {
                       const line = lineSubtotal(it)
                       return (
                         <tr key={it._key} className="border-t border-slate-200">
@@ -406,7 +406,7 @@ export default function EstimateFormClient({
                               className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                             >
                               <option value="">Custom item…</option>
-                              {products.map((p) => (
+                              {products.map((p: any) => (
                                 <option key={p.id} value={p.id}>
                                   {p.name}
                                 </option>
@@ -480,7 +480,7 @@ export default function EstimateFormClient({
 
             {/* Mobile cards */}
             <div className="mt-3 grid gap-3 md:hidden">
-              {items.map((it, idx) => {
+              {items.map((it: any, idx: number) => {
                 const line = lineSubtotal(it)
                 return (
                   <div key={it._key} className="rounded-2xl border border-slate-200 bg-white p-3">
@@ -493,7 +493,7 @@ export default function EstimateFormClient({
                           className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                         >
                           <option value="">Custom item…</option>
-                          {products.map((p) => (
+                          {products.map((p: any) => (
                             <option key={p.id} value={p.id}>
                               {p.name}
                             </option>

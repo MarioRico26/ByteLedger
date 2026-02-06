@@ -37,14 +37,14 @@ export default async function SalesPage({
 
   const productsClean = products
     .filter((p) => p.active)
-    .map((p) => ({
+    .map((p: any) => ({
       id: p.id,
       name: p.name,
       type: p.type,
       price: p.price ? p.price.toString() : null,
     }))
 
-  const salesClean: SaleRow[] = sales.map((s) => ({
+  const salesClean: SaleRow[] = sales.map((s: any) => ({
     id: s.id,
     description: s.description,
     status: s.status,
@@ -61,7 +61,7 @@ export default async function SalesPage({
     customerPhone: s.customer.phone ?? null,
     itemsCount: s.items.length,
     paymentsCount: s.payments.length,
-    payments: (s.payments || []).map((p) => ({
+    payments: (s.payments || []).map((p: any) => ({
       id: p.id,
       amount: p.amount.toString(),
       method: p.method,

@@ -22,7 +22,7 @@ export default function MobileNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/90 backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2">
-        {MOBILE_ITEMS.map((item) => {
+        {MOBILE_ITEMS.map((item: any) => {
           const active = isActive(pathname, item.href)
           return (
             <Link

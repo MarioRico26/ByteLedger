@@ -62,7 +62,7 @@ export default async function SaleEditPage({
     discountAmount: sale.discountAmount?.toString?.() ?? "0",
     paidAmount: sale.paidAmount?.toString?.() ?? "0",
     balanceAmount: sale.balanceAmount?.toString?.() ?? "0",
-    items: sale.items.map((it) => ({
+    items: sale.items.map((it: any) => ({
       id: it.id,
       productId: it.productId ?? null,
       name: it.name,
@@ -70,13 +70,13 @@ export default async function SaleEditPage({
       quantity: it.quantity,
       unitPrice: it.unitPrice?.toString?.() ?? "0",
     })),
-    payments: sale.payments.map((p) => ({
+    payments: sale.payments.map((p: any) => ({
       id: p.id,
       amount: p.amount?.toString?.() ?? "0",
     })),
   }
 
-  const productsClean = products.map((p) => ({
+  const productsClean = products.map((p: any) => ({
     id: p.id,
     name: p.name,
     type: p.type,

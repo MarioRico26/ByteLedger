@@ -65,7 +65,7 @@ export async function sendEstimateEmail(args: SendEstimateEmailArgs) {
   </div>
   `
 
-  const attachments = (args.attachments || []).map((a) => ({
+  const attachments = (args.attachments || []).map((a: any) => ({
     filename: a.filename,
     content: a.content.toString("base64"),
   }))

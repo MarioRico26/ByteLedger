@@ -132,7 +132,7 @@ export default function NewSaleForm({
   const customerOptions: SearchableOption[] = useMemo(() => {
     return [
       { value: "", label: "Select a customer" },
-      ...(customers ?? []).map((c) => ({
+      ...(customers ?? []).map((c: any) => ({
         value: c.id,
         label: c.fullName,
         subLabel: c.email ?? undefined,
@@ -143,7 +143,7 @@ export default function NewSaleForm({
   const productOptions: SearchableOption[] = useMemo(() => {
     return [
       { value: "", label: "Custom item" },
-      ...(products ?? []).map((p) => ({
+      ...(products ?? []).map((p: any) => ({
         value: p.id,
         label: `${p.name} (${p.type === "SERVICE" ? "Service" : "Product"})`,
         subLabel: p.price ? `$${Number(p.price).toFixed(2)}` : undefined,
@@ -152,7 +152,7 @@ export default function NewSaleForm({
   }, [products])
 
   const subtotal = useMemo(() => {
-    return (lines ?? []).reduce((sum, l) => {
+    return (lines ?? []).reduce((sum: any, l: any) => {
       const qty = Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1)))
       const price = Math.max(0, toMoneyNumber(l.unitPriceStr, 0))
       return sum + qty * price
@@ -174,7 +174,7 @@ export default function NewSaleForm({
   const total = useMemo(() => taxableBase + taxAmount, [taxableBase, taxAmount])
 
   function updateLine(idx: number, patch: Partial<Line>) {
-    setLines((prev) => (prev ?? []).map((l, i) => (i === idx ? { ...l, ...patch } : l)))
+    setLines((prev) => (prev ?? []).map((l: any, i: number) => (i === idx ? { ...l, ...patch } : l)))
   }
 
   function addLine() {
@@ -220,7 +220,7 @@ export default function NewSaleForm({
 
     const prepared = (lines ?? [])
       .filter((l) => l.name.trim())
-      .map((l) => ({
+      .map((l: any) => ({
         productId: l.productId || null,
         name: l.name.trim(),
         type: l.type,
@@ -380,7 +380,7 @@ export default function NewSaleForm({
                           </thead>
 
                           <tbody>
-                            {lines.map((l, idx) => {
+                            {lines.map((l: any, idx: number) => {
                               const line = lineSubtotal(l)
                               return (
                                 <tr key={idx} className="border-t border-slate-200">
@@ -452,7 +452,7 @@ export default function NewSaleForm({
 
                     {/* Mobile cards */}
                     <div className="mt-3 grid gap-3 md:hidden">
-                      {lines.map((l, idx) => {
+                      {lines.map((l: any, idx: number) => {
                         const line = lineSubtotal(l)
                         return (
                           <div key={idx} className="rounded-2xl border border-slate-200 bg-white p-3">

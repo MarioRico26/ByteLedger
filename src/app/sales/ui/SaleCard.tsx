@@ -200,7 +200,7 @@ export default function SaleCard({ sale }: Props) {
                 <div>Notes</div>
                 <div className="text-right">Receipt</div>
               </div>
-              {state.payments.map((p) => (
+              {state.payments.map((p: any) => (
                 <div
                   key={p.id}
                   className="grid grid-cols-1 gap-2 border-t border-slate-200 px-3 py-2 sm:grid-cols-[1.2fr_1fr_1.2fr_2fr_auto] sm:items-center"

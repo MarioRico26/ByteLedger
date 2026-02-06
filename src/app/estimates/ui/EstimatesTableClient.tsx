@@ -116,7 +116,7 @@ export default function EstimatesTableClient({ initialEstimates }: Props) {
       const order = ["APPROVED", "SENT", "DRAFT", "EXPIRED"]
       return order
         .filter((k) => map.has(k))
-        .map((k) => ({ key: k, rows: map.get(k)! }))
+        .map((k: any) => ({ key: k, rows: map.get(k)! }))
     }
 
     return Array.from(map.entries())
@@ -250,7 +250,7 @@ export default function EstimatesTableClient({ initialEstimates }: Props) {
                     </tr>
                   )
 
-                  const dataRows = rows.map((e) => {
+                  const dataRows = rows.map((e: any) => {
                     const id = safeId(e.id)
                     const locked = Boolean(e.saleId)
 

@@ -95,12 +95,12 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
   }, [initialPayments, q, method, from, to])
 
   const metrics = useMemo(() => {
-    const totalReceived = filtered.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+    const totalReceived = filtered.reduce((sum: any, p: any) => sum + Number(p.amount || 0), 0)
     const paymentsCount = filtered.length
     const avgPayment = paymentsCount > 0 ? totalReceived / paymentsCount : 0
 
     const now = new Date()
-    const thisMonthTotal = filtered.reduce((sum, p) => {
+    const thisMonthTotal = filtered.reduce((sum: any, p: any) => {
       const d = p.paidAt ? new Date(p.paidAt) : null
       if (!d || Number.isNaN(d.valueOf())) return sum
       if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) {
@@ -249,7 +249,7 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
             {monthlyChart.points.length === 0 ? (
               <div className="text-sm text-slate-500">No data yet.</div>
             ) : (
-              monthlyChart.points.map((p) => (
+              monthlyChart.points.map((p: any) => (
                 <div key={p.key} className="flex flex-1 flex-col items-center gap-2">
                   <div className="relative group flex h-24 w-full items-end rounded-full bg-slate-100 p-1">
                     <div
@@ -272,7 +272,7 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
               {methodTotals.length === 0 ? (
                 <div className="text-slate-500">No data.</div>
               ) : (
-                methodTotals.map((m) => (
+                methodTotals.map((m: any) => (
                   <div key={m.key} className="flex items-center justify-between">
                     <span className="text-slate-600">{m.key}</span>
                     <span className="font-semibold text-slate-900">{money(m.total)}</span>
@@ -303,7 +303,7 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
               onChange={(e) => setMethod(e.target.value)}
               className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
             >
-              {methodOptions.map((m) => (
+              {methodOptions.map((m: any) => (
                 <option key={m} value={m}>
                   {m}
                 </option>
@@ -381,7 +381,7 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
                       </tr>
                     )
 
-                  const dataRows = rows.map((p) => {
+                  const dataRows = rows.map((p: any) => {
                     const paidAt = fmtDate(p.paidAt)
                     const saleId = p.saleId
                     const inv = invoiceNumber(p.saleId, p.saleCreatedAt)

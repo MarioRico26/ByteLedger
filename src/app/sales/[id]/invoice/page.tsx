@@ -226,7 +226,7 @@ export default async function InvoicePage({
                 </tr>
               </thead>
               <tbody>
-                {sale.items.map((i) => (
+                {sale.items.map((i: any) => (
                   <tr key={i.id} className="border-t border-slate-200">
                     <td className="px-4 py-3 font-medium">{i.name}</td>
                     <td className="px-4 py-3 text-slate-700">{i.type}</td>
@@ -247,7 +247,7 @@ export default async function InvoicePage({
               <div className="p-4 text-sm text-slate-500">No payments yet.</div>
             ) : (
               <div className="divide-y divide-slate-200">
-                {payments.map((p) => (
+                {payments.map((p: any) => (
                   <details key={p.id} className="group">
                     <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm hover:bg-slate-50">
                       <div className="flex flex-wrap items-center gap-2">

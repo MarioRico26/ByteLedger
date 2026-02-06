@@ -199,14 +199,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     }
   }
 
-  const chartRows = months.map((m) => ({
+  const chartRows = months.map((m: any) => ({
     label: m.label,
     sales: salesByMonth[m.key],
     payments: paymentsByMonth[m.key],
   }))
   const chartMax = Math.max(
     1,
-    ...chartRows.map((r) => Math.max(r.sales, r.payments))
+    ...chartRows.map((r: any) => Math.max(r.sales, r.payments))
   )
 
   const topCustomers = (() => {
@@ -286,7 +286,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           { label: "Last 30 days", value: "last30" },
           { label: "Last 90 days", value: "last90" },
           { label: "YTD", value: "ytd" },
-        ].map((opt) => (
+        ].map((opt: any) => (
           <Link
             key={opt.value}
             href={`/?range=${opt.value}`}
@@ -342,7 +342,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-3 md:grid-cols-6">
-            {chartRows.map((row) => {
+            {chartRows.map((row: any) => {
               const salesPct = Math.round((row.sales / chartMax) * 100)
               const payPct = Math.round((row.payments / chartMax) * 100)
               return (
@@ -409,7 +409,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 No activity yet.
               </div>
             ) : (
-              activity.map((a) => (
+              activity.map((a: any) => (
                 <div key={a.id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
                   <div>
                     <div className="text-sm font-semibold text-slate-900">{a.title}</div>
@@ -453,7 +453,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   No customer activity in this range.
                 </div>
               ) : (
-                topCustomers.map((c) => (
+                topCustomers.map((c: any) => (
                   <div
                     key={c.name}
                     className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"

@@ -30,7 +30,7 @@ export default function TopNav() {
 
   const parts = pathname.split("/").filter(Boolean)
 
-  const crumbs = parts.map((seg, idx) => {
+  const crumbs = parts.map((seg: any, idx: number) => {
     const href = "/" + parts.slice(0, idx + 1).join("/")
     return { seg, href, label: nice(seg) }
   })
@@ -59,7 +59,7 @@ export default function TopNav() {
         {crumbs.length === 0 ? (
           <span className="text-zinc-300">Dashboard</span>
         ) : (
-          crumbs.map((c, i) => (
+          crumbs.map((c: any, i: number) => (
             <div key={c.href} className="flex items-center gap-2">
               <Link href={c.href} className="hover:text-zinc-200">
                 {c.label}

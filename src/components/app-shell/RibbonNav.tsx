@@ -33,13 +33,13 @@ export default function RibbonNav() {
         </Link>
 
         <div className="flex flex-1 items-center gap-6 overflow-x-auto pb-1">
-          {NAV_GROUPS.map((group) => (
+          {NAV_GROUPS.map((group: any) => (
             <div key={group.label} className="flex flex-col gap-2">
               <div className="text-[10px] uppercase tracking-[0.26em] text-slate-400">
                 {group.label}
               </div>
               <div className="flex items-center gap-2">
-                {group.items.map((item) => {
+                {group.items.map((item: any) => {
                   const active = isActive(pathname, item.href)
                   return (
                     <Link

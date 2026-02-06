@@ -142,7 +142,7 @@ export default function AddPaymentModal({
                   onChange={(e) => setMethod(e.target.value as any)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                 >
-                  {METHODS.map((m) => (
+                  {METHODS.map((m: any) => (
                     <option key={m} value={m}>
                       {m}
                     </option>

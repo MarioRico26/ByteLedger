@@ -54,7 +54,7 @@ export async function sendReceiptEmail(args: SendReceiptEmailArgs) {
     .slice(-6)
     .toUpperCase()}`
 
-  const attachments = (args.attachments || []).map((a) => ({
+  const attachments = (args.attachments || []).map((a: any) => ({
     filename: a.filename,
     content: a.content.toString("base64"),
   }))

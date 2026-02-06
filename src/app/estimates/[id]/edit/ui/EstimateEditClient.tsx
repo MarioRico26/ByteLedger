@@ -44,7 +44,7 @@ export default function EstimateEditClient({
   })
 
   function updateItem(key: string, patch: any) {
-    setItems((prev: any[]) => prev.map((it) => (it._key === key ? { ...it, ...patch } : it)))
+    setItems((prev: any[]) => prev.map((it: any) => (it._key === key ? { ...it, ...patch } : it)))
   }
 
   function pickProduct(key: string, productId: string) {
@@ -110,7 +110,7 @@ export default function EstimateEditClient({
             className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm text-zinc-100"
           >
             <option value="">Select customer…</option>
-            {customers.map((c) => (
+            {customers.map((c: any) => (
               <option key={c.id} value={c.id}>
                 {c.fullName}
               </option>
@@ -131,7 +131,7 @@ export default function EstimateEditClient({
                   className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950/60 px-2 py-2 text-sm text-zinc-100"
                 >
                   <option value="">Custom item…</option>
-                  {products.map((p) => (
+                  {products.map((p: any) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
                     </option>

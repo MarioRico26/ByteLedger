@@ -131,7 +131,7 @@ export default function SaleEditClient({
   const productOptions: SearchableOption[] = useMemo(() => {
     return [
       { value: "", label: "Custom item" },
-      ...(products ?? []).map((p) => ({
+      ...(products ?? []).map((p: any) => ({
         value: p.id,
         label: `${p.name}${p.active === false ? " (inactive)" : ""} (${p.type === "SERVICE" ? "Service" : "Product"})`,
         subLabel: p.price ? `$${Number(p.price).toFixed(2)}` : undefined,
@@ -140,7 +140,7 @@ export default function SaleEditClient({
   }, [products])
 
   function updateItem(key: string, patch: Partial<Item>) {
-    setItems((prev) => prev.map((it) => (it._key === key ? { ...it, ...patch } : it)))
+    setItems((prev) => prev.map((it: any) => (it._key === key ? { ...it, ...patch } : it)))
   }
 
   function pickProduct(key: string, productId: string) {
@@ -177,7 +177,7 @@ export default function SaleEditClient({
   }
 
   const subtotal = useMemo(() => {
-    return (items ?? []).reduce((sum, it) => sum + lineSubtotal(it), 0)
+    return (items ?? []).reduce((sum: any, it: any) => sum + lineSubtotal(it), 0)
   }, [items])
 
   const taxAmount = useMemo(() => {
@@ -210,7 +210,7 @@ export default function SaleEditClient({
       dueDate: dueDate || null,
       taxRate: Math.max(0, toMoneyNumber(taxRateStr, 0)),
       discountAmount: Math.max(0, toMoneyNumber(discountStr, 0)),
-      items: items.map((it) => ({
+      items: items.map((it: any) => ({
         productId: it.productId,
         name: it.name,
         type: it.type,
@@ -249,7 +249,7 @@ export default function SaleEditClient({
                 className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
               >
                 <option value="">Select customer…</option>
-                {customers.map((c) => (
+                {customers.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.fullName}
                   </option>
@@ -326,7 +326,7 @@ export default function SaleEditClient({
                   </thead>
 
                   <tbody>
-                    {items.map((it, idx) => {
+                    {items.map((it: any, idx: number) => {
                       const line = lineSubtotal(it)
                       return (
                         <tr key={it._key} className="border-t border-slate-200">
@@ -396,7 +396,7 @@ export default function SaleEditClient({
 
             {/* Mobile cards */}
             <div className="mt-3 grid gap-3 md:hidden">
-              {items.map((it, idx) => {
+              {items.map((it: any, idx: number) => {
                 const line = lineSubtotal(it)
                 return (
                   <div key={it._key} className="rounded-2xl border border-slate-200 bg-white p-3">

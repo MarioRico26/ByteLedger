@@ -34,7 +34,7 @@ export default function MobileMenu() {
   }, [])
 
   const groups = useMemo(() => {
-    return NAV_GROUPS.map((group) => ({
+    return NAV_GROUPS.map((group: any) => ({
       ...group,
       items: group.items.filter((item) =>
         item.requiresSuperAdmin ? Boolean(isSuperAdmin) : true
@@ -75,13 +75,13 @@ export default function MobileMenu() {
             </div>
 
             <div className="mt-6 space-y-4">
-              {groups.map((group) => (
+              {groups.map((group: any) => (
                 <div key={group.label} className="space-y-2">
                   <div className="px-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
                     {group.label}
                   </div>
                   <div className="space-y-1">
-                    {group.items.map((item) => {
+                    {group.items.map((item: any) => {
                       const active = isActive(pathname, item.href)
                       return (
                         <Link

@@ -179,7 +179,7 @@ export default function SearchableSelect({
                     {filtered.length === 0 ? (
                       <div className="px-3 py-2 text-sm text-slate-500">No results</div>
                     ) : (
-                      filtered.map((opt, idx) => {
+                      filtered.map((opt: any, idx: number) => {
                         const active = idx === activeIndex
                         return (
                           <button
@@ -209,7 +209,7 @@ export default function SearchableSelect({
                   {filtered.length === 0 ? (
                     <div className="px-3 py-2 text-sm text-slate-500">No results</div>
                   ) : (
-                    filtered.map((opt, idx) => {
+                    filtered.map((opt: any, idx: number) => {
                       const active = idx === activeIndex
                       return (
                         <button

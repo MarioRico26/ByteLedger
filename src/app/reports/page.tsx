@@ -89,15 +89,15 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
     }),
   ])
 
-  const totalInvoiced = sales.reduce((sum, s) => sum + Number(s.totalAmount || 0), 0)
-  const totalTax = sales.reduce((sum, s) => sum + Number(s.taxAmount || 0), 0)
-  const totalPayments = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0)
-  const outstanding = openSales.reduce((sum, s) => sum + Number(s.balanceAmount || 0), 0)
+  const totalInvoiced = sales.reduce((sum: any, s: any) => sum + Number(s.totalAmount || 0), 0)
+  const totalTax = sales.reduce((sum: any, s: any) => sum + Number(s.taxAmount || 0), 0)
+  const totalPayments = payments.reduce((sum: any, p: any) => sum + Number(p.amount || 0), 0)
+  const outstanding = openSales.reduce((sum: any, s: any) => sum + Number(s.balanceAmount || 0), 0)
 
   const avgInvoice = sales.length ? totalInvoiced / sales.length : 0
-  const prevInvoiced = prevSales.reduce((sum, s) => sum + Number(s.totalAmount || 0), 0)
-  const prevTax = prevSales.reduce((sum, s) => sum + Number(s.taxAmount || 0), 0)
-  const prevPaymentsTotal = prevPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+  const prevInvoiced = prevSales.reduce((sum: any, s: any) => sum + Number(s.totalAmount || 0), 0)
+  const prevTax = prevSales.reduce((sum: any, s: any) => sum + Number(s.taxAmount || 0), 0)
+  const prevPaymentsTotal = prevPayments.reduce((sum: any, p: any) => sum + Number(p.amount || 0), 0)
 
   function pctChange(current: number, prev: number) {
     if (!prev) return current ? 100 : 0
@@ -173,12 +173,12 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
     if (key in paymentsByMonth) paymentsByMonth[key] += Number(p.amount || 0)
   }
 
-  const chartRows = months.map((m) => ({
+  const chartRows = months.map((m: any) => ({
     label: m.label,
     sales: salesByMonth[m.key],
     payments: paymentsByMonth[m.key],
   }))
-  const chartMax = Math.max(1, ...chartRows.map((r) => Math.max(r.sales, r.payments)))
+  const chartMax = Math.max(1, ...chartRows.map((r: any) => Math.max(r.sales, r.payments)))
 
   return (
     <div className="space-y-8">
@@ -204,7 +204,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
             { label: "This month", value: "thisMonth" },
             { label: "Last month", value: "lastMonth" },
             { label: "YTD", value: "ytd" },
-          ].map((opt) => (
+          ].map((opt: any) => (
             <Link
               key={opt.value}
               href={`/reports?range=${opt.value}`}
@@ -272,7 +272,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
           <div className="text-sm font-semibold text-slate-900">Revenue vs Payments</div>
           <div className="mt-1 text-xs text-slate-500">Monthly trend</div>
           <div className="mt-6 grid grid-cols-3 gap-3 md:grid-cols-6">
-            {chartRows.map((row) => {
+            {chartRows.map((row: any) => {
               const salesPct = Math.round((row.sales / chartMax) * 100)
               const payPct = Math.round((row.payments / chartMax) * 100)
               return (
@@ -334,7 +334,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
                 No customer activity in this range.
               </div>
             ) : (
-              topCustomers.map((c) => (
+              topCustomers.map((c: any) => (
                 <div key={c.name} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
                   <div className="text-sm text-slate-700">{c.name}</div>
                   <div className="text-sm font-semibold text-slate-900">{toMoney(c.total)}</div>
@@ -353,7 +353,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
                 No payments in this range.
               </div>
             ) : (
-              paymentMethods.map((m) => (
+              paymentMethods.map((m: any) => (
                 <div key={m.method} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
                   <div className="text-sm text-slate-700">{m.method}</div>
                   <div className="text-sm font-semibold text-slate-900">{toMoney(m.amount)}</div>

@@ -121,7 +121,7 @@ export async function PUT(req: Request, ctx: Ctx) {
       return NextResponse.json({ error: "At least one item is required" }, { status: 400 })
     }
 
-    const normalizedItems = itemsIn.map((it) => {
+    const normalizedItems = itemsIn.map((it: any) => {
       const qty = Math.max(1, Math.floor(asNumber(it.quantity, 1)))
       const unit = Math.max(0, asNumber(it.unitPrice, 0))
       const name = String(it.name ?? "").trim() || "Item"
@@ -130,7 +130,7 @@ export async function PUT(req: Request, ctx: Ctx) {
       return { productId, name, type: t, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
     })
 
-    const subtotal = normalizedItems.reduce((acc, it) => acc + it.lineTotal, 0)
+    const subtotal = normalizedItems.reduce((acc: any, it: any) => acc + it.lineTotal, 0)
     const taxableBase = Math.max(subtotal - discountAmount, 0)
     const taxAmount = taxableBase * (taxRate / 100)
     const totalAmount = Math.max(subtotal - discountAmount + taxAmount, 0)
@@ -153,7 +153,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     if (balanceAmount <= 0) status = "PAID"
     else if (dueDate && new Date(dueDate) < new Date()) status = "OVERDUE"
 
-    const itemsCreate = normalizedItems.map((it) => ({
+    const itemsCreate = normalizedItems.map((it: any) => ({
       name: it.name,
       type: it.type,
       quantity: it.quantity,

@@ -88,7 +88,7 @@ function orgAddressLines(org: Org) {
   const cityStateZip = [org.city, org.state, org.zip].filter(Boolean).join(" ")
   return [org.addressLine1, org.addressLine2, cityStateZip || null, org.country]
     .filter((x) => (x ?? "").toString().trim().length > 0)
-    .map((x) => String(x))
+    .map((x: any) => String(x))
 }
 
 function wrapText(text: string, maxChars: number) {

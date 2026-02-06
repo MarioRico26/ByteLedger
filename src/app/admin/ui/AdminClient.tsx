@@ -270,7 +270,7 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
                 onChange={(e) => setUserForm((p) => ({ ...p, organizationId: e.target.value }))}
                 className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
               >
-                {orgOptions.map((o) => (
+                {orgOptions.map((o: any) => (
                   <option key={o.id} value={o.id}>
                     {o.businessName || o.name}
                   </option>
@@ -315,7 +315,7 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
           {filteredOrgs.length === 0 ? (
             <div className="text-slate-500">No organizations yet.</div>
           ) : (
-            filteredOrgs.map((o) => (
+            filteredOrgs.map((o: any) => (
               <div
                 key={o.id}
                 className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700 md:flex-row md:items-center md:justify-between"
@@ -347,7 +347,7 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
           {filteredUsers.length === 0 ? (
             <div className="text-slate-500">No users yet.</div>
           ) : (
-            filteredUsers.map((u) => {
+            filteredUsers.map((u: any) => {
               const membership = u.memberships?.[0]
               const emailStatus = emailStatusByUserId[u.id]
               return (
