@@ -46,8 +46,9 @@ export async function POST(req: Request, ctx: Ctx) {
     }
 
     // hardening: qty>0, price>=0
-    const hasBadQty = estimate.items.some((it) => Number(it.quantity) <= 0)
-    const hasBadPrice = estimate.items.some((it) => Number(it.unitPrice) < 0)
+    type EstimateItem = (typeof estimate.items)[number]
+    const hasBadQty = estimate.items.some((it: EstimateItem) => Number(it.quantity) <= 0)
+    const hasBadPrice = estimate.items.some((it: EstimateItem) => Number(it.unitPrice) < 0)
     if (hasBadQty || hasBadPrice) {
       await prisma.emailLog.create({
         data: {
