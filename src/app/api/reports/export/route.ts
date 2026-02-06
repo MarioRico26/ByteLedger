@@ -69,10 +69,22 @@ export async function GET(req: Request) {
       }),
     ])
 
-    const totalInvoiced = sales.reduce((sum, s) => sum + Number(s.totalAmount || 0), 0)
-    const totalTax = sales.reduce((sum, s) => sum + Number(s.taxAmount || 0), 0)
-    const totalPayments = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0)
-    const outstanding = openSales.reduce((sum, s) => sum + Number(s.balanceAmount || 0), 0)
+    const totalInvoiced = sales.reduce(
+      (sum: number, s: { totalAmount: unknown }) => sum + Number(s.totalAmount || 0),
+      0
+    )
+    const totalTax = sales.reduce(
+      (sum: number, s: { taxAmount: unknown }) => sum + Number(s.taxAmount || 0),
+      0
+    )
+    const totalPayments = payments.reduce(
+      (sum: number, p: { amount: unknown }) => sum + Number(p.amount || 0),
+      0
+    )
+    const outstanding = openSales.reduce(
+      (sum: number, s: { balanceAmount: unknown }) => sum + Number(s.balanceAmount || 0),
+      0
+    )
     const avgInvoice = sales.length ? totalInvoiced / sales.length : 0
 
     const lines: string[] = []
