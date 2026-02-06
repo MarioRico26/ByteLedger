@@ -44,7 +44,7 @@ export default async function CustomersPage() {
     }
   }
 
-  const clean = customers.map((c) => ({
+  const clean = customers.map((c: (typeof customers)[number]) => ({
     id: c.id,
     fullName: c.fullName,
     email: c.email,
