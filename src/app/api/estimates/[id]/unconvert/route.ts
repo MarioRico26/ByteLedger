@@ -25,7 +25,7 @@ export async function POST(
 
     const saleId = est.saleId
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // 1) Primero desconectamos el estimate del sale (para no violar FK)
       await tx.estimate.update({
         where: { id: est.id },
