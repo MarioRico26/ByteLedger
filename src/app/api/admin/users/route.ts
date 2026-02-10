@@ -9,6 +9,14 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+function parseDateInput(v: unknown) {
+  const s = String(v ?? "").trim()
+  if (!s) return null
+  const d = new Date(`${s}T00:00:00`)
+  if (Number.isNaN(d.valueOf())) return null
+  return d
+}
+
 export async function POST(req: Request) {
   try {
     await requireSuperAdmin()
@@ -21,6 +29,9 @@ export async function POST(req: Request) {
     const name = String(body.name || "").trim() || null
     const organizationId = String(body.organizationId || "").trim()
     const role = ROLE_VALUES.includes(body.role) ? (body.role as Role) : "STAFF"
+    const isEnabled = body.isEnabled === false ? false : true
+    const accessStartsAt = parseDateInput(body.accessStartsAt)
+    const accessEndsAt = parseDateInput(body.accessEndsAt)
 
     if (!email || !isValidEmail(email)) {
       return NextResponse.json({ error: "Valid email is required" }, { status: 400 })
@@ -48,6 +59,9 @@ export async function POST(req: Request) {
       data: {
         email,
         name,
+        isEnabled,
+        accessStartsAt,
+        accessEndsAt,
         passwordHash,
         mustChangePassword: true,
         memberships: {
@@ -57,7 +71,7 @@ export async function POST(req: Request) {
           },
         },
       },
-      include: { memberships: true },
+      include: { memberships: { include: { organization: true } } },
     })
 
     const baseUrl =

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 export type ProductType = "PRODUCT" | "SERVICE"
 
@@ -9,6 +9,7 @@ export type CreatedProduct = {
   name: string
   type: ProductType
   description: string | null
+  imageUrl?: string | null
   price: string | null
   active: boolean
   createdAt: string
@@ -26,8 +27,36 @@ export default function NewProductForm({
   const [type, setType] = useState<ProductType>("SERVICE")
   const [price, setPrice] = useState("")
   const [description, setDescription] = useState("")
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [active, setActive] = useState(true)
   const [msg, setMsg] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement | null>(null)
+
+  async function fileToDataUrl(file: File) {
+    const rawDataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onerror = () => reject(new Error("Failed to read image"))
+      reader.onload = () => resolve(String(reader.result || ""))
+      reader.readAsDataURL(file)
+    })
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const instance = new Image()
+      instance.onerror = () => reject(new Error("Invalid image"))
+      instance.onload = () => resolve(instance)
+      instance.src = rawDataUrl
+    })
+    const maxSize = 800
+    const scale = Math.min(maxSize / img.width, maxSize / img.height, 1)
+    const width = Math.max(1, Math.round(img.width * scale))
+    const height = Math.max(1, Math.round(img.height * scale))
+    const canvas = document.createElement("canvas")
+    canvas.width = width
+    canvas.height = height
+    const ctx = canvas.getContext("2d")
+    if (!ctx) throw new Error("Canvas unavailable")
+    ctx.drawImage(img, 0, 0, width, height)
+    return canvas.toDataURL("image/jpeg", 0.88)
+  }
 
   async function submit() {
     setMsg(null)
@@ -46,6 +75,7 @@ export default function NewProductForm({
           type,
           price: price.trim() ? price.trim() : null,
           description: description.trim() ? description.trim() : null,
+          imageUrl,
           active,
         }),
       })
@@ -59,6 +89,7 @@ export default function NewProductForm({
       setType("SERVICE")
       setPrice("")
       setDescription("")
+      setImageUrl(null)
       setActive(true)
       setOpen(false)
     } catch (e: any) {
@@ -100,6 +131,60 @@ export default function NewProductForm({
             </div>
 
             <div className="mt-5 grid gap-3">
+              <div className="grid gap-2">
+                <span className="text-xs text-slate-500">Photo (optional)</span>
+                <div className="flex items-center gap-3">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+                        setMsg("Image must be PNG, JPG or WEBP.")
+                        return
+                      }
+                      if (file.size > 4 * 1024 * 1024) {
+                        setMsg("Image max size is 4MB.")
+                        return
+                      }
+                      try {
+                        const dataUrl = await fileToDataUrl(file)
+                        setImageUrl(dataUrl)
+                        setMsg(null)
+                      } catch (err: any) {
+                        setMsg(err?.message || "Failed to process image")
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                  >
+                    Upload photo
+                  </button>
+                  {imageUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl(null)}
+                      className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 hover:border-rose-300 hover:text-rose-700"
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt="Product preview"
+                    className="h-20 w-20 rounded-xl border border-slate-200 object-cover"
+                  />
+                ) : null}
+              </div>
+
               <label className="grid gap-1">
                 <span className="text-xs text-slate-500">Name *</span>
                 <input

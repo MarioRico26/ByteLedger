@@ -16,6 +16,9 @@ type User = {
   email: string
   name?: string | null
   isSuperAdmin?: boolean
+  isEnabled?: boolean
+  accessStartsAt?: string | null
+  accessEndsAt?: string | null
   memberships?: { organization?: Org | null; role?: string }[]
 }
 
@@ -36,12 +39,26 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
     name: "",
     organizationId: orgs[0]?.id ?? "",
     role: "STAFF",
+    isEnabled: true,
+    accessStartsAt: "",
+    accessEndsAt: "",
   })
   const [msg, setMsg] = useState<string | null>(null)
   const [loadingOrg, setLoadingOrg] = useState(false)
   const [loadingUser, setLoadingUser] = useState(false)
+  const [accessBusyId, setAccessBusyId] = useState<string | null>(null)
   const [resendBusyId, setResendBusyId] = useState<string | null>(null)
   const [emailStatusByUserId, setEmailStatusByUserId] = useState<Record<string, "sent" | "failed">>({})
+
+  const toDateInput = (value?: string | Date | null) => {
+    if (!value) return ""
+    const d = new Date(value)
+    if (Number.isNaN(d.valueOf())) return ""
+    const y = d.getFullYear()
+    const m = `${d.getMonth() + 1}`.padStart(2, "0")
+    const day = `${d.getDate()}`.padStart(2, "0")
+    return `${y}-${m}-${day}`
+  }
 
   const orgOptions = useMemo(() => orgList || [], [orgList])
   const metrics = useMemo(() => {
@@ -101,7 +118,7 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
       const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userForm),
+      body: JSON.stringify(userForm),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.error || "Failed to create user")
@@ -119,11 +136,41 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
         name: "",
         organizationId: orgOptions[0]?.id ?? "",
         role: "STAFF",
+        isEnabled: true,
+        accessStartsAt: "",
+        accessEndsAt: "",
       })
     } catch (e: any) {
       setMsg(e?.message || "Failed to create user")
     } finally {
       setLoadingUser(false)
+    }
+  }
+
+  async function updateUserAccess(
+    userId: string,
+    payload: {
+      isEnabled?: boolean
+      accessStartsAt?: string
+      accessEndsAt?: string
+    }
+  ) {
+    setAccessBusyId(userId)
+    setMsg(null)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || "Failed to update user access")
+      setUserList((prev) => prev.map((u) => (u.id === userId ? data : u)))
+      setMsg("User access updated.")
+    } catch (e: any) {
+      setMsg(e?.message || "Failed to update user access")
+    } finally {
+      setAccessBusyId(null)
     }
   }
 
@@ -289,6 +336,33 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
                 <option value="STAFF">STAFF</option>
               </select>
             </label>
+            <label className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+              <span className="text-xs text-slate-500">Enabled</span>
+              <input
+                type="checkbox"
+                checked={userForm.isEnabled}
+                onChange={(e) => setUserForm((p) => ({ ...p, isEnabled: e.target.checked }))}
+                className="h-4 w-4"
+              />
+            </label>
+            <label className="grid gap-1">
+              <span className="text-xs text-slate-500">Access start (optional)</span>
+              <input
+                type="date"
+                value={userForm.accessStartsAt}
+                onChange={(e) => setUserForm((p) => ({ ...p, accessStartsAt: e.target.value }))}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+              />
+            </label>
+            <label className="grid gap-1">
+              <span className="text-xs text-slate-500">Access end (optional)</span>
+              <input
+                type="date"
+                value={userForm.accessEndsAt}
+                onChange={(e) => setUserForm((p) => ({ ...p, accessEndsAt: e.target.value }))}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+              />
+            </label>
           </div>
           <div className="mt-4 flex justify-end">
             <button
@@ -350,6 +424,9 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
             filteredUsers.map((u: any) => {
               const membership = u.memberships?.[0]
               const emailStatus = emailStatusByUserId[u.id]
+              const enabled = u.isEnabled !== false
+              const start = toDateInput(u.accessStartsAt)
+              const end = toDateInput(u.accessEndsAt)
               return (
                 <div
                   key={u.id}
@@ -361,6 +438,27 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
                     </div>
                     <div className="text-xs text-slate-500">
                       {membership?.organization?.businessName || membership?.organization?.name || "No org"} • {membership?.role || "—"}
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full border px-2 py-0.5 text-[10px] ${
+                          enabled
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border-rose-200 bg-rose-50 text-rose-700"
+                        }`}
+                      >
+                        {enabled ? "ENABLED" : "DISABLED"}
+                      </span>
+                      {start ? (
+                        <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-600">
+                          Start: {start}
+                        </span>
+                      ) : null}
+                      {end ? (
+                        <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-600">
+                          End: {end}
+                        </span>
+                      ) : null}
                     </div>
                     <div
                       className={`mt-1 text-xs ${
@@ -374,8 +472,33 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
                       Email status: {emailStatus === "sent" ? "sent" : emailStatus === "failed" ? "failed" : "—"}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                     <div>{u.name || ""}</div>
+                    <button
+                      onClick={() => updateUserAccess(u.id, { isEnabled: !enabled })}
+                      disabled={accessBusyId === u.id}
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:text-slate-900 disabled:opacity-60"
+                    >
+                      {accessBusyId === u.id ? "Updating..." : enabled ? "Disable" : "Enable"}
+                    </button>
+                    <input
+                      type="date"
+                      value={start}
+                      disabled={accessBusyId === u.id}
+                      onChange={(e) =>
+                        updateUserAccess(u.id, { accessStartsAt: e.target.value || "" })
+                      }
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-teal-400 disabled:opacity-60"
+                    />
+                    <input
+                      type="date"
+                      value={end}
+                      disabled={accessBusyId === u.id}
+                      onChange={(e) =>
+                        updateUserAccess(u.id, { accessEndsAt: e.target.value || "" })
+                      }
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-teal-400 disabled:opacity-60"
+                    />
                     <button
                       onClick={() => resendCredentials(u.id)}
                       disabled={resendBusyId === u.id}

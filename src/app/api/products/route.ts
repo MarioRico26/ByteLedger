@@ -48,6 +48,8 @@ export async function POST(req: Request) {
 
     const description =
       typeof body?.description === "string" ? body.description.trim() : null
+    const imageUrl =
+      typeof body?.imageUrl === "string" ? body.imageUrl.trim() || null : null
 
     const created = await prisma.product.create({
       data: {
@@ -56,6 +58,7 @@ export async function POST(req: Request) {
         type,
         price,
         description: description || null,
+        imageUrl,
         active: body?.active === false ? false : true,
       },
     })

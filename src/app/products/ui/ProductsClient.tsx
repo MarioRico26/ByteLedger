@@ -11,6 +11,7 @@ export type Product = {
   id: string
   name: string
   description: string
+  imageUrl: string | null
   type: ProductType
   price: number | null
   active: boolean
@@ -24,6 +25,7 @@ type CreatedProduct = {
   id: string
   name: string
   description: string | null
+  imageUrl?: string | null
   type: ProductType
   price: string | number | null
   active: boolean
@@ -118,6 +120,7 @@ export default function ProductsClient({
       id: p.id,
       name: p.name,
       description: p.description ?? "",
+      imageUrl: p.imageUrl ?? null,
       type: p.type,
       price: p.price == null ? null : Number(p.price),
       active: p.active,

@@ -51,6 +51,12 @@ export async function PATCH(
         : typeof body.description === "string"
           ? body.description.trim() || null
           : undefined
+    const imageUrl =
+      body.imageUrl === null
+        ? null
+        : typeof body.imageUrl === "string"
+          ? body.imageUrl.trim() || null
+          : undefined
 
     const updated = await prisma.product.update({
       where: { id },
@@ -60,6 +66,7 @@ export async function PATCH(
         ...(active !== undefined ? { active } : {}),
         ...(price !== undefined ? { price } : {}),
         ...(description !== undefined ? { description } : {}),
+        ...(imageUrl !== undefined ? { imageUrl } : {}),
       },
     })
 

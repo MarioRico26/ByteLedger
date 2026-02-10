@@ -1,0 +1,7 @@
+ALTER TABLE "Product"
+ADD COLUMN "imageUrl" TEXT;
+
+ALTER TABLE "User"
+ADD COLUMN "isEnabled" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN "accessStartsAt" TIMESTAMP(3),
+ADD COLUMN "accessEndsAt" TIMESTAMP(3);

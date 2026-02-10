@@ -13,6 +13,20 @@ function hashToken(token: string) {
   return crypto.createHash("sha256").update(token).digest("hex")
 }
 
+export function isUserAccessAllowed(user: {
+  isEnabled?: boolean | null
+  accessStartsAt?: Date | string | null
+  accessEndsAt?: Date | string | null
+}) {
+  if (!user || user.isEnabled === false) return false
+  const now = new Date()
+  const start = user.accessStartsAt ? new Date(user.accessStartsAt) : null
+  const end = user.accessEndsAt ? new Date(user.accessEndsAt) : null
+  if (start && !Number.isNaN(start.valueOf()) && now < start) return false
+  if (end && !Number.isNaN(end.valueOf()) && now > end) return false
+  return true
+}
+
 export function generateToken(bytes = 32) {
   return crypto.randomBytes(bytes).toString("hex")
 }
@@ -122,6 +136,11 @@ export async function getSession() {
 
   if (!session) return null
   if (session.expiresAt < new Date()) {
+    await destroySession(session.id)
+    await clearSessionCookie()
+    return null
+  }
+  if (!isUserAccessAllowed(session.user)) {
     await destroySession(session.id)
     await clearSessionCookie()
     return null

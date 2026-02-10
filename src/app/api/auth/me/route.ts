@@ -13,6 +13,9 @@ export async function GET() {
       email: session.user.email,
       name: session.user.name,
       isSuperAdmin: Boolean(session.user.isSuperAdmin),
+      isEnabled: Boolean(session.user.isEnabled),
+      accessStartsAt: session.user.accessStartsAt ?? null,
+      accessEndsAt: session.user.accessEndsAt ?? null,
       mustChangePassword: Boolean(session.user.mustChangePassword),
     },
   })

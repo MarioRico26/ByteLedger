@@ -12,6 +12,7 @@ export default async function ProductsPage() {
       id: true,
       name: true,
       description: true,
+      imageUrl: true,
       type: true,
       price: true,
       active: true,
@@ -23,6 +24,7 @@ export default async function ProductsPage() {
     id: p.id,
     name: p.name,
     description: p.description ?? "",
+    imageUrl: p.imageUrl ?? null,
     type: p.type, // "PRODUCT" | "SERVICE"
     price: p.price ? Number(p.price) : null,
     active: p.active,

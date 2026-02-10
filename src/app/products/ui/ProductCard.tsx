@@ -15,6 +15,7 @@ type ApiProduct = {
   id: string
   name: string
   description: string | null
+  imageUrl?: string | null
   type: "PRODUCT" | "SERVICE"
   price: string | number | null
   active: boolean
@@ -39,6 +40,7 @@ export default function ProductCard({
       id: p.id,
       name: p.name,
       description: p.description ?? "",
+      imageUrl: p.imageUrl ?? null,
       type: p.type,
       price: p.price == null ? null : Number(p.price),
       active: p.active,
@@ -92,7 +94,19 @@ export default function ProductCard({
   return (
     <div className="card card-stripe p-3">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
+        <div className="min-w-0 flex items-start gap-3">
+          {product.imageUrl ? (
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 object-cover"
+            />
+          ) : (
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-semibold text-slate-400">
+              IMG
+            </div>
+          )}
+          <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <div className="truncate text-sm font-semibold text-slate-900">{product.name}</div>
             <span className={`rounded-full border px-2 py-0.5 text-[10px] ${badgeType}`}>
@@ -110,6 +124,7 @@ export default function ProductCard({
 
           <div className="mt-1 text-xs text-slate-500 line-clamp-2">
             {product.description ? product.description : "No description"}
+          </div>
           </div>
         </div>
 

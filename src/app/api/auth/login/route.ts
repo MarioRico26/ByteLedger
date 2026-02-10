@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifyPassword, isStrongEnough } from "@/lib/password"
 import { createSession, setSessionCookie } from "@/lib/auth"
+import { isUserAccessAllowed } from "@/lib/auth"
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -27,6 +28,12 @@ export async function POST(req: Request) {
 
     if (!user || user.memberships.length === 0) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+    }
+    if (!isUserAccessAllowed(user)) {
+      return NextResponse.json(
+        { error: "User access is disabled or outside allowed dates" },
+        { status: 403 }
+      )
     }
 
     const ok = verifyPassword(password, user.passwordHash)

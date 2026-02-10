@@ -80,12 +80,27 @@ export default function ProductTable({ products }: { products: Product[] }) {
             {filtered.map((p: any) => (
               <tr key={p.id} className="border-t border-slate-200">
                 <td className="px-4 py-3">
-                  <div className="font-medium text-slate-900">{p.name}</div>
-                  {p.description ? (
-                    <div className="mt-0.5 text-xs text-slate-500 line-clamp-1">
-                      {p.description}
+                  <div className="flex items-start gap-3">
+                    {p.imageUrl ? (
+                      <img
+                        src={p.imageUrl}
+                        alt={p.name}
+                        className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-semibold text-slate-400">
+                        IMG
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="font-medium text-slate-900">{p.name}</div>
+                      {p.description ? (
+                        <div className="mt-0.5 text-xs text-slate-500 line-clamp-1">
+                          {p.description}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
+                  </div>
                 </td>
 
                 <td className="px-4 py-3 text-slate-600">{p.type}</td>
