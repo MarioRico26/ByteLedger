@@ -47,6 +47,7 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
   const [loadingOrg, setLoadingOrg] = useState(false)
   const [loadingUser, setLoadingUser] = useState(false)
   const [accessBusyId, setAccessBusyId] = useState<string | null>(null)
+  const [deleteBusyId, setDeleteBusyId] = useState<string | null>(null)
   const [resendBusyId, setResendBusyId] = useState<string | null>(null)
   const [emailStatusByUserId, setEmailStatusByUserId] = useState<Record<string, "sent" | "failed">>({})
 
@@ -192,6 +193,25 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
       setMsg(e?.message || "Failed to resend credentials")
     } finally {
       setResendBusyId(null)
+    }
+  }
+
+  async function deleteUser(userId: string, email: string) {
+    const ok = confirm(`Delete user ${email}? This action is permanent.`)
+    if (!ok) return
+
+    setDeleteBusyId(userId)
+    setMsg(null)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || "Failed to delete user")
+      setUserList((prev) => prev.filter((u) => u.id !== userId))
+      setMsg("User deleted.")
+    } catch (e: any) {
+      setMsg(e?.message || "Failed to delete user")
+    } finally {
+      setDeleteBusyId(null)
     }
   }
 
@@ -505,6 +525,13 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
                       className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:text-slate-900 disabled:opacity-60"
                     >
                       {resendBusyId === u.id ? "Sending..." : "Resend credentials"}
+                    </button>
+                    <button
+                      onClick={() => deleteUser(u.id, u.email)}
+                      disabled={deleteBusyId === u.id}
+                      className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600 hover:border-rose-300 hover:text-rose-700 disabled:opacity-60"
+                    >
+                      {deleteBusyId === u.id ? "Deleting..." : "Delete"}
                     </button>
                   </div>
                 </div>

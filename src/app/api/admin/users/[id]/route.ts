@@ -78,3 +78,56 @@ export async function PATCH(req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 })
   }
 }
+
+export async function DELETE(_: Request, ctx: Ctx) {
+  try {
+    const session = await requireSuperAdmin()
+    const params = await ctx.params
+    const userId = String(params?.id || "").trim()
+    if (!userId) {
+      return NextResponse.json({ error: "User id is required" }, { status: 400 })
+    }
+
+    if (session.user.id === userId) {
+      return NextResponse.json(
+        { error: "You cannot delete your own superadmin account" },
+        { status: 400 }
+      )
+    }
+
+    const existing = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, isSuperAdmin: true, email: true },
+    })
+    if (!existing) return NextResponse.json({ error: "User not found" }, { status: 404 })
+
+    if (existing.isSuperAdmin) {
+      const totalSuperAdmins = await prisma.user.count({
+        where: { isSuperAdmin: true },
+      })
+      if (totalSuperAdmins <= 1) {
+        return NextResponse.json(
+          { error: "Cannot delete the last superadmin" },
+          { status: 400 }
+        )
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.membership.deleteMany({ where: { userId } })
+      await tx.user.delete({ where: { id: userId } })
+    })
+
+    return NextResponse.json({ success: true, id: userId, email: existing.email })
+  } catch (error: any) {
+    if (
+      error?.message === "UNAUTHORIZED" ||
+      error?.message === "FORBIDDEN" ||
+      error?.message === "PASSWORD_CHANGE_REQUIRED"
+    ) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 })
+    }
+    console.error("Admin user delete error:", error)
+    return NextResponse.json({ error: "Failed to delete user" }, { status: 500 })
+  }
+}
