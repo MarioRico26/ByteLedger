@@ -1,44 +1,49 @@
-# ByteLedger User Manual
+# ByteLedger User Manual (EN/ES)
 
-## 1. Getting Started
-- Sign in with your organization email and password.
-- First-time users must change temporary password on first login.
-- Dashboard shows high-level KPIs and recent activity.
+## 1) Getting Started / Inicio
+- EN: Sign in with your organization email and password.
+  ES: Inicia sesión con el correo de tu organización y tu contraseña.
+- EN: First login requires password change.
+  ES: El primer inicio de sesión requiere cambio de contraseña.
 
-## 2. Catalog Setup
-- Add customers in `Catalog > Customers`.
-- Add products/services in `Catalog > Products`.
-- Product photos are optional and can be uploaded in create/edit modal.
+## 2) Catalog / Catálogo
+- EN: Create customers in `Catalog > Customers`.
+  ES: Crea clientes en `Catalog > Customers`.
+- EN: Create products/services in `Catalog > Products`.
+  ES: Crea productos/servicios en `Catalog > Products`.
+- EN: Product photos are optional and supported.
+  ES: Las fotos de producto son opcionales y están soportadas.
 
-## 3. Estimates
-- Create and manage quotes in `Sales > Estimates`.
-- Configure tax and discount (`$` or `%`).
-- Send quote by email and download/print PDF.
+## 3) Estimates / Cotizaciones
+- EN: Create and send estimates from `Sales > Estimates`.
+  ES: Crea y envía cotizaciones desde `Sales > Estimates`.
+- EN: Set discount as amount (`$`) or percentage (`%`).
+  ES: Configura descuento como monto (`$`) o porcentaje (`%`).
 
-## 4. Sales & Invoices
-- Create invoice in `Sales > Sales` or convert from estimate.
-- Track status, due date, paid amount, and balance.
-- Send invoice with PDF attachment.
+## 4) Sales & Invoices / Ventas y Facturas
+- EN: Create invoices from sales flow or convert an estimate.
+  ES: Crea facturas desde el flujo de ventas o convierte una cotización.
+- EN: Track due date, paid amount, and balance.
+  ES: Da seguimiento a vencimiento, pagado y balance.
 
-## 5. Payments
-- Add payments from sale actions or from `Sales > Payments`.
-- Overpayment is blocked by validation.
-- Generate and send payment receipt documents.
+## 5) Payments / Pagos
+- EN: Register payments from sale actions or Payments module.
+  ES: Registra pagos desde acciones de venta o módulo Payments.
+- EN: Overpayments are blocked by validation.
+  ES: Los sobrepagos se bloquean por validación.
 
-## 6. Reports
-- Use `Sales > Reports` for performance and trend analysis.
-- Filter by period and export for accounting workflows.
+## 6) Reports / Reportes
+- EN: Use reports for KPIs, trends, and exports.
+  ES: Usa reportes para KPIs, tendencias y exportaciones.
 
-## 7. Organization Settings
-- Manage legal/business profile, logo, and contact data.
-- Set defaults (tax/recurring) for consistent billing behavior.
+## 7) Admin / Administración
+- EN: Create organizations and users, and control access windows.
+  ES: Crea organizaciones y usuarios, y controla ventanas de acceso.
+- EN: Benchmarking shows usage and transaction volume per organization.
+  ES: Benchmarking muestra uso y volumen transaccional por organización.
 
-## 8. Admin (Superadmin)
-- Create organizations and initial users.
-- Enable/disable users and define access windows (`start/end` dates).
-- Use Admin benchmarking to compare organization usage and volume.
-
-## 9. Access Policy and Support
-- Disabled/expired users cannot sign in.
-- Blocked users should contact ByteNetworks support.
-- Suggested support email: `support@bytenetworks.net`.
+## 8) Support / Soporte
+- EN: For blocked access or account issues contact ByteNetworks.
+  ES: Para acceso bloqueado o problemas de cuenta, contacta a ByteNetworks.
+- EN: Email `info@bytenetworks.net` | Tel `6097137333`.
+  ES: Correo `info@bytenetworks.net` | Tel `6097137333`.

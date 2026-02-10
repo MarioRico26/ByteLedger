@@ -14,6 +14,11 @@ function isActive(pathname: string, href: string) {
 export default function Sidebar() {
   const pathname = usePathname()
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null)
+  const [profile, setProfile] = useState<{
+    name?: string | null
+    email?: string | null
+    organizationName?: string | null
+  } | null>(null)
 
   useEffect(() => {
     let active = true
@@ -22,10 +27,12 @@ export default function Sidebar() {
       .then((data) => {
         if (!active) return
         setIsSuperAdmin(Boolean(data?.user?.isSuperAdmin))
+        setProfile(data?.user || null)
       })
       .catch(() => {
         if (!active) return
         setIsSuperAdmin(false)
+        setProfile(null)
       })
     return () => {
       active = false
@@ -107,8 +114,12 @@ export default function Sidebar() {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-500 shadow-sm">
           <div className="text-[10px] uppercase tracking-[0.24em] text-slate-400">Workspace</div>
-          <div className="mt-2 text-sm font-semibold text-slate-700">Byte Networks</div>
-          <div className="mt-1 text-xs text-slate-500">Premium finance suite</div>
+          <div className="mt-2 text-sm font-semibold text-slate-700">
+            {profile?.organizationName || "Byte Networks"}
+          </div>
+          <div className="mt-1 text-xs text-slate-500">
+            {profile?.name || profile?.email || "Premium finance suite"}
+          </div>
         </div>
       </div>
     </aside>

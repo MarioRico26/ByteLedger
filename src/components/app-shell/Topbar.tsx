@@ -2,10 +2,33 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import MobileMenu from "./MobileMenu"
 
 export default function Topbar() {
   const router = useRouter()
+  const [profile, setProfile] = useState<{
+    name?: string | null
+    email?: string | null
+    organizationName?: string | null
+  } | null>(null)
+
+  useEffect(() => {
+    let active = true
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!active) return
+        setProfile(data?.user || null)
+      })
+      .catch(() => {
+        if (!active) return
+        setProfile(null)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => {})
@@ -34,8 +57,13 @@ export default function Topbar() {
         </div>
 
         <div className="flex items-center gap-3 text-xs text-slate-500">
-          <div className="hidden text-[11px] uppercase tracking-[0.28em] text-slate-400 md:block">
-            ByteLedger
+          <div className="hidden text-right md:block">
+            <div className="text-[11px] uppercase tracking-[0.28em] text-slate-400">
+              {profile?.organizationName || "ByteLedger"}
+            </div>
+            <div className="text-[11px] text-slate-500">
+              {profile?.name || profile?.email || ""}
+            </div>
           </div>
           <button
             onClick={logout}

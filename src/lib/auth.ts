@@ -130,7 +130,7 @@ export async function getSession() {
   const session = await prisma.authSession.findUnique({
     where: { id: sessionId },
     include: {
-      user: { include: { memberships: true } },
+      user: { include: { memberships: { include: { organization: true } } } },
     },
   })
 

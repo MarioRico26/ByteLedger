@@ -12,6 +12,11 @@ export async function GET() {
       id: session.user.id,
       email: session.user.email,
       name: session.user.name,
+      organizationId: session.orgId ?? null,
+      organizationName:
+        session.user.memberships?.[0]?.organization?.businessName ||
+        session.user.memberships?.[0]?.organization?.name ||
+        null,
       isSuperAdmin: Boolean(session.user.isSuperAdmin),
       isEnabled: Boolean(session.user.isEnabled),
       accessStartsAt: session.user.accessStartsAt ?? null,

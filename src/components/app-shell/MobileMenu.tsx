@@ -16,6 +16,11 @@ export default function MobileMenu() {
   const pathname = usePathname() || "/"
   const [open, setOpen] = useState(false)
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null)
+  const [profile, setProfile] = useState<{
+    name?: string | null
+    email?: string | null
+    organizationName?: string | null
+  } | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -25,10 +30,12 @@ export default function MobileMenu() {
       .then((data) => {
         if (!active) return
         setIsSuperAdmin(Boolean(data?.user?.isSuperAdmin))
+        setProfile(data?.user || null)
       })
       .catch(() => {
         if (!active) return
         setIsSuperAdmin(false)
+        setProfile(null)
       })
     return () => {
       active = false
@@ -89,7 +96,12 @@ export default function MobileMenu() {
                     <div className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
                       Byte Networks
                     </div>
-                    <div className="mt-1 text-lg font-semibold text-slate-900">ByteLedger</div>
+                    <div className="mt-1 text-lg font-semibold text-slate-900">
+                      {profile?.organizationName || "ByteLedger"}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      {profile?.name || profile?.email || ""}
+                    </div>
                   </div>
                   <button
                     onClick={() => setOpen(false)}

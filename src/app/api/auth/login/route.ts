@@ -14,10 +14,13 @@ function getAccessBlockedMessage(user: {
   accessEndsAt?: Date | string | null
 }) {
   const supportEmail =
-    process.env.SUPPORT_EMAIL || process.env.BYTENETWORKS_SUPPORT_EMAIL || "support@bytenetworks.net"
+    process.env.SUPPORT_EMAIL || process.env.BYTENETWORKS_SUPPORT_EMAIL || "info@bytenetworks.net"
+  const supportPhone =
+    process.env.SUPPORT_PHONE || process.env.BYTENETWORKS_SUPPORT_PHONE || "6097137333"
+  const supportLine = `ByteNetworks support: ${supportEmail} | Tel: ${supportPhone}`
 
   if (user?.isEnabled === false) {
-    return `This account is disabled. Please contact ByteNetworks support at ${supportEmail}.`
+    return `This account is disabled. Please contact ${supportLine}.`
   }
 
   const now = new Date()
@@ -25,13 +28,13 @@ function getAccessBlockedMessage(user: {
   const end = user?.accessEndsAt ? new Date(user.accessEndsAt) : null
 
   if (start && !Number.isNaN(start.valueOf()) && now < start) {
-    return `This account is not active yet. Please contact ByteNetworks support at ${supportEmail}.`
+    return `This account is not active yet. Please contact ${supportLine}.`
   }
   if (end && !Number.isNaN(end.valueOf()) && now > end) {
-    return `This account has expired. Please contact ByteNetworks support at ${supportEmail}.`
+    return `This account has expired. Please contact ${supportLine}.`
   }
 
-  return `Access is blocked. Please contact ByteNetworks support at ${supportEmail}.`
+  return `Access is blocked. Please contact ${supportLine}.`
 }
 
 export async function POST(req: Request) {

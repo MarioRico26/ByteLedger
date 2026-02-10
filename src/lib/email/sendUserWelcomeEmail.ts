@@ -18,6 +18,26 @@ export async function sendUserWelcomeEmail({ to, tempPassword, orgName, loginUrl
   const resend = new Resend(apiKey)
   const from = process.env.EMAIL_FROM || process.env.RESEND_FROM || "ByteLedger <onboarding@resend.dev>"
   const brand = safe(orgName) || "ByteLedger"
+  const supportEmail =
+    process.env.SUPPORT_EMAIL || process.env.BYTENETWORKS_SUPPORT_EMAIL || "info@bytenetworks.net"
+  const supportPhone =
+    process.env.SUPPORT_PHONE || process.env.BYTENETWORKS_SUPPORT_PHONE || "6097137333"
+
+  const credentialsText = `ByteLedger - Welcome Credentials
+
+Organization: ${brand}
+Username: ${to}
+Temporary password: ${tempPassword}
+Login URL: ${loginUrl}
+
+Important:
+- Change your password immediately after first login.
+- Keep credentials private.
+
+Support:
+Email: ${supportEmail}
+Tel: ${supportPhone}
+`
 
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111">
@@ -44,6 +64,12 @@ export async function sendUserWelcomeEmail({ to, tempPassword, orgName, loginUrl
         <p style="margin-top:18px;font-size:12px;color:#6b7280">
           For security, please change your password immediately after signing in.
         </p>
+        <p style="margin-top:8px;font-size:12px;color:#6b7280">
+          Support: ${supportEmail} | Tel: ${supportPhone}
+        </p>
+        <p style="margin-top:8px;font-size:12px;color:#6b7280">
+          An attachment with your initial credentials is included in this email.
+        </p>
       </div>
     </div>
   `
@@ -53,5 +79,11 @@ export async function sendUserWelcomeEmail({ to, tempPassword, orgName, loginUrl
     to,
     subject: `${brand} account access`,
     html,
+    attachments: [
+      {
+        filename: "ByteLedger-Welcome-Credentials.txt",
+        content: credentialsText,
+      },
+    ],
   })
 }
