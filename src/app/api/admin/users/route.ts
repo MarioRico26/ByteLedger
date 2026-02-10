@@ -4,6 +4,7 @@ import { requireSuperAdmin } from "@/lib/auth"
 import crypto from "crypto"
 import { hashPassword } from "@/lib/password"
 import { sendUserWelcomeEmail } from "@/lib/email/sendUserWelcomeEmail"
+import { getBaseUrl } from "@/lib/appUrl"
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -74,9 +75,7 @@ export async function POST(req: Request) {
       include: { memberships: { include: { organization: true } } },
     })
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+    const baseUrl = getBaseUrl(req)
 
     let emailSent = true
     try {

@@ -13,6 +13,9 @@ function LoginContent() {
   const router = useRouter()
 
   const error = params.get("error")
+  const blockedHint =
+    (msg && msg.toLowerCase().includes("bytenetworks")) ||
+    (error && error.toLowerCase().includes("bytenetworks"))
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -86,13 +89,25 @@ function LoginContent() {
       </div>
 
       {error ? (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+        <div
+          className={`mt-4 rounded-xl p-3 text-sm ${
+            blockedHint
+              ? "border border-amber-200 bg-amber-50 text-amber-800"
+              : "border border-slate-200 bg-slate-50 text-slate-600"
+          }`}
+        >
           {error}
         </div>
       ) : null}
 
       {msg ? (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+        <div
+          className={`mt-4 rounded-xl p-3 text-sm ${
+            blockedHint
+              ? "border border-amber-200 bg-amber-50 text-amber-800"
+              : "border border-slate-200 bg-slate-50 text-slate-600"
+          }`}
+        >
           {msg}
         </div>
       ) : null}

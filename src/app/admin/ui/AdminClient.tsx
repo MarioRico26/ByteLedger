@@ -22,7 +22,33 @@ type User = {
   memberships?: { organization?: Org | null; role?: string }[]
 }
 
-export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[] }) {
+type OrgBenchmark = {
+  organizationId: string
+  organizationName: string
+  customersCount: number
+  productsCount: number
+  estimatesCount: number
+  salesCount: number
+  paymentsCount: number
+  totalInvoiced: string
+  totalCollected: string
+  outstanding: string
+}
+
+function money(v: string | number) {
+  const n = Number(v || 0)
+  return n.toLocaleString(undefined, { style: "currency", currency: "USD" })
+}
+
+export default function AdminClient({
+  orgs,
+  users,
+  benchmarks,
+}: {
+  orgs: Org[]
+  users: User[]
+  benchmarks: OrgBenchmark[]
+}) {
   const [orgList, setOrgList] = useState<Org[]>(orgs)
   const [userList, setUserList] = useState<User[]>(users)
   const [orgSearch, setOrgSearch] = useState("")
@@ -69,6 +95,36 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
     const orgsWithEmail = orgList.filter((o: any) => o.email).length
     return { totalOrgs, totalUsers, superAdmins, orgsWithEmail }
   }, [orgList, userList])
+
+  const benchmarkTotals = useMemo(() => {
+    return benchmarks.reduce(
+      (acc, row) => {
+        acc.customers += Number(row.customersCount || 0)
+        acc.products += Number(row.productsCount || 0)
+        acc.estimates += Number(row.estimatesCount || 0)
+        acc.sales += Number(row.salesCount || 0)
+        acc.payments += Number(row.paymentsCount || 0)
+        acc.invoiced += Number(row.totalInvoiced || 0)
+        acc.collected += Number(row.totalCollected || 0)
+        acc.outstanding += Number(row.outstanding || 0)
+        return acc
+      },
+      {
+        customers: 0,
+        products: 0,
+        estimates: 0,
+        sales: 0,
+        payments: 0,
+        invoiced: 0,
+        collected: 0,
+        outstanding: 0,
+      }
+    )
+  }, [benchmarks])
+
+  const benchmarkRows = useMemo(() => {
+    return [...benchmarks].sort((a, b) => Number(b.totalInvoiced || 0) - Number(a.totalInvoiced || 0))
+  }, [benchmarks])
 
   const filteredOrgs = useMemo(() => {
     const q = orgSearch.trim().toLowerCase()
@@ -247,6 +303,74 @@ export default function AdminClient({ orgs, users }: { orgs: Org[]; users: User[
           <div className="mt-2 text-xl font-semibold text-slate-900">
             {metrics.orgsWithEmail.toLocaleString()}
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-slate-900">Organization Benchmarking</div>
+            <div className="mt-1 text-xs text-slate-500">
+              Cross-organization usage and transaction volume snapshot.
+            </div>
+          </div>
+          <div className="text-xs text-slate-500">
+            {benchmarkRows.length} organization(s)
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="text-[11px] text-slate-500">Total invoiced</div>
+            <div className="mt-1 text-lg font-semibold text-slate-900">{money(benchmarkTotals.invoiced)}</div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="text-[11px] text-slate-500">Total collected</div>
+            <div className="mt-1 text-lg font-semibold text-slate-900">{money(benchmarkTotals.collected)}</div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="text-[11px] text-slate-500">Outstanding</div>
+            <div className="mt-1 text-lg font-semibold text-slate-900">{money(benchmarkTotals.outstanding)}</div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="text-[11px] text-slate-500">Sales / Payments</div>
+            <div className="mt-1 text-lg font-semibold text-slate-900">
+              {benchmarkTotals.sales.toLocaleString()} / {benchmarkTotals.payments.toLocaleString()}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+          <table className="w-full text-left text-xs md:text-sm">
+            <thead className="bg-slate-50 text-slate-500">
+              <tr>
+                <th className="px-3 py-2">Organization</th>
+                <th className="px-3 py-2 text-right">Customers</th>
+                <th className="px-3 py-2 text-right">Products</th>
+                <th className="px-3 py-2 text-right">Estimates</th>
+                <th className="px-3 py-2 text-right">Sales</th>
+                <th className="px-3 py-2 text-right">Payments</th>
+                <th className="px-3 py-2 text-right">Invoiced</th>
+                <th className="px-3 py-2 text-right">Collected</th>
+                <th className="px-3 py-2 text-right">Outstanding</th>
+              </tr>
+            </thead>
+            <tbody>
+              {benchmarkRows.map((row) => (
+                <tr key={row.organizationId} className="border-t border-slate-200">
+                  <td className="px-3 py-2 font-medium text-slate-800">{row.organizationName}</td>
+                  <td className="px-3 py-2 text-right text-slate-700">{row.customersCount.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right text-slate-700">{row.productsCount.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right text-slate-700">{row.estimatesCount.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right text-slate-700">{row.salesCount.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right text-slate-700">{row.paymentsCount.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right text-slate-700">{money(row.totalInvoiced)}</td>
+                  <td className="px-3 py-2 text-right text-slate-700">{money(row.totalCollected)}</td>
+                  <td className="px-3 py-2 text-right text-slate-700">{money(row.outstanding)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 

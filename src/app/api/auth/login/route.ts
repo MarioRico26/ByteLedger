@@ -8,6 +8,32 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+function getAccessBlockedMessage(user: {
+  isEnabled?: boolean | null
+  accessStartsAt?: Date | string | null
+  accessEndsAt?: Date | string | null
+}) {
+  const supportEmail =
+    process.env.SUPPORT_EMAIL || process.env.BYTENETWORKS_SUPPORT_EMAIL || "support@bytenetworks.net"
+
+  if (user?.isEnabled === false) {
+    return `This account is disabled. Please contact ByteNetworks support at ${supportEmail}.`
+  }
+
+  const now = new Date()
+  const start = user?.accessStartsAt ? new Date(user.accessStartsAt) : null
+  const end = user?.accessEndsAt ? new Date(user.accessEndsAt) : null
+
+  if (start && !Number.isNaN(start.valueOf()) && now < start) {
+    return `This account is not active yet. Please contact ByteNetworks support at ${supportEmail}.`
+  }
+  if (end && !Number.isNaN(end.valueOf()) && now > end) {
+    return `This account has expired. Please contact ByteNetworks support at ${supportEmail}.`
+  }
+
+  return `Access is blocked. Please contact ByteNetworks support at ${supportEmail}.`
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}))
@@ -31,7 +57,7 @@ export async function POST(req: Request) {
     }
     if (!isUserAccessAllowed(user)) {
       return NextResponse.json(
-        { error: "User access is disabled or outside allowed dates" },
+        { error: getAccessBlockedMessage(user) },
         { status: 403 }
       )
     }

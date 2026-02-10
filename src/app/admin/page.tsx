@@ -27,6 +27,47 @@ export default async function AdminPage() {
     }),
   ])
 
+  const benchmarks = await Promise.all(
+    orgs.map(async (org) => {
+      const [
+        customersCount,
+        productsCount,
+        estimatesCount,
+        salesCount,
+        paymentsCount,
+        salesAgg,
+        paymentsAgg,
+      ] = await Promise.all([
+        prisma.customer.count({ where: { organizationId: org.id } }),
+        prisma.product.count({ where: { organizationId: org.id } }),
+        prisma.estimate.count({ where: { organizationId: org.id } }),
+        prisma.sale.count({ where: { organizationId: org.id } }),
+        prisma.payment.count({ where: { organizationId: org.id } }),
+        prisma.sale.aggregate({
+          where: { organizationId: org.id },
+          _sum: { totalAmount: true, balanceAmount: true },
+        }),
+        prisma.payment.aggregate({
+          where: { organizationId: org.id },
+          _sum: { amount: true },
+        }),
+      ])
+
+      return {
+        organizationId: org.id,
+        organizationName: org.businessName || org.name,
+        customersCount,
+        productsCount,
+        estimatesCount,
+        salesCount,
+        paymentsCount,
+        totalInvoiced: salesAgg._sum.totalAmount?.toString() ?? "0",
+        totalCollected: paymentsAgg._sum.amount?.toString() ?? "0",
+        outstanding: salesAgg._sum.balanceAmount?.toString() ?? "0",
+      }
+    })
+  )
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -43,7 +84,7 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      <AdminClient orgs={orgs as any} users={users as any} />
+      <AdminClient orgs={orgs as any} users={users as any} benchmarks={benchmarks as any} />
     </div>
   )
 }

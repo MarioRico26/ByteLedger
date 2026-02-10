@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { createMagicLinkToken } from "@/lib/auth"
 import { sendMagicLinkEmail } from "@/lib/email/sendMagicLinkEmail"
+import { getBaseUrl } from "@/lib/appUrl"
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -30,9 +31,7 @@ export async function POST(req: Request) {
 
     const { token } = await createMagicLinkToken(email)
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+    const baseUrl = getBaseUrl(req)
 
     const link = `${baseUrl}/auth/verify?token=${token}`
     const orgName = user.memberships[0]?.organization?.businessName || user.memberships[0]?.organization?.name

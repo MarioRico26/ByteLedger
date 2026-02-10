@@ -27,6 +27,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Organization", href: "/settings/organization" },
       { label: "Disclaimer", href: "/settings/organization#disclaimer" },
+      { label: "User Manual", href: "/manual" },
       { label: "Admin", href: "/admin", requiresSuperAdmin: true },
     ],
   },
