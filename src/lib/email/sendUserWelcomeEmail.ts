@@ -38,6 +38,7 @@ Support:
 Email: ${supportEmail}
 Tel: ${supportPhone}
 `
+  const credentialsBuffer = Buffer.from(credentialsText, "utf-8")
 
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111">
@@ -82,7 +83,7 @@ Tel: ${supportPhone}
     attachments: [
       {
         filename: "ByteLedger-Welcome-Credentials.txt",
-        content: credentialsText,
+        content: credentialsBuffer,
       },
     ],
   })
