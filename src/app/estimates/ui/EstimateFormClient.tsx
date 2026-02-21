@@ -183,7 +183,16 @@ export default function EstimateFormClient({
   const discountInputNum = Math.max(toMoneyNumber(discountStr, 0), 0)
 
   const subtotal = useMemo(() => {
-    return items.reduce((acc: any, it: any) => {
+    return items.reduce((acc: number, it: any) => {
+      const qty = Math.max(1, Math.floor(toMoneyNumber(it.quantityStr, 1)))
+      const unit = Math.max(0, toMoneyNumber(it.unitPriceStr, 0))
+      return acc + qty * unit
+    }, 0)
+  }, [items])
+
+  const taxableSubtotal = useMemo(() => {
+    return items.reduce((acc: number, it: any) => {
+      if (it.type !== "PRODUCT") return acc
       const qty = Math.max(1, Math.floor(toMoneyNumber(it.quantityStr, 1)))
       const unit = Math.max(0, toMoneyNumber(it.unitPriceStr, 0))
       return acc + qty * unit
@@ -198,12 +207,18 @@ export default function EstimateFormClient({
     return Math.min(subtotal, discountInputNum)
   }, [discountInputNum, discountType, subtotal])
 
+  const taxableDiscount = useMemo(() => {
+    if (subtotal <= 0) return 0
+    return (discountAmount * taxableSubtotal) / subtotal
+  }, [discountAmount, taxableSubtotal, subtotal])
+
   const totals = useMemo(() => {
-    const tax = taxRate > 0 ? subtotal * (taxRate / 100) : 0
-    const total = Math.max(subtotal + tax - discountAmount, 0)
+    const taxableBase = Math.max(taxableSubtotal - taxableDiscount, 0)
+    const tax = taxRate > 0 ? taxableBase * (taxRate / 100) : 0
+    const total = Math.max(subtotal - discountAmount + tax, 0)
 
     return { subtotal, tax, discount: discountAmount, total }
-  }, [subtotal, taxRate, discountAmount])
+  }, [subtotal, taxRate, discountAmount, taxableSubtotal, taxableDiscount])
 
   function updateItem(key: string, patch: Partial<FormItem>) {
     setItems((prev) => prev.map((it: any) => (it._key === key ? { ...it, ...patch } : it)))

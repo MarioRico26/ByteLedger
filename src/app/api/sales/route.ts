@@ -91,9 +91,15 @@ export async function POST(req: Request) {
         : `Invoice (${normalizedItems.length} items)`)
 
     const subtotal = normalizedItems.reduce((sum: number, i: any) => sum + num(i.lineTotal), 0)
-    const taxableBase = Math.max(subtotal - discountAmount, 0)
+    const taxableSubtotal = normalizedItems.reduce(
+      (sum: number, i: any) => sum + (i.type === "PRODUCT" ? num(i.lineTotal) : 0),
+      0
+    )
+    const appliedDiscount = Math.min(discountAmount, subtotal)
+    const taxableDiscount = subtotal > 0 ? (appliedDiscount * taxableSubtotal) / subtotal : 0
+    const taxableBase = Math.max(taxableSubtotal - taxableDiscount, 0)
     const taxAmount = taxableBase * (taxRate / 100)
-    const totalAmount = Math.max(subtotal - discountAmount + taxAmount, 0)
+    const totalAmount = Math.max(subtotal - appliedDiscount + taxAmount, 0)
 
     const sale = await prisma.sale.create({
       data: {
@@ -106,7 +112,7 @@ export async function POST(req: Request) {
         dueDate,
 
         subtotalAmount: subtotal,
-        discountAmount,
+        discountAmount: appliedDiscount,
         taxRate,
         taxAmount,
         totalAmount,

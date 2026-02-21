@@ -76,9 +76,16 @@ export async function POST(req: Request) {
       return { productId, name, type: t, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
     })
 
-    const subtotal = normalizedItems.reduce((acc: any, it: any) => acc + it.lineTotal, 0)
-    const taxAmount = taxRateNum > 0 ? subtotal * (taxRateNum / 100) : 0
-    const total = Math.max(subtotal + taxAmount - discountAmountNum, 0)
+    const subtotal = normalizedItems.reduce((acc: number, it: any) => acc + it.lineTotal, 0)
+    const taxableSubtotal = normalizedItems.reduce(
+      (acc: number, it: any) => acc + (it.type === "PRODUCT" ? it.lineTotal : 0),
+      0
+    )
+    const appliedDiscount = Math.min(discountAmountNum, subtotal)
+    const taxableDiscount = subtotal > 0 ? (appliedDiscount * taxableSubtotal) / subtotal : 0
+    const taxableBase = Math.max(taxableSubtotal - taxableDiscount, 0)
+    const taxAmount = taxRateNum > 0 ? taxableBase * (taxRateNum / 100) : 0
+    const total = Math.max(subtotal - appliedDiscount + taxAmount, 0)
 
     const itemsCreate = normalizedItems.map((it: any) => ({
       name: it.name,
@@ -102,7 +109,7 @@ export async function POST(req: Request) {
         validUntil,
 
         taxRate: taxRateNum,
-        discountAmount: discountAmountNum,
+        discountAmount: appliedDiscount,
         subtotalAmount: subtotal,
         taxAmount,
         totalAmount: total,

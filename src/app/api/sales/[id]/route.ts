@@ -139,10 +139,16 @@ export async function PUT(req: Request, ctx: Ctx) {
         ? `Invoice for ${customer.fullName}`
         : `Invoice (${normalizedItems.length} items)`)
 
-    const subtotal = normalizedItems.reduce((acc: any, it: any) => acc + it.lineTotal, 0)
-    const taxableBase = Math.max(subtotal - discountAmount, 0)
+    const subtotal = normalizedItems.reduce((acc: number, it: any) => acc + it.lineTotal, 0)
+    const taxableSubtotal = normalizedItems.reduce(
+      (acc: number, it: any) => acc + (it.type === "PRODUCT" ? it.lineTotal : 0),
+      0
+    )
+    const appliedDiscount = Math.min(discountAmount, subtotal)
+    const taxableDiscount = subtotal > 0 ? (appliedDiscount * taxableSubtotal) / subtotal : 0
+    const taxableBase = Math.max(taxableSubtotal - taxableDiscount, 0)
     const taxAmount = taxableBase * (taxRate / 100)
-    const totalAmount = Math.max(subtotal - discountAmount + taxAmount, 0)
+    const totalAmount = Math.max(subtotal - appliedDiscount + taxAmount, 0)
 
     const paidAmount = (existing.payments || []).reduce(
       (sum: number, p: { amount: unknown }) => sum + asNumber(p.amount, 0),
@@ -182,7 +188,7 @@ export async function PUT(req: Request, ctx: Ctx) {
         ...(notes !== undefined ? { notes } : {}),
         ...(dueDate !== undefined ? { dueDate } : {}),
         taxRate,
-        discountAmount,
+        discountAmount: appliedDiscount,
         subtotalAmount: subtotal,
         taxAmount,
         totalAmount,

@@ -191,7 +191,14 @@ export default function SaleEditClient({
   }
 
   const subtotal = useMemo(() => {
-    return (items ?? []).reduce((sum: any, it: any) => sum + lineSubtotal(it), 0)
+    return (items ?? []).reduce((sum: number, it: any) => sum + lineSubtotal(it), 0)
+  }, [items])
+
+  const taxableSubtotal = useMemo(() => {
+    return (items ?? []).reduce((sum: number, it: any) => {
+      if (it.type !== "PRODUCT") return sum
+      return sum + lineSubtotal(it)
+    }, 0)
   }, [items])
 
   const discountInputNum = useMemo(() => Math.max(0, toMoneyNumber(discountStr, 0)), [discountStr])
@@ -204,11 +211,16 @@ export default function SaleEditClient({
     return Math.min(subtotal, discountInputNum)
   }, [discountInputNum, discountType, subtotal])
 
+  const taxableDiscount = useMemo(() => {
+    if (subtotal <= 0) return 0
+    return (discountAmount * taxableSubtotal) / subtotal
+  }, [discountAmount, taxableSubtotal, subtotal])
+
   const taxAmount = useMemo(() => {
     const rate = Math.max(0, toMoneyNumber(taxRateStr, 0))
-    const taxableBase = Math.max(subtotal - discountAmount, 0)
+    const taxableBase = Math.max(taxableSubtotal - taxableDiscount, 0)
     return taxableBase * (rate / 100)
-  }, [subtotal, taxRateStr, discountAmount])
+  }, [taxableSubtotal, taxRateStr, taxableDiscount])
 
   const total = useMemo(() => {
     return Math.max(subtotal - discountAmount + taxAmount, 0)

@@ -158,7 +158,16 @@ export default function NewSaleForm({
   }, [products])
 
   const subtotal = useMemo(() => {
-    return (lines ?? []).reduce((sum: any, l: any) => {
+    return (lines ?? []).reduce((sum: number, l: any) => {
+      const qty = Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1)))
+      const price = Math.max(0, toMoneyNumber(l.unitPriceStr, 0))
+      return sum + qty * price
+    }, 0)
+  }, [lines])
+
+  const taxableSubtotal = useMemo(() => {
+    return (lines ?? []).reduce((sum: number, l: any) => {
+      if (l.type !== "PRODUCT") return sum
       const qty = Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1)))
       const price = Math.max(0, toMoneyNumber(l.unitPriceStr, 0))
       return sum + qty * price
@@ -183,9 +192,17 @@ export default function NewSaleForm({
     return Math.min(subtotal, discountInputNum)
   }, [discountInputNum, discountType, subtotal])
 
-  const taxableBase = useMemo(() => Math.max(subtotal - discountAmount, 0), [subtotal, discountAmount])
+  const taxableDiscount = useMemo(() => {
+    if (subtotal <= 0) return 0
+    return (discountAmount * taxableSubtotal) / subtotal
+  }, [discountAmount, taxableSubtotal, subtotal])
+
+  const taxableBase = useMemo(
+    () => Math.max(taxableSubtotal - taxableDiscount, 0),
+    [taxableSubtotal, taxableDiscount]
+  )
   const taxAmount = useMemo(() => taxableBase * (taxRateNum / 100), [taxableBase, taxRateNum])
-  const total = useMemo(() => taxableBase + taxAmount, [taxableBase, taxAmount])
+  const total = useMemo(() => Math.max(subtotal - discountAmount + taxAmount, 0), [subtotal, discountAmount, taxAmount])
 
   function updateLine(idx: number, patch: Partial<Line>) {
     setLines((prev) => (prev ?? []).map((l: any, i: number) => (i === idx ? { ...l, ...patch } : l)))
