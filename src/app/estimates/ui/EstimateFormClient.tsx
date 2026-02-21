@@ -12,6 +12,7 @@ type FormItem = {
   productId: string | null
   name: string
   type: ProductType
+  taxable: boolean
 
   quantityStr: string
   unitPriceStr: string
@@ -159,6 +160,7 @@ export default function EstimateFormClient({
           productId: it.productId ?? null,
           name: String(it.name ?? ""),
           type: (it.type as ProductType) ?? "PRODUCT",
+          taxable: typeof it.taxable === "boolean" ? it.taxable : ((it.type as ProductType) ?? "PRODUCT") === "PRODUCT",
           quantityStr: qty.toLocaleString(undefined),
           unitPriceStr: unitStr,
           manualUnitPriceStr: unitStr,
@@ -171,7 +173,8 @@ export default function EstimateFormClient({
         _key: uid(),
         productId: null,
         name: "",
-        type: "PRODUCT",
+        type: "SERVICE",
+        taxable: false,
         quantityStr: "1",
         unitPriceStr: "0.00",
         manualUnitPriceStr: "0.00",
@@ -192,7 +195,7 @@ export default function EstimateFormClient({
 
   const taxableSubtotal = useMemo(() => {
     return items.reduce((acc: number, it: any) => {
-      if (it.type !== "PRODUCT") return acc
+      if (!it.taxable) return acc
       const qty = Math.max(1, Math.floor(toMoneyNumber(it.quantityStr, 1)))
       const unit = Math.max(0, toMoneyNumber(it.unitPriceStr, 0))
       return acc + qty * unit
@@ -237,6 +240,8 @@ export default function EstimateFormClient({
           return {
             ...it,
             productId: null,
+            type: "SERVICE",
+            taxable: false,
             // ✅ lo que pediste: volver a 0 al ser custom
             unitPriceStr: "0.00",
             manualUnitPriceStr: "0.00",
@@ -259,6 +264,7 @@ export default function EstimateFormClient({
           productId: p.id,
           name: p.name,
           type: p.type,
+          taxable: p.type === "PRODUCT",
           unitPriceStr: Number.isFinite(parsed) ? fmtMoney(Math.max(0, parsed)) : it.unitPriceStr,
         }
       })
@@ -272,7 +278,8 @@ export default function EstimateFormClient({
         _key: uid(),
         productId: null,
         name: "",
-        type: "PRODUCT",
+        type: "SERVICE",
+        taxable: false,
         quantityStr: "1",
         unitPriceStr: "0.00",
         manualUnitPriceStr: "0.00",
@@ -325,6 +332,7 @@ export default function EstimateFormClient({
         productId: it.productId,
         name: it.name,
         type: it.type,
+        taxable: Boolean(it.taxable),
         quantity: Math.max(1, Math.floor(toMoneyNumber(it.quantityStr, 1))),
         unitPrice: Math.max(0, toMoneyNumber(it.unitPriceStr, 0)),
       })),
@@ -424,11 +432,13 @@ export default function EstimateFormClient({
             {/* Desktop table */}
             <div className="mt-2 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
               <div className="overflow-x-auto">
-                <table className="min-w-[860px] w-full border-collapse text-sm">
+                <table className="min-w-[1040px] w-full border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
                       <th className="px-3 py-2 min-w-[170px]">Catalog</th>
                       <th className="px-3 py-2 min-w-[240px]">Name</th>
+                      <th className="px-3 py-2 w-[130px]">Type</th>
+                      <th className="px-3 py-2 w-[110px]">Taxable</th>
                       <th className="px-3 py-2 w-[110px]">Qty</th>
                       <th className="px-3 py-2 w-[140px]">Price</th>
                       <th className="px-3 py-2 w-[160px]">Subtotal</th>
@@ -463,6 +473,35 @@ export default function EstimateFormClient({
                               placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                               className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
+                          </td>
+
+                          <td className="px-3 py-2">
+                            <select
+                              value={it.type}
+                              onChange={(e) => {
+                                const nextType = e.target.value as ProductType
+                                updateItem(it._key, {
+                                  type: nextType,
+                                  taxable: nextType === "PRODUCT",
+                                  ...(nextType === "SERVICE" ? { productId: null } : {}),
+                                })
+                              }}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                            >
+                              <option value="PRODUCT">Product</option>
+                              <option value="SERVICE">Service</option>
+                            </select>
+                          </td>
+
+                          <td className="px-3 py-2">
+                            <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700">
+                              <input
+                                type="checkbox"
+                                checked={Boolean(it.taxable)}
+                                onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                              />
+                              Tax
+                            </label>
                           </td>
 
                           <td className="px-3 py-2">
@@ -551,6 +590,35 @@ export default function EstimateFormClient({
                           placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                           className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                         />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-slate-500">Type</label>
+                          <select
+                            value={it.type}
+                            onChange={(e) => {
+                              const nextType = e.target.value as ProductType
+                              updateItem(it._key, {
+                                type: nextType,
+                                taxable: nextType === "PRODUCT",
+                                ...(nextType === "SERVICE" ? { productId: null } : {}),
+                              })
+                            }}
+                            className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                          >
+                            <option value="PRODUCT">Product</option>
+                            <option value="SERVICE">Service</option>
+                          </select>
+                        </div>
+                        <label className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 mt-5 inline-flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(it.taxable)}
+                            onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                          />
+                          Taxable
+                        </label>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">

@@ -15,6 +15,7 @@ type Line = {
   productId: string
   name: string
   type: "PRODUCT" | "SERVICE"
+  taxable: boolean
   quantityStr: string
   unitPriceStr: string
 }
@@ -117,6 +118,7 @@ export default function NewSaleForm({
       productId: "",
       name: "",
       type: "SERVICE",
+      taxable: false,
       quantityStr: "1",
       unitPriceStr: "0.00",
     },
@@ -167,7 +169,7 @@ export default function NewSaleForm({
 
   const taxableSubtotal = useMemo(() => {
     return (lines ?? []).reduce((sum: number, l: any) => {
-      if (l.type !== "PRODUCT") return sum
+      if (!l.taxable) return sum
       const qty = Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1)))
       const price = Math.max(0, toMoneyNumber(l.unitPriceStr, 0))
       return sum + qty * price
@@ -211,7 +213,7 @@ export default function NewSaleForm({
   function addLine() {
     setLines((prev) => [
       ...(prev ?? []),
-      { productId: "", name: "", type: "SERVICE", quantityStr: "1", unitPriceStr: "0.00" },
+      { productId: "", name: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" },
     ])
   }
 
@@ -221,7 +223,7 @@ export default function NewSaleForm({
 
   function pickProduct(idx: number, productId: string) {
     if (!productId) {
-      updateLine(idx, { productId: "", type: "SERVICE", unitPriceStr: "0.00" })
+      updateLine(idx, { productId: "", type: "SERVICE", taxable: false, unitPriceStr: "0.00" })
       return
     }
 
@@ -232,6 +234,7 @@ export default function NewSaleForm({
       productId: p.id,
       name: p.name,
       type: p.type,
+      taxable: p.type === "PRODUCT",
       unitPriceStr: p.price ? fmtMoney(Number(p.price)) : "0.00",
     })
   }
@@ -266,6 +269,7 @@ export default function NewSaleForm({
         productId: l.productId || null,
         name: l.name.trim(),
         type: l.type,
+        taxable: Boolean(l.taxable),
         quantity: Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1))),
         unitPrice: Math.max(0, toMoneyNumber(l.unitPriceStr, 0)),
       }))
@@ -309,7 +313,7 @@ export default function NewSaleForm({
       setDiscountType("amount")
       setDiscount("0.00")
       setTaxRate("0")
-      setLines([{ productId: "", name: "", type: "SERVICE", quantityStr: "1", unitPriceStr: "0.00" }])
+      setLines([{ productId: "", name: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" }])
 
       setOpen(false)
       window.location.reload()
@@ -416,11 +420,13 @@ export default function NewSaleForm({
                     {/* Desktop table */}
                     <div className="mt-2 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
                       <div className="overflow-x-auto">
-                        <table className="min-w-[900px] w-full border-collapse text-sm">
+                        <table className="min-w-[1040px] w-full border-collapse text-sm">
                           <thead className="bg-slate-50">
                             <tr className="text-left text-xs text-slate-500">
                               <th className="px-3 py-2 min-w-[190px]">Catalog</th>
                               <th className="px-3 py-2 min-w-[240px]">Name</th>
+                              <th className="px-3 py-2 w-[130px]">Type</th>
+                              <th className="px-3 py-2 w-[110px]">Taxable</th>
                               <th className="px-3 py-2 w-[110px]">Qty</th>
                               <th className="px-3 py-2 w-[140px]">Price</th>
                               <th className="px-3 py-2 w-[160px]">Subtotal</th>
@@ -450,6 +456,35 @@ export default function NewSaleForm({
                                       placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                                       className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                                     />
+                                  </td>
+
+                                  <td className="px-3 py-2">
+                                    <select
+                                      value={l.type}
+                                      onChange={(e) => {
+                                        const nextType = e.target.value as "PRODUCT" | "SERVICE"
+                                        updateLine(idx, {
+                                          type: nextType,
+                                          taxable: nextType === "PRODUCT",
+                                          ...(nextType === "SERVICE" ? { productId: "" } : {}),
+                                        })
+                                      }}
+                                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                    >
+                                      <option value="PRODUCT">Product</option>
+                                      <option value="SERVICE">Service</option>
+                                    </select>
+                                  </td>
+
+                                  <td className="px-3 py-2">
+                                    <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700">
+                                      <input
+                                        type="checkbox"
+                                        checked={Boolean(l.taxable)}
+                                        onChange={(e) => updateLine(idx, { taxable: e.target.checked })}
+                                      />
+                                      Tax
+                                    </label>
                                   </td>
 
                                   <td className="px-3 py-2">
@@ -527,6 +562,35 @@ export default function NewSaleForm({
                                   placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                                   className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                                 />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-xs text-slate-500">Type</label>
+                                  <select
+                                    value={l.type}
+                                    onChange={(e) => {
+                                      const nextType = e.target.value as "PRODUCT" | "SERVICE"
+                                      updateLine(idx, {
+                                        type: nextType,
+                                        taxable: nextType === "PRODUCT",
+                                        ...(nextType === "SERVICE" ? { productId: "" } : {}),
+                                      })
+                                    }}
+                                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                  >
+                                    <option value="PRODUCT">Product</option>
+                                    <option value="SERVICE">Service</option>
+                                  </select>
+                                </div>
+                                <label className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 mt-5 inline-flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={Boolean(l.taxable)}
+                                    onChange={(e) => updateLine(idx, { taxable: e.target.checked })}
+                                  />
+                                  Taxable
+                                </label>
                               </div>
 
                               <div className="grid grid-cols-2 gap-3">

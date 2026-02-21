@@ -41,6 +41,7 @@ type BodyItem = {
   productId?: string | null
   name: string
   type: "PRODUCT" | "SERVICE"
+  taxable?: boolean
   quantity: number
   unitPrice: number
 }
@@ -121,13 +122,14 @@ export async function PUT(req: Request, ctx: Ctx) {
       const unit = Math.max(0, asNumber(it.unitPrice, 0))
       const name = String(it.name ?? "").trim() || "Item"
       const t = String(it.type) === "SERVICE" ? "SERVICE" : "PRODUCT"
+      const taxable = typeof it.taxable === "boolean" ? it.taxable : t === "PRODUCT"
       const productId = it.productId ? String(it.productId) : null
-      return { productId, name, type: t, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
+      return { productId, name, type: t, taxable, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
     })
 
     const subtotal = normalizedItems.reduce((acc: number, it: any) => acc + it.lineTotal, 0)
     const taxableSubtotal = normalizedItems.reduce(
-      (acc: number, it: any) => acc + (it.type === "PRODUCT" ? it.lineTotal : 0),
+      (acc: number, it: any) => acc + (it.taxable ? it.lineTotal : 0),
       0
     )
     const appliedDiscount = Math.min(discountAmountNum, subtotal)
@@ -139,6 +141,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     const itemsCreate = normalizedItems.map((it: any) => ({
       name: it.name,
       type: it.type,
+      taxable: it.taxable,
       quantity: it.quantity,
       unitPrice: it.unitPrice,
       lineTotal: it.lineTotal,

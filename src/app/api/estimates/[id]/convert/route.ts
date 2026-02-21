@@ -30,6 +30,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
       organization: { connect: { id: orgId } },
       name: it.name,
       type: it.type,
+      taxable: (it as any).taxable ?? it.type === "PRODUCT",
       quantity: it.quantity,
       unitPrice: it.unitPrice,
       lineTotal: it.lineTotal,

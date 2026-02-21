@@ -82,6 +82,7 @@ type Item = {
   productId: string | null
   name: string
   type: "PRODUCT" | "SERVICE"
+  taxable: boolean
   quantityStr: string
   unitPriceStr: string
 }
@@ -123,10 +124,11 @@ export default function SaleEditClient({
           productId: it.productId ?? null,
           name: String(it.name ?? ""),
           type: it.type ?? "SERVICE",
+          taxable: typeof it.taxable === "boolean" ? it.taxable : (it.type ?? "SERVICE") === "PRODUCT",
           quantityStr: normalizeQtyInput(String(it.quantity ?? "1")),
           unitPriceStr: fmtMoney(Math.max(0, toMoneyNumber(it.unitPrice, 0))),
         }))
-      : [{ _key: uid(), productId: null, name: "", type: "SERVICE", quantityStr: "1", unitPriceStr: "0.00" }]
+      : [{ _key: uid(), productId: null, name: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" }]
   })
 
   const productOptions: SearchableOption[] = useMemo(() => {
@@ -146,7 +148,7 @@ export default function SaleEditClient({
 
   function pickProduct(key: string, productId: string) {
     if (!productId) {
-      updateItem(key, { productId: null, type: "SERVICE", unitPriceStr: "0.00" })
+      updateItem(key, { productId: null, type: "SERVICE", taxable: false, unitPriceStr: "0.00" })
       return
     }
 
@@ -156,6 +158,7 @@ export default function SaleEditClient({
       productId: p.id,
       name: p.name,
       type: p.type,
+      taxable: p.type === "PRODUCT",
       unitPriceStr: fmtMoney(Math.max(0, toMoneyNumber(p.price, 0))),
     })
   }
@@ -163,7 +166,7 @@ export default function SaleEditClient({
   function addLine() {
     setItems((prev) => [
       ...(prev ?? []),
-      { _key: uid(), productId: null, name: "", type: "SERVICE", quantityStr: "1", unitPriceStr: "0.00" },
+      { _key: uid(), productId: null, name: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" },
     ])
   }
 
@@ -196,7 +199,7 @@ export default function SaleEditClient({
 
   const taxableSubtotal = useMemo(() => {
     return (items ?? []).reduce((sum: number, it: any) => {
-      if (it.type !== "PRODUCT") return sum
+      if (!it.taxable) return sum
       return sum + lineSubtotal(it)
     }, 0)
   }, [items])
@@ -248,6 +251,7 @@ export default function SaleEditClient({
         productId: it.productId,
         name: it.name,
         type: it.type,
+        taxable: Boolean(it.taxable),
         quantity: Math.max(1, Math.floor(toMoneyNumber(it.quantityStr, 1))),
         unitPrice: Math.max(0, toMoneyNumber(it.unitPriceStr, 0)),
       })),
@@ -347,11 +351,13 @@ export default function SaleEditClient({
             {/* Desktop table */}
             <div className="mt-2 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
               <div className="overflow-x-auto">
-                <table className="min-w-[900px] w-full border-collapse text-sm">
+                <table className="min-w-[1040px] w-full border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
                       <th className="px-3 py-2 min-w-[190px]">Catalog</th>
                       <th className="px-3 py-2 min-w-[240px]">Name</th>
+                      <th className="px-3 py-2 w-[130px]">Type</th>
+                      <th className="px-3 py-2 w-[110px]">Taxable</th>
                       <th className="px-3 py-2 w-[110px]">Qty</th>
                       <th className="px-3 py-2 w-[140px]">Price</th>
                       <th className="px-3 py-2 w-[160px]">Subtotal</th>
@@ -381,6 +387,35 @@ export default function SaleEditClient({
                               placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                               className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
+                          </td>
+
+                          <td className="px-3 py-2">
+                            <select
+                              value={it.type}
+                              onChange={(e) => {
+                                const nextType = e.target.value as "PRODUCT" | "SERVICE"
+                                updateItem(it._key, {
+                                  type: nextType,
+                                  taxable: nextType === "PRODUCT",
+                                  ...(nextType === "SERVICE" ? { productId: null } : {}),
+                                })
+                              }}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                            >
+                              <option value="PRODUCT">Product</option>
+                              <option value="SERVICE">Service</option>
+                            </select>
+                          </td>
+
+                          <td className="px-3 py-2">
+                            <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700">
+                              <input
+                                type="checkbox"
+                                checked={Boolean(it.taxable)}
+                                onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                              />
+                              Tax
+                            </label>
                           </td>
 
                           <td className="px-3 py-2">
@@ -456,6 +491,35 @@ export default function SaleEditClient({
                           placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                           className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                         />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-slate-500">Type</label>
+                          <select
+                            value={it.type}
+                            onChange={(e) => {
+                              const nextType = e.target.value as "PRODUCT" | "SERVICE"
+                              updateItem(it._key, {
+                                type: nextType,
+                                taxable: nextType === "PRODUCT",
+                                ...(nextType === "SERVICE" ? { productId: null } : {}),
+                              })
+                            }}
+                            className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                          >
+                            <option value="PRODUCT">Product</option>
+                            <option value="SERVICE">Service</option>
+                          </select>
+                        </div>
+                        <label className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 mt-5 inline-flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(it.taxable)}
+                            onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                          />
+                          Taxable
+                        </label>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">

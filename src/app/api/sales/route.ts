@@ -66,6 +66,7 @@ export async function POST(req: Request) {
       const lineTotal = quantity * unitPrice
 
       const type = i.type === "PRODUCT" ? "PRODUCT" : "SERVICE"
+      const taxable = typeof i.taxable === "boolean" ? i.taxable : type === "PRODUCT"
       const name = String(i.name || "").trim()
 
       if (!name) throw new Error("Each item must have a name")
@@ -74,6 +75,7 @@ export async function POST(req: Request) {
         productId: i.productId ? String(i.productId) : null,
         name,
         type,
+        taxable,
         quantity,
         unitPrice,
         lineTotal,
@@ -92,7 +94,7 @@ export async function POST(req: Request) {
 
     const subtotal = normalizedItems.reduce((sum: number, i: any) => sum + num(i.lineTotal), 0)
     const taxableSubtotal = normalizedItems.reduce(
-      (sum: number, i: any) => sum + (i.type === "PRODUCT" ? num(i.lineTotal) : 0),
+      (sum: number, i: any) => sum + (i.taxable ? num(i.lineTotal) : 0),
       0
     )
     const appliedDiscount = Math.min(discountAmount, subtotal)
@@ -126,6 +128,7 @@ export async function POST(req: Request) {
             ...(i.productId ? { product: { connect: { id: i.productId } } } : {}),
             name: i.name,
             type: i.type,
+            taxable: i.taxable,
             quantity: i.quantity,
             unitPrice: i.unitPrice,
             lineTotal: i.lineTotal,

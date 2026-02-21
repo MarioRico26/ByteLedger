@@ -1,0 +1,5 @@
+ALTER TABLE "SaleItem"
+ADD COLUMN "taxable" BOOLEAN NOT NULL DEFAULT true;
+
+ALTER TABLE "EstimateItem"
+ADD COLUMN "taxable" BOOLEAN NOT NULL DEFAULT true;
