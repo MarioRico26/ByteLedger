@@ -12,6 +12,7 @@ type FormItem = {
   productId: string | null
   name: string
   lineNote: string
+  showLineNote: boolean
   type: ProductType
   taxable: boolean
 
@@ -115,6 +116,11 @@ function normalizePercentInput(value: string) {
   return fmtPercent(n)
 }
 
+function autoResizeTextarea(el: HTMLTextAreaElement) {
+  el.style.height = "0px"
+  el.style.height = `${Math.min(el.scrollHeight, 240)}px`
+}
+
 export default function EstimateFormClient({
   mode,
   estimate,
@@ -161,6 +167,7 @@ export default function EstimateFormClient({
           productId: it.productId ?? null,
           name: String(it.name ?? ""),
           lineNote: String(it.lineNote ?? ""),
+          showLineNote: String(it.lineNote ?? "").trim().length > 0,
           type: (it.type as ProductType) ?? "PRODUCT",
           taxable: typeof it.taxable === "boolean" ? it.taxable : ((it.type as ProductType) ?? "PRODUCT") === "PRODUCT",
           quantityStr: qty.toLocaleString(undefined),
@@ -176,6 +183,7 @@ export default function EstimateFormClient({
         productId: null,
         name: "",
         lineNote: "",
+        showLineNote: false,
         type: "SERVICE",
         taxable: false,
         quantityStr: "1",
@@ -246,6 +254,7 @@ export default function EstimateFormClient({
             type: "SERVICE",
             taxable: false,
             lineNote: "",
+            showLineNote: false,
             // ✅ lo que pediste: volver a 0 al ser custom
             unitPriceStr: "0.00",
             manualUnitPriceStr: "0.00",
@@ -283,6 +292,7 @@ export default function EstimateFormClient({
         productId: null,
         name: "",
         lineNote: "",
+        showLineNote: false,
         type: "SERVICE",
         taxable: false,
         quantityStr: "1",
@@ -473,12 +483,21 @@ export default function EstimateFormClient({
                           </td>
 
                           <td className="px-3 py-2">
-                            <input
-                              value={it.name}
-                              onChange={(e) => updateItem(it._key, { name: e.target.value })}
-                              placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
+                            <div className="space-y-1.5">
+                              <input
+                                value={it.name}
+                                onChange={(e) => updateItem(it._key, { name: e.target.value })}
+                                placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => updateItem(it._key, { showLineNote: !it.showLineNote })}
+                                className="inline-flex rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              >
+                                {it.showLineNote ? "Hide details" : (String(it.lineNote ?? "").trim() ? "Edit details" : "+ Add details")}
+                              </button>
+                            </div>
                           </td>
 
                           <td className="px-3 py-2">
@@ -558,21 +577,28 @@ export default function EstimateFormClient({
                             </button>
                           </td>
                         </tr>,
+                        it.showLineNote ? (
                         <tr key={`${it._key}-note`} className="border-t-0">
                           <td colSpan={8} className="px-3 pb-3 pt-0">
                             <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2">
                               <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                                 Line Note (Optional)
                               </label>
-                              <input
+                              <textarea
                                 value={it.lineNote}
                                 onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                                onInput={(e) => autoResizeTextarea(e.currentTarget)}
+                                ref={(el) => {
+                                  if (el) autoResizeTextarea(el)
+                                }}
                                 placeholder="Add details for this line item (scope, inclusions, exclusions, etc.)"
-                                className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs text-slate-700 outline-none focus:border-teal-400"
+                                rows={1}
+                                className="w-full resize-none overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none focus:border-teal-400"
                               />
                             </div>
                           </td>
-                        </tr>,
+                        </tr>
+                        ) : null,
                       ]
                     })}
                   </tbody>
@@ -612,16 +638,32 @@ export default function EstimateFormClient({
                           className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                         />
                       </div>
-
                       <div>
-                        <label className="text-xs text-slate-500">Line note (optional)</label>
-                        <input
-                          value={it.lineNote}
-                          onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
-                          placeholder="Scope/details for this line"
-                          className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-teal-400"
-                        />
+                        <button
+                          type="button"
+                          onClick={() => updateItem(it._key, { showLineNote: !it.showLineNote })}
+                          className="inline-flex rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                        >
+                          {it.showLineNote ? "Hide details" : (String(it.lineNote ?? "").trim() ? "Edit details" : "+ Add details")}
+                        </button>
                       </div>
+
+                      {it.showLineNote ? (
+                        <div>
+                          <label className="text-xs text-slate-500">Line note (optional)</label>
+                          <textarea
+                            value={it.lineNote}
+                            onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                            onInput={(e) => autoResizeTextarea(e.currentTarget)}
+                            ref={(el) => {
+                              if (el) autoResizeTextarea(el)
+                            }}
+                            placeholder="Scope/details for this line"
+                            rows={1}
+                            className="mt-1 w-full resize-none overflow-hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
+                          />
+                        </div>
+                      ) : null}
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
