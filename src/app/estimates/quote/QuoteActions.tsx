@@ -55,6 +55,12 @@ export default function QuoteActions({
 
   const canSend = isValidEmail(to.trim())
 
+  function onDownloadPdf() {
+    // No existe endpoint PDF server-side en este flujo.
+    // Usamos print dialog para "Save as PDF" sin romper con 404.
+    window.print()
+  }
+
   async function onSend() {
     try {
       setSending(true)
@@ -110,12 +116,14 @@ export default function QuoteActions({
         Print
       </button>
 
-      <a
-        href={`/api/estimates/${estimateId}/pdf?filename=${encodeURIComponent(pdfName)}`}
+      <button
+        type="button"
+        onClick={onDownloadPdf}
+        title={`Use "Save as PDF" and filename: ${pdfName}`}
         className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
       >
         Download PDF
-      </a>
+      </button>
 
       {/* ✅ Send ALWAYS visible. If converted -> sends Invoice (backend decides) */}
       <button
