@@ -440,8 +440,8 @@ export default function NewSaleForm({
                           <tbody>
                             {lines.map((l: any, idx: number) => {
                               const line = lineSubtotal(l)
-                              return (
-                                <tr key={idx} className="border-t border-slate-200">
+                              return [
+                                <tr key={`line-${idx}-main`} className="border-t border-slate-200">
                                   <td className="px-3 py-2">
                                     <SearchableSelect
                                       value={l.productId}
@@ -453,20 +453,12 @@ export default function NewSaleForm({
                                   </td>
 
                                   <td className="px-3 py-2">
-                                    <div className="space-y-2">
-                                      <input
-                                        value={l.name}
-                                        onChange={(e) => updateLine(idx, { name: e.target.value })}
-                                        placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                                        className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                                      />
-                                      <input
-                                        value={l.lineNote}
-                                        onChange={(e) => updateLine(idx, { lineNote: e.target.value })}
-                                        placeholder="Line note (optional)"
-                                        className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-teal-400"
-                                      />
-                                    </div>
+                                    <input
+                                      value={l.name}
+                                      onChange={(e) => updateLine(idx, { name: e.target.value })}
+                                      placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                    />
                                   </td>
 
                                   <td className="px-3 py-2">
@@ -537,8 +529,23 @@ export default function NewSaleForm({
                                       Remove
                                     </button>
                                   </td>
-                                </tr>
-                              )
+                                </tr>,
+                                <tr key={`line-${idx}-note`} className="border-t-0">
+                                  <td colSpan={8} className="px-3 pb-3 pt-0">
+                                    <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2">
+                                      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                        Line Note (Optional)
+                                      </label>
+                                      <input
+                                        value={l.lineNote}
+                                        onChange={(e) => updateLine(idx, { lineNote: e.target.value })}
+                                        placeholder="Add details for this line item (scope, inclusions, exclusions, etc.)"
+                                        className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs text-slate-700 outline-none focus:border-teal-400"
+                                      />
+                                    </div>
+                                  </td>
+                                </tr>,
+                              ]
                             })}
                           </tbody>
                         </table>

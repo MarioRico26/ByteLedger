@@ -371,8 +371,8 @@ export default function SaleEditClient({
                   <tbody>
                     {items.map((it: any, idx: number) => {
                       const line = lineSubtotal(it)
-                      return (
-                        <tr key={it._key} className="border-t border-slate-200">
+                      return [
+                        <tr key={`${it._key}-main`} className="border-t border-slate-200">
                           <td className="px-3 py-2">
                             <SearchableSelect
                               value={it.productId ?? ""}
@@ -384,20 +384,12 @@ export default function SaleEditClient({
                           </td>
 
                           <td className="px-3 py-2">
-                            <div className="space-y-2">
-                              <input
-                                value={it.name}
-                                onChange={(e) => updateItem(it._key, { name: e.target.value })}
-                                placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                              />
-                              <input
-                                value={it.lineNote}
-                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
-                                placeholder="Line note (optional)"
-                                className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-teal-400"
-                              />
-                            </div>
+                            <input
+                              value={it.name}
+                              onChange={(e) => updateItem(it._key, { name: e.target.value })}
+                              placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                            />
                           </td>
 
                           <td className="px-3 py-2">
@@ -466,8 +458,23 @@ export default function SaleEditClient({
                               Remove
                             </button>
                           </td>
-                        </tr>
-                      )
+                        </tr>,
+                        <tr key={`${it._key}-note`} className="border-t-0">
+                          <td colSpan={8} className="px-3 pb-3 pt-0">
+                            <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2">
+                              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                Line Note (Optional)
+                              </label>
+                              <input
+                                value={it.lineNote}
+                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                                placeholder="Add details for this line item (scope, inclusions, exclusions, etc.)"
+                                className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs text-slate-700 outline-none focus:border-teal-400"
+                              />
+                            </div>
+                          </td>
+                        </tr>,
+                      ]
                     })}
                   </tbody>
                 </table>
