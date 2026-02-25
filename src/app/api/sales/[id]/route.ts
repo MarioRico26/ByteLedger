@@ -39,6 +39,7 @@ function parseDateOnlyToUTC(v: unknown): Date | null {
 type BodyItem = {
   productId?: string | null
   name: string
+  lineNote?: string | null
   type: "PRODUCT" | "SERVICE"
   taxable?: boolean
   quantity: number
@@ -125,10 +126,11 @@ export async function PUT(req: Request, ctx: Ctx) {
       const qty = Math.max(1, Math.floor(asNumber(it.quantity, 1)))
       const unit = Math.max(0, asNumber(it.unitPrice, 0))
       const name = String(it.name ?? "").trim() || "Item"
+      const lineNote = String(it.lineNote ?? "").trim() || null
       const t = String(it.type) === "SERVICE" ? "SERVICE" : "PRODUCT"
       const taxable = typeof it.taxable === "boolean" ? it.taxable : t === "PRODUCT"
       const productId = it.productId ? String(it.productId) : null
-      return { productId, name, type: t, taxable, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
+      return { productId, name, lineNote, type: t, taxable, quantity: qty, unitPrice: unit, lineTotal: qty * unit }
     })
 
     const customer = await prisma.customer.findFirst({
@@ -172,6 +174,7 @@ export async function PUT(req: Request, ctx: Ctx) {
 
     const itemsCreate = normalizedItems.map((it: any) => ({
       name: it.name,
+      lineNote: it.lineNote,
       type: it.type,
       taxable: it.taxable,
       quantity: it.quantity,

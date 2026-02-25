@@ -29,6 +29,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
     const itemsCreate = estimate.items.map((it: EstimateItem) => ({
       organization: { connect: { id: orgId } },
       name: it.name,
+      lineNote: (it as any).lineNote ?? null,
       type: it.type,
       taxable: (it as any).taxable ?? it.type === "PRODUCT",
       quantity: it.quantity,

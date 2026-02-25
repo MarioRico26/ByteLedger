@@ -81,6 +81,7 @@ type Item = {
   _key: string
   productId: string | null
   name: string
+  lineNote: string
   type: "PRODUCT" | "SERVICE"
   taxable: boolean
   quantityStr: string
@@ -123,12 +124,13 @@ export default function SaleEditClient({
           _key: uid(),
           productId: it.productId ?? null,
           name: String(it.name ?? ""),
+          lineNote: String(it.lineNote ?? ""),
           type: it.type ?? "SERVICE",
           taxable: typeof it.taxable === "boolean" ? it.taxable : (it.type ?? "SERVICE") === "PRODUCT",
           quantityStr: normalizeQtyInput(String(it.quantity ?? "1")),
           unitPriceStr: fmtMoney(Math.max(0, toMoneyNumber(it.unitPrice, 0))),
         }))
-      : [{ _key: uid(), productId: null, name: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" }]
+      : [{ _key: uid(), productId: null, name: "", lineNote: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" }]
   })
 
   const productOptions: SearchableOption[] = useMemo(() => {
@@ -148,7 +150,7 @@ export default function SaleEditClient({
 
   function pickProduct(key: string, productId: string) {
     if (!productId) {
-      updateItem(key, { productId: null, type: "SERVICE", taxable: false, unitPriceStr: "0.00" })
+      updateItem(key, { productId: null, type: "SERVICE", taxable: false, lineNote: "", unitPriceStr: "0.00" })
       return
     }
 
@@ -166,7 +168,7 @@ export default function SaleEditClient({
   function addLine() {
     setItems((prev) => [
       ...(prev ?? []),
-      { _key: uid(), productId: null, name: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" },
+      { _key: uid(), productId: null, name: "", lineNote: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" },
     ])
   }
 
@@ -250,6 +252,7 @@ export default function SaleEditClient({
       items: items.map((it: any) => ({
         productId: it.productId,
         name: it.name,
+        lineNote: String(it.lineNote ?? "").trim() || null,
         type: it.type,
         taxable: Boolean(it.taxable),
         quantity: Math.max(1, Math.floor(toMoneyNumber(it.quantityStr, 1))),
@@ -381,12 +384,20 @@ export default function SaleEditClient({
                           </td>
 
                           <td className="px-3 py-2">
-                            <input
-                              value={it.name}
-                              onChange={(e) => updateItem(it._key, { name: e.target.value })}
-                              placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
+                            <div className="space-y-2">
+                              <input
+                                value={it.name}
+                                onChange={(e) => updateItem(it._key, { name: e.target.value })}
+                                placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                              <input
+                                value={it.lineNote}
+                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                                placeholder="Line note (optional)"
+                                className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-teal-400"
+                              />
+                            </div>
                           </td>
 
                           <td className="px-3 py-2">
@@ -490,6 +501,16 @@ export default function SaleEditClient({
                           onChange={(e) => updateItem(it._key, { name: e.target.value })}
                           placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                           className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs text-slate-500">Line note (optional)</label>
+                        <input
+                          value={it.lineNote}
+                          onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                          placeholder="Scope/details for this line"
+                          className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-teal-400"
                         />
                       </div>
 

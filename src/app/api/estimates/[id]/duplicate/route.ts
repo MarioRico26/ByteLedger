@@ -23,6 +23,7 @@ export async function POST(
   type EstimateItem = (typeof est.items)[number]
   const itemsCreate = est.items.map((it: EstimateItem) => ({
     name: it.name,
+    lineNote: (it as any).lineNote ?? null,
     type: it.type,
     taxable: (it as any).taxable ?? it.type === "PRODUCT",
     quantity: it.quantity,

@@ -11,6 +11,7 @@ type FormItem = {
   _key: string
   productId: string | null
   name: string
+  lineNote: string
   type: ProductType
   taxable: boolean
 
@@ -159,6 +160,7 @@ export default function EstimateFormClient({
           _key: uid(),
           productId: it.productId ?? null,
           name: String(it.name ?? ""),
+          lineNote: String(it.lineNote ?? ""),
           type: (it.type as ProductType) ?? "PRODUCT",
           taxable: typeof it.taxable === "boolean" ? it.taxable : ((it.type as ProductType) ?? "PRODUCT") === "PRODUCT",
           quantityStr: qty.toLocaleString(undefined),
@@ -173,6 +175,7 @@ export default function EstimateFormClient({
         _key: uid(),
         productId: null,
         name: "",
+        lineNote: "",
         type: "SERVICE",
         taxable: false,
         quantityStr: "1",
@@ -242,6 +245,7 @@ export default function EstimateFormClient({
             productId: null,
             type: "SERVICE",
             taxable: false,
+            lineNote: "",
             // ✅ lo que pediste: volver a 0 al ser custom
             unitPriceStr: "0.00",
             manualUnitPriceStr: "0.00",
@@ -278,6 +282,7 @@ export default function EstimateFormClient({
         _key: uid(),
         productId: null,
         name: "",
+        lineNote: "",
         type: "SERVICE",
         taxable: false,
         quantityStr: "1",
@@ -331,6 +336,7 @@ export default function EstimateFormClient({
       items: items.map((it: any) => ({
         productId: it.productId,
         name: it.name,
+        lineNote: String(it.lineNote ?? "").trim() || null,
         type: it.type,
         taxable: Boolean(it.taxable),
         quantity: Math.max(1, Math.floor(toMoneyNumber(it.quantityStr, 1))),
@@ -467,12 +473,20 @@ export default function EstimateFormClient({
                           </td>
 
                           <td className="px-3 py-2">
-                            <input
-                              value={it.name}
-                              onChange={(e) => updateItem(it._key, { name: e.target.value })}
-                              placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
+                            <div className="space-y-2">
+                              <input
+                                value={it.name}
+                                onChange={(e) => updateItem(it._key, { name: e.target.value })}
+                                placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                              <input
+                                value={it.lineNote}
+                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                                placeholder="Line note (optional)"
+                                className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-teal-400"
+                              />
+                            </div>
                           </td>
 
                           <td className="px-3 py-2">
@@ -589,6 +603,16 @@ export default function EstimateFormClient({
                           onChange={(e) => updateItem(it._key, { name: e.target.value })}
                           placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                           className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs text-slate-500">Line note (optional)</label>
+                        <input
+                          value={it.lineNote}
+                          onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                          placeholder="Scope/details for this line"
+                          className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-teal-400"
                         />
                       </div>
 

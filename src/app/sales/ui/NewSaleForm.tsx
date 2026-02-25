@@ -14,6 +14,7 @@ type ProductOption = {
 type Line = {
   productId: string
   name: string
+  lineNote: string
   type: "PRODUCT" | "SERVICE"
   taxable: boolean
   quantityStr: string
@@ -117,6 +118,7 @@ export default function NewSaleForm({
     {
       productId: "",
       name: "",
+      lineNote: "",
       type: "SERVICE",
       taxable: false,
       quantityStr: "1",
@@ -213,7 +215,7 @@ export default function NewSaleForm({
   function addLine() {
     setLines((prev) => [
       ...(prev ?? []),
-      { productId: "", name: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" },
+      { productId: "", name: "", lineNote: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" },
     ])
   }
 
@@ -223,7 +225,7 @@ export default function NewSaleForm({
 
   function pickProduct(idx: number, productId: string) {
     if (!productId) {
-      updateLine(idx, { productId: "", type: "SERVICE", taxable: false, unitPriceStr: "0.00" })
+      updateLine(idx, { productId: "", type: "SERVICE", taxable: false, lineNote: "", unitPriceStr: "0.00" })
       return
     }
 
@@ -268,6 +270,7 @@ export default function NewSaleForm({
       .map((l: any) => ({
         productId: l.productId || null,
         name: l.name.trim(),
+        lineNote: String(l.lineNote ?? "").trim() || null,
         type: l.type,
         taxable: Boolean(l.taxable),
         quantity: Math.max(1, Math.floor(toMoneyNumber(l.quantityStr, 1))),
@@ -313,7 +316,7 @@ export default function NewSaleForm({
       setDiscountType("amount")
       setDiscount("0.00")
       setTaxRate("0")
-      setLines([{ productId: "", name: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" }])
+      setLines([{ productId: "", name: "", lineNote: "", type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" }])
 
       setOpen(false)
       window.location.reload()
@@ -450,12 +453,20 @@ export default function NewSaleForm({
                                   </td>
 
                                   <td className="px-3 py-2">
-                                    <input
-                                      value={l.name}
-                                      onChange={(e) => updateLine(idx, { name: e.target.value })}
-                                      placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                                    />
+                                    <div className="space-y-2">
+                                      <input
+                                        value={l.name}
+                                        onChange={(e) => updateLine(idx, { name: e.target.value })}
+                                        placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                        className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                      />
+                                      <input
+                                        value={l.lineNote}
+                                        onChange={(e) => updateLine(idx, { lineNote: e.target.value })}
+                                        placeholder="Line note (optional)"
+                                        className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-teal-400"
+                                      />
+                                    </div>
                                   </td>
 
                                   <td className="px-3 py-2">
@@ -561,6 +572,16 @@ export default function NewSaleForm({
                                   onChange={(e) => updateLine(idx, { name: e.target.value })}
                                   placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                                   className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-xs text-slate-500">Line note (optional)</label>
+                                <input
+                                  value={l.lineNote}
+                                  onChange={(e) => updateLine(idx, { lineNote: e.target.value })}
+                                  placeholder="Scope/details for this line"
+                                  className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-teal-400"
                                 />
                               </div>
 

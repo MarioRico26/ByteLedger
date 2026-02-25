@@ -177,7 +177,14 @@ export default async function PublicEstimatePage({
               <tbody>
                 {estimate.items.map((i: (typeof estimate.items)[number]) => (
                   <tr key={i.id} className="border-t border-zinc-200">
-                    <td className="px-4 py-3 font-medium">{i.name}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{i.name}</div>
+                      {String((i as any).lineNote ?? "").trim() ? (
+                        <div className="mt-0.5 text-xs text-zinc-500 whitespace-pre-wrap">
+                          {String((i as any).lineNote).trim()}
+                        </div>
+                      ) : null}
+                    </td>
                     <td className="px-4 py-3 text-zinc-700">{i.type}</td>
                     <td className="px-4 py-3 text-right">{i.quantity}</td>
                     <td className="px-4 py-3 text-right">

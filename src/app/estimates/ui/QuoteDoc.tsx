@@ -26,6 +26,7 @@ type Customer = {
 type QuoteItem = {
   id: string
   name: string
+  lineNote?: string | null
   type: string
   quantity: number
   unitPrice: any
@@ -283,7 +284,14 @@ export default function QuoteDoc({ estimate }: { estimate: QuoteDocEstimate }) {
               <tbody className="divide-y divide-zinc-200">
                 {estimate.items.map((it: any) => (
                   <tr key={it.id}>
-                    <td className="px-3 py-2 font-medium text-zinc-900">{it.name}</td>
+                    <td className="px-3 py-2">
+                      <div className="font-medium text-zinc-900">{it.name}</div>
+                      {String(it.lineNote ?? "").trim() ? (
+                        <div className="mt-0.5 text-xs text-zinc-500 whitespace-pre-wrap">
+                          {String(it.lineNote).trim()}
+                        </div>
+                      ) : null}
+                    </td>
                     <td className="px-3 py-2 text-zinc-600">{it.type}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{it.quantity}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{money(it.unitPrice)}</td>

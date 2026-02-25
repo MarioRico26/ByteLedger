@@ -68,12 +68,14 @@ export async function POST(req: Request) {
       const type = i.type === "PRODUCT" ? "PRODUCT" : "SERVICE"
       const taxable = typeof i.taxable === "boolean" ? i.taxable : type === "PRODUCT"
       const name = String(i.name || "").trim()
+      const lineNote = String(i.lineNote ?? "").trim() || null
 
       if (!name) throw new Error("Each item must have a name")
 
       return {
         productId: i.productId ? String(i.productId) : null,
         name,
+        lineNote,
         type,
         taxable,
         quantity,
@@ -127,6 +129,7 @@ export async function POST(req: Request) {
             organization: { connect: { id: orgId } },
             ...(i.productId ? { product: { connect: { id: i.productId } } } : {}),
             name: i.name,
+            lineNote: i.lineNote,
             type: i.type,
             taxable: i.taxable,
             quantity: i.quantity,

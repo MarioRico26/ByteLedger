@@ -173,6 +173,7 @@ model SaleItem {
   product   Product? @relation(fields: [productId], references: [id])
 
   name      String
+  lineNote   String?
   type      ProductType
   taxable   Boolean     @default(true)
   quantity  Int         @default(1)
@@ -274,6 +275,7 @@ model EstimateItem {
   product   Product? @relation(fields: [productId], references: [id])
 
   name      String
+  lineNote   String?
   type      ProductType
   taxable   Boolean     @default(true)
   quantity  Int
