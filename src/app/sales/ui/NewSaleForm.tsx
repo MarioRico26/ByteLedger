@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import SearchableSelect, { SearchableOption } from "@/components/SearchableSelect"
+import LineDetailsModal from "@/components/ui/LineDetailsModal"
 
 type CustomerOption = { id: string; fullName: string; email?: string | null }
 type ProductOption = {
@@ -84,11 +85,6 @@ function normalizePercentInput(value: string) {
   return fmtPercent(n)
 }
 
-function autoResizeTextarea(el: HTMLTextAreaElement) {
-  el.style.height = "0px"
-  el.style.height = `${Math.min(el.scrollHeight, 240)}px`
-}
-
 export default function NewSaleForm({
   customers,
   products,
@@ -132,6 +128,7 @@ export default function NewSaleForm({
       unitPriceStr: "0.00",
     },
   ])
+  const [detailsLineIndex, setDetailsLineIndex] = useState<number | null>(null)
 
   const didInit = useRef(false)
 
@@ -214,6 +211,10 @@ export default function NewSaleForm({
   )
   const taxAmount = useMemo(() => taxableBase * (taxRateNum / 100), [taxableBase, taxRateNum])
   const total = useMemo(() => Math.max(subtotal - discountAmount + taxAmount, 0), [subtotal, discountAmount, taxAmount])
+  const detailsLine = useMemo(
+    () => (detailsLineIndex === null ? null : (lines?.[detailsLineIndex] ?? null)),
+    [lines, detailsLineIndex]
+  )
 
   function updateLine(idx: number, patch: Partial<Line>) {
     setLines((prev) => (prev ?? []).map((l: any, i: number) => (i === idx ? { ...l, ...patch } : l)))
@@ -227,6 +228,7 @@ export default function NewSaleForm({
   }
 
   function removeLine(idx: number) {
+    setDetailsLineIndex((current) => (current === null ? null : current === idx ? null : current > idx ? current - 1 : current))
     setLines((prev) => (prev.length <= 1 ? prev : prev.filter((_: any, i: number) => i !== idx)))
   }
 
@@ -447,7 +449,7 @@ export default function NewSaleForm({
                           <tbody>
                             {lines.map((l: any, idx: number) => {
                               const line = lineSubtotal(l)
-                              return [
+                              return (
                                 <tr key={`line-${idx}-main`} className="border-t border-slate-200">
                                   <td className="px-3 py-2">
                                     <SearchableSelect
@@ -460,21 +462,12 @@ export default function NewSaleForm({
                                   </td>
 
                                   <td className="px-3 py-2">
-                                    <div className="space-y-1.5">
-                                      <input
-                                        value={l.name}
-                                        onChange={(e) => updateLine(idx, { name: e.target.value })}
-                                        placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                                        className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() => updateLine(idx, { showLineNote: !l.showLineNote })}
-                                        className="inline-flex rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                                      >
-                                        {l.showLineNote ? "Hide details" : (String(l.lineNote ?? "").trim() ? "Edit details" : "+ Add details")}
-                                      </button>
-                                    </div>
+                                    <input
+                                      value={l.name}
+                                      onChange={(e) => updateLine(idx, { name: e.target.value })}
+                                      placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                    />
                                   </td>
 
                                   <td className="px-3 py-2">
@@ -537,38 +530,25 @@ export default function NewSaleForm({
                                   </td>
 
                                   <td className="px-3 py-2 text-right">
-                                    <button
-                                      type="button"
-                                      onClick={() => removeLine(idx)}
-                                      className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                                    >
-                                      Remove
-                                    </button>
-                                  </td>
-                                </tr>,
-                                l.showLineNote ? (
-                                <tr key={`line-${idx}-note`} className="border-t-0">
-                                  <td colSpan={8} className="px-3 pb-3 pt-0">
-                                    <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2">
-                                      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                        Line Note (Optional)
-                                      </label>
-                                      <textarea
-                                        value={l.lineNote}
-                                        onChange={(e) => updateLine(idx, { lineNote: e.target.value })}
-                                        onInput={(e) => autoResizeTextarea(e.currentTarget)}
-                                        ref={(el) => {
-                                          if (el) autoResizeTextarea(el)
-                                        }}
-                                        placeholder="Add details for this line item (scope, inclusions, exclusions, etc.)"
-                                        rows={1}
-                                        className="w-full resize-none overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none focus:border-teal-400"
-                                      />
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => setDetailsLineIndex(idx)}
+                                        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                      >
+                                        {String(l.lineNote ?? "").trim() ? "Details" : "+ Details"}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => removeLine(idx)}
+                                        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                      >
+                                        Remove
+                                      </button>
                                     </div>
                                   </td>
                                 </tr>
-                                ) : null,
-                              ]
+                              )
                             })}
                           </tbody>
                         </table>
@@ -607,29 +587,12 @@ export default function NewSaleForm({
                               <div>
                                 <button
                                   type="button"
-                                  onClick={() => updateLine(idx, { showLineNote: !l.showLineNote })}
+                                  onClick={() => setDetailsLineIndex(idx)}
                                   className="inline-flex rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
                                 >
-                                  {l.showLineNote ? "Hide details" : (String(l.lineNote ?? "").trim() ? "Edit details" : "+ Add details")}
+                                  {String(l.lineNote ?? "").trim() ? "Details" : "+ Details"}
                                 </button>
                               </div>
-
-                              {l.showLineNote ? (
-                                <div>
-                                  <label className="text-xs text-slate-500">Line note (optional)</label>
-                                  <textarea
-                                    value={l.lineNote}
-                                    onChange={(e) => updateLine(idx, { lineNote: e.target.value })}
-                                    onInput={(e) => autoResizeTextarea(e.currentTarget)}
-                                    ref={(el) => {
-                                      if (el) autoResizeTextarea(el)
-                                    }}
-                                    placeholder="Scope/details for this line"
-                                    rows={1}
-                                    className="mt-1 w-full resize-none overflow-hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
-                                  />
-                                </div>
-                              ) : null}
 
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
@@ -815,6 +778,16 @@ export default function NewSaleForm({
           </div>
         </div>
       ) : null}
+      <LineDetailsModal
+        open={Boolean(open && detailsLine)}
+        title={String(detailsLine?.name ?? "").trim() || "Custom item"}
+        value={String(detailsLine?.lineNote ?? "")}
+        onChange={(next) => {
+          if (detailsLineIndex === null) return
+          updateLine(detailsLineIndex, { lineNote: next })
+        }}
+        onClose={() => setDetailsLineIndex(null)}
+      />
     </>
   )
 }

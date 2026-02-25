@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import SearchableSelect, { SearchableOption } from "@/components/SearchableSelect"
+import LineDetailsModal from "@/components/ui/LineDetailsModal"
 
 function toMoneyNumber(v: any, fallback = 0) {
   if (v === null || v === undefined) return fallback
@@ -63,11 +64,6 @@ function normalizeMoneyInput(value: string) {
 function normalizePercentInput(value: string) {
   const n = Math.max(0, toMoneyNumber(value, 0))
   return fmtPercent(n)
-}
-
-function autoResizeTextarea(el: HTMLTextAreaElement) {
-  el.style.height = "0px"
-  el.style.height = `${Math.min(el.scrollHeight, 240)}px`
 }
 
 function uid() {
@@ -139,6 +135,11 @@ export default function SaleEditClient({
         }))
       : [{ _key: uid(), productId: null, name: "", lineNote: "", showLineNote: false, type: "SERVICE", taxable: false, quantityStr: "1", unitPriceStr: "0.00" }]
   })
+  const [detailsItemKey, setDetailsItemKey] = useState<string | null>(null)
+  const detailsItem = useMemo(
+    () => items.find((it) => it._key === detailsItemKey) ?? null,
+    [items, detailsItemKey]
+  )
 
   const productOptions: SearchableOption[] = useMemo(() => {
     return [
@@ -180,6 +181,7 @@ export default function SaleEditClient({
   }
 
   function removeLine(key: string) {
+    if (detailsItemKey === key) setDetailsItemKey(null)
     setItems((prev) => (prev.length <= 1 ? prev : prev.filter((it: any) => it._key !== key)))
   }
 
@@ -378,7 +380,7 @@ export default function SaleEditClient({
                   <tbody>
                     {items.map((it: any, idx: number) => {
                       const line = lineSubtotal(it)
-                      return [
+                      return (
                         <tr key={`${it._key}-main`} className="border-t border-slate-200">
                           <td className="px-3 py-2">
                             <SearchableSelect
@@ -391,21 +393,12 @@ export default function SaleEditClient({
                           </td>
 
                           <td className="px-3 py-2">
-                            <div className="space-y-1.5">
-                              <input
-                                value={it.name}
-                                onChange={(e) => updateItem(it._key, { name: e.target.value })}
-                                placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => updateItem(it._key, { showLineNote: !it.showLineNote })}
-                                className="inline-flex rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                              >
-                                {it.showLineNote ? "Hide details" : (String(it.lineNote ?? "").trim() ? "Edit details" : "+ Add details")}
-                              </button>
-                            </div>
+                            <input
+                              value={it.name}
+                              onChange={(e) => updateItem(it._key, { name: e.target.value })}
+                              placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                            />
                           </td>
 
                           <td className="px-3 py-2">
@@ -466,38 +459,25 @@ export default function SaleEditClient({
                           </td>
 
                           <td className="px-3 py-2 text-right">
-                            <button
-                              type="button"
-                              onClick={() => removeLine(it._key)}
-                              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                            >
-                              Remove
-                            </button>
-                          </td>
-                        </tr>,
-                        it.showLineNote ? (
-                        <tr key={`${it._key}-note`} className="border-t-0">
-                          <td colSpan={8} className="px-3 pb-3 pt-0">
-                            <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2">
-                              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                Line Note (Optional)
-                              </label>
-                              <textarea
-                                value={it.lineNote}
-                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
-                                onInput={(e) => autoResizeTextarea(e.currentTarget)}
-                                ref={(el) => {
-                                  if (el) autoResizeTextarea(el)
-                                }}
-                                placeholder="Add details for this line item (scope, inclusions, exclusions, etc.)"
-                                rows={1}
-                                className="w-full resize-none overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none focus:border-teal-400"
-                              />
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setDetailsItemKey(it._key)}
+                                className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              >
+                                {String(it.lineNote ?? "").trim() ? "Details" : "+ Details"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeLine(it._key)}
+                                className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              >
+                                Remove
+                              </button>
                             </div>
                           </td>
                         </tr>
-                        ) : null,
-                      ]
+                      )
                     })}
                   </tbody>
                 </table>
@@ -536,29 +516,12 @@ export default function SaleEditClient({
                       <div>
                         <button
                           type="button"
-                          onClick={() => updateItem(it._key, { showLineNote: !it.showLineNote })}
+                          onClick={() => setDetailsItemKey(it._key)}
                           className="inline-flex rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
                         >
-                          {it.showLineNote ? "Hide details" : (String(it.lineNote ?? "").trim() ? "Edit details" : "+ Add details")}
+                          {String(it.lineNote ?? "").trim() ? "Details" : "+ Details"}
                         </button>
                       </div>
-
-                      {it.showLineNote ? (
-                        <div>
-                          <label className="text-xs text-slate-500">Line note (optional)</label>
-                          <textarea
-                            value={it.lineNote}
-                            onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
-                            onInput={(e) => autoResizeTextarea(e.currentTarget)}
-                            ref={(el) => {
-                              if (el) autoResizeTextarea(el)
-                            }}
-                            placeholder="Scope/details for this line"
-                            rows={1}
-                            className="mt-1 w-full resize-none overflow-hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
-                          />
-                        </div>
-                      ) : null}
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -754,6 +717,16 @@ export default function SaleEditClient({
           </div>
         </div>
       </div>
+      <LineDetailsModal
+        open={Boolean(detailsItem)}
+        title={String(detailsItem?.name ?? "").trim() || "Custom item"}
+        value={String(detailsItem?.lineNote ?? "")}
+        onChange={(next) => {
+          if (!detailsItem) return
+          updateItem(detailsItem._key, { lineNote: next })
+        }}
+        onClose={() => setDetailsItemKey(null)}
+      />
     </div>
   )
 }
