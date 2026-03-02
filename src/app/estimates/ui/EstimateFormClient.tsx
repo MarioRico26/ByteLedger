@@ -446,17 +446,18 @@ export default function EstimateFormClient({
             {/* Desktop table */}
             <div className="mt-2 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
               <div className="overflow-x-auto">
-                <table className="min-w-[1040px] w-full border-collapse text-sm">
+                <table className="min-w-[1240px] w-full border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
-                      <th className="px-3 py-2 min-w-[170px]">Catalog</th>
-                      <th className="px-3 py-2 min-w-[240px]">Name</th>
-                      <th className="px-3 py-2 w-[130px]">Type</th>
-                      <th className="px-3 py-2 w-[110px]">Taxable</th>
-                      <th className="px-3 py-2 w-[110px]">Qty</th>
-                      <th className="px-3 py-2 w-[140px]">Price</th>
-                      <th className="px-3 py-2 w-[160px]">Subtotal</th>
-                      <th className="px-3 py-2 w-[110px]"></th>
+                      <th className="px-2 py-2 min-w-[180px]">Catalog</th>
+                      <th className="px-2 py-2 min-w-[220px]">Item</th>
+                      <th className="px-2 py-2 min-w-[260px]">Description</th>
+                      <th className="px-2 py-2 w-[120px]">Type</th>
+                      <th className="px-2 py-2 w-[90px] text-right">Qty</th>
+                      <th className="px-2 py-2 w-[130px] text-right">Rate</th>
+                      <th className="px-2 py-2 w-[150px] text-right">Amount</th>
+                      <th className="px-2 py-2 w-[90px] text-center">Tax</th>
+                      <th className="px-2 py-2 w-[90px] text-right"></th>
                     </tr>
                   </thead>
 
@@ -465,11 +466,11 @@ export default function EstimateFormClient({
                       const line = lineSubtotal(it)
                       return (
                         <tr key={`${it._key}-main`} className="border-t border-slate-200">
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <select
                               value={it.productId ?? ""}
                               onChange={(e) => onPickProduct(it._key, e.target.value)}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                             >
                               <option value="">Custom item…</option>
                               {products.map((p: any) => (
@@ -480,16 +481,25 @@ export default function EstimateFormClient({
                             </select>
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <input
                               value={it.name}
                               onChange={(e) => updateItem(it._key, { name: e.target.value })}
                               placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
+                            <input
+                              value={it.lineNote}
+                              onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                              placeholder="Scope/details (optional)"
+                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700 outline-none focus:border-teal-400"
+                            />
+                          </td>
+
+                          <td className="px-2 py-2">
                             <select
                               value={it.type}
                               onChange={(e) => {
@@ -500,36 +510,25 @@ export default function EstimateFormClient({
                                   ...(nextType === "SERVICE" ? { productId: null } : {}),
                                 })
                               }}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                             >
                               <option value="PRODUCT">Product</option>
                               <option value="SERVICE">Service</option>
                             </select>
                           </td>
 
-                          <td className="px-3 py-2">
-                            <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700">
-                              <input
-                                type="checkbox"
-                                checked={Boolean(it.taxable)}
-                                onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
-                              />
-                              Tax
-                            </label>
-                          </td>
-
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <input
                               inputMode="numeric"
                               value={it.quantityStr}
                               onFocus={(e) => e.currentTarget.select()}
                               onChange={(e) => updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })}
                               onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <input
                               inputMode="decimal"
                               value={it.unitPriceStr}
@@ -546,33 +545,33 @@ export default function EstimateFormClient({
                                   manualUnitPriceStr: normalizeMoneyInput(e.target.value),
                                 })
                               }
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
                           </td>
 
-                          <td className="px-3 py-2">
-                            <div className="flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-slate-700">
+                          <td className="px-2 py-2">
+                            <div className="flex h-9 items-center justify-end rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700">
                               {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
                             </div>
                           </td>
 
-                          <td className="px-3 py-2 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setDetailsItemKey(it._key)}
-                                className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                              >
-                                {String(it.lineNote ?? "").trim() ? "Details" : "+ Details"}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => removeItem(it._key)}
-                                className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                              >
-                                Remove
-                              </button>
-                            </div>
+                          <td className="px-2 py-2 text-center">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(it.taxable)}
+                              onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                              className="h-4 w-4 accent-blue-600"
+                            />
+                          </td>
+
+                          <td className="px-2 py-2 text-right">
+                            <button
+                              type="button"
+                              onClick={() => removeItem(it._key)}
+                              className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                            >
+                              Remove
+                            </button>
                           </td>
                         </tr>
                       )
