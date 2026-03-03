@@ -449,13 +449,14 @@ export default function EstimateFormClient({
                 <table className="w-full table-fixed border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
-                      <th className="w-[24%] px-2 py-2">Catalog</th>
-                      <th className="w-[30%] px-2 py-2">Item</th>
+                      <th className="w-[22%] px-2 py-2">Catalog</th>
+                      <th className="w-[24%] px-2 py-2">Item</th>
+                      <th className="w-[12%] px-2 py-2">Type</th>
                       <th className="w-[8%] px-2 py-2 text-right">Qty</th>
-                      <th className="w-[13%] px-2 py-2 text-right">Rate</th>
-                      <th className="w-[15%] px-2 py-2 text-right">Amount</th>
-                      <th className="w-[5%] px-2 py-2 text-center">Tax</th>
-                      <th className="w-[5%] px-2 py-2 text-right"></th>
+                      <th className="w-[12%] px-2 py-2 text-right">Rate</th>
+                      <th className="w-[14%] px-2 py-2 text-right">Amount</th>
+                      <th className="w-[4%] px-2 py-2 text-center">Tax</th>
+                      <th className="w-[4%] px-2 py-2 text-right"></th>
                     </tr>
                   </thead>
 
@@ -487,6 +488,24 @@ export default function EstimateFormClient({
                                 placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                                 className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                               />
+                            </td>
+
+                            <td className="px-2 py-2">
+                              <select
+                                value={it.type}
+                                onChange={(e) => {
+                                  const nextType = e.target.value as ProductType
+                                  updateItem(it._key, {
+                                    type: nextType,
+                                    taxable: nextType === "PRODUCT",
+                                    ...(nextType === "SERVICE" ? { productId: null } : {}),
+                                  })
+                                }}
+                                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              >
+                                <option value="PRODUCT">Product</option>
+                                <option value="SERVICE">Service</option>
+                              </select>
                             </td>
 
                             <td className="px-2 py-2">
@@ -548,41 +567,14 @@ export default function EstimateFormClient({
                             </td>
                           </tr>
                           <tr className="border-t-0">
-                            <td colSpan={7} className="px-2 pb-3 pt-0">
-                              <div className="grid gap-2 md:grid-cols-[1fr_180px]">
-                                <div>
-                                  <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                    Description
-                                  </label>
-                                  <textarea
-                                    value={it.lineNote}
-                                    onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
-                                    placeholder="Scope/details for this line"
-                                    rows={3}
-                                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                    Type
-                                  </label>
-                                  <select
-                                    value={it.type}
-                                    onChange={(e) => {
-                                      const nextType = e.target.value as ProductType
-                                      updateItem(it._key, {
-                                        type: nextType,
-                                        taxable: nextType === "PRODUCT",
-                                        ...(nextType === "SERVICE" ? { productId: null } : {}),
-                                      })
-                                    }}
-                                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                                  >
-                                    <option value="PRODUCT">Product</option>
-                                    <option value="SERVICE">Service</option>
-                                  </select>
-                                </div>
-                              </div>
+                            <td colSpan={8} className="px-2 pb-3 pt-0">
+                              <textarea
+                                value={it.lineNote}
+                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                                placeholder="Description / scope for this line item..."
+                                rows={2}
+                                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
+                              />
                             </td>
                           </tr>
                         </Fragment>
