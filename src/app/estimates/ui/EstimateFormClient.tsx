@@ -445,19 +445,19 @@ export default function EstimateFormClient({
 
             {/* Desktop table */}
             <div className="mt-2 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
-              <div className="overflow-x-auto">
-                <table className="min-w-[1240px] w-full border-collapse text-sm">
+              <div className="overflow-x-hidden">
+                <table className="w-full table-fixed border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
-                      <th className="px-2 py-2 min-w-[180px]">Catalog</th>
-                      <th className="px-2 py-2 min-w-[220px]">Item</th>
-                      <th className="px-2 py-2 min-w-[260px]">Description</th>
-                      <th className="px-2 py-2 w-[120px]">Type</th>
-                      <th className="px-2 py-2 w-[90px] text-right">Qty</th>
-                      <th className="px-2 py-2 w-[130px] text-right">Rate</th>
-                      <th className="px-2 py-2 w-[150px] text-right">Amount</th>
-                      <th className="px-2 py-2 w-[90px] text-center">Tax</th>
-                      <th className="px-2 py-2 w-[90px] text-right"></th>
+                      <th className="w-[16%] px-2 py-2">Catalog</th>
+                      <th className="w-[16%] px-2 py-2">Item</th>
+                      <th className="w-[21%] px-2 py-2">Description</th>
+                      <th className="w-[10%] px-2 py-2">Type</th>
+                      <th className="w-[7%] px-2 py-2 text-right">Qty</th>
+                      <th className="w-[10%] px-2 py-2 text-right">Rate</th>
+                      <th className="w-[11%] px-2 py-2 text-right">Amount</th>
+                      <th className="w-[4%] px-2 py-2 text-center">Tax</th>
+                      <th className="w-[5%] px-2 py-2 text-right"></th>
                     </tr>
                   </thead>
 
@@ -470,7 +470,7 @@ export default function EstimateFormClient({
                             <select
                               value={it.productId ?? ""}
                               onChange={(e) => onPickProduct(it._key, e.target.value)}
-                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none focus:border-teal-400"
                             >
                               <option value="">Custom item…</option>
                               {products.map((p: any) => (
@@ -486,7 +486,7 @@ export default function EstimateFormClient({
                               value={it.name}
                               onChange={(e) => updateItem(it._key, { name: e.target.value })}
                               placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
                           </td>
 
@@ -495,7 +495,7 @@ export default function EstimateFormClient({
                               value={it.lineNote}
                               onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
                               placeholder="Scope/details (optional)"
-                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700 outline-none focus:border-teal-400"
+                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700 outline-none focus:border-teal-400"
                             />
                           </td>
 
@@ -510,7 +510,7 @@ export default function EstimateFormClient({
                                   ...(nextType === "SERVICE" ? { productId: null } : {}),
                                 })
                               }}
-                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none focus:border-teal-400"
                             >
                               <option value="PRODUCT">Product</option>
                               <option value="SERVICE">Service</option>
@@ -524,7 +524,7 @@ export default function EstimateFormClient({
                               onFocus={(e) => e.currentTarget.select()}
                               onChange={(e) => updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })}
                               onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
-                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
                           </td>
 
@@ -545,12 +545,12 @@ export default function EstimateFormClient({
                                   manualUnitPriceStr: normalizeMoneyInput(e.target.value),
                                 })
                               }
-                              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
+                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
                           </td>
 
                           <td className="px-2 py-2">
-                            <div className="flex h-9 items-center justify-end rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700">
+                            <div className="flex h-8 items-center justify-end rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700">
                               {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
                             </div>
                           </td>
@@ -568,9 +568,10 @@ export default function EstimateFormClient({
                             <button
                               type="button"
                               onClick={() => removeItem(it._key)}
-                              className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              title="Remove line"
+                              className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
                             >
-                              Remove
+                              Del
                             </button>
                           </td>
                         </tr>
