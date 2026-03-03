@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import LineDetailsModal from "@/components/ui/LineDetailsModal"
 
 type ProductType = "PRODUCT" | "SERVICE"
@@ -449,15 +449,14 @@ export default function EstimateFormClient({
                 <table className="w-full table-fixed border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
-                      <th className="w-[16%] px-2 py-2">Catalog</th>
-                      <th className="w-[16%] px-2 py-2">Item</th>
-                      <th className="w-[21%] px-2 py-2">Description</th>
-                      <th className="w-[10%] px-2 py-2">Type</th>
-                      <th className="w-[7%] px-2 py-2 text-right">Qty</th>
-                      <th className="w-[10%] px-2 py-2 text-right">Rate</th>
-                      <th className="w-[11%] px-2 py-2 text-right">Amount</th>
+                      <th className="w-[22%] px-2 py-2">Catalog</th>
+                      <th className="w-[24%] px-2 py-2">Item</th>
+                      <th className="w-[12%] px-2 py-2">Type</th>
+                      <th className="w-[8%] px-2 py-2 text-right">Qty</th>
+                      <th className="w-[12%] px-2 py-2 text-right">Rate</th>
+                      <th className="w-[14%] px-2 py-2 text-right">Amount</th>
                       <th className="w-[4%] px-2 py-2 text-center">Tax</th>
-                      <th className="w-[5%] px-2 py-2 text-right"></th>
+                      <th className="w-[4%] px-2 py-2 text-right"></th>
                     </tr>
                   </thead>
 
@@ -465,116 +464,123 @@ export default function EstimateFormClient({
                     {items.map((it: any, idx: number) => {
                       const line = lineSubtotal(it)
                       return (
-                        <tr key={`${it._key}-main`} className="border-t border-slate-200">
-                          <td className="px-2 py-2">
-                            <select
-                              value={it.productId ?? ""}
-                              onChange={(e) => onPickProduct(it._key, e.target.value)}
-                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none focus:border-teal-400"
-                            >
-                              <option value="">Custom item…</option>
-                              {products.map((p: any) => (
-                                <option key={p.id} value={p.id}>
-                                  {p.name}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
+                        <Fragment key={it._key}>
+                          <tr key={`${it._key}-main`} className="border-t border-slate-200">
+                            <td className="px-2 py-2">
+                              <select
+                                value={it.productId ?? ""}
+                                onChange={(e) => onPickProduct(it._key, e.target.value)}
+                                className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none focus:border-teal-400"
+                              >
+                                <option value="">Custom item…</option>
+                                {products.map((p: any) => (
+                                  <option key={p.id} value={p.id}>
+                                    {p.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <input
-                              value={it.name}
-                              onChange={(e) => updateItem(it._key, { name: e.target.value })}
-                              placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
-                          </td>
+                            <td className="px-2 py-2">
+                              <input
+                                value={it.name}
+                                onChange={(e) => updateItem(it._key, { name: e.target.value })}
+                                placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <input
-                              value={it.lineNote}
-                              onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
-                              placeholder="Scope/details (optional)"
-                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700 outline-none focus:border-teal-400"
-                            />
-                          </td>
+                            <td className="px-2 py-2">
+                              <select
+                                value={it.type}
+                                onChange={(e) => {
+                                  const nextType = e.target.value as ProductType
+                                  updateItem(it._key, {
+                                    type: nextType,
+                                    taxable: nextType === "PRODUCT",
+                                    ...(nextType === "SERVICE" ? { productId: null } : {}),
+                                  })
+                                }}
+                                className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none focus:border-teal-400"
+                              >
+                                <option value="PRODUCT">Product</option>
+                                <option value="SERVICE">Service</option>
+                              </select>
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <select
-                              value={it.type}
-                              onChange={(e) => {
-                                const nextType = e.target.value as ProductType
-                                updateItem(it._key, {
-                                  type: nextType,
-                                  taxable: nextType === "PRODUCT",
-                                  ...(nextType === "SERVICE" ? { productId: null } : {}),
-                                })
-                              }}
-                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none focus:border-teal-400"
-                            >
-                              <option value="PRODUCT">Product</option>
-                              <option value="SERVICE">Service</option>
-                            </select>
-                          </td>
+                            <td className="px-2 py-2">
+                              <input
+                                inputMode="numeric"
+                                value={it.quantityStr}
+                                onFocus={(e) => e.currentTarget.select()}
+                                onChange={(e) => updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })}
+                                onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
+                                className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <input
-                              inputMode="numeric"
-                              value={it.quantityStr}
-                              onFocus={(e) => e.currentTarget.select()}
-                              onChange={(e) => updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })}
-                              onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
-                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
-                          </td>
+                            <td className="px-2 py-2">
+                              <input
+                                inputMode="decimal"
+                                value={it.unitPriceStr}
+                                onFocus={(e) => e.currentTarget.select()}
+                                onChange={(e) =>
+                                  updateItem(it._key, {
+                                    unitPriceStr: formatDecimalInput(e.target.value, 2),
+                                    manualUnitPriceStr: e.target.value,
+                                  })
+                                }
+                                onBlur={(e) =>
+                                  updateItem(it._key, {
+                                    unitPriceStr: normalizeMoneyInput(e.target.value),
+                                    manualUnitPriceStr: normalizeMoneyInput(e.target.value),
+                                  })
+                                }
+                                className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <input
-                              inputMode="decimal"
-                              value={it.unitPriceStr}
-                              onFocus={(e) => e.currentTarget.select()}
-                              onChange={(e) =>
-                                updateItem(it._key, {
-                                  unitPriceStr: formatDecimalInput(e.target.value, 2),
-                                  manualUnitPriceStr: e.target.value,
-                                })
-                              }
-                              onBlur={(e) =>
-                                updateItem(it._key, {
-                                  unitPriceStr: normalizeMoneyInput(e.target.value),
-                                  manualUnitPriceStr: normalizeMoneyInput(e.target.value),
-                                })
-                              }
-                              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
-                          </td>
+                            <td className="px-2 py-2">
+                              <div className="flex h-8 items-center justify-end rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700">
+                                {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
+                              </div>
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <div className="flex h-8 items-center justify-end rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700">
-                              {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
-                            </div>
-                          </td>
+                            <td className="px-2 py-2 text-center">
+                              <input
+                                type="checkbox"
+                                checked={Boolean(it.taxable)}
+                                onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                                className="h-4 w-4 accent-blue-600"
+                              />
+                            </td>
 
-                          <td className="px-2 py-2 text-center">
-                            <input
-                              type="checkbox"
-                              checked={Boolean(it.taxable)}
-                              onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
-                              className="h-4 w-4 accent-blue-600"
-                            />
-                          </td>
-
-                          <td className="px-2 py-2 text-right">
-                            <button
-                              type="button"
-                              onClick={() => removeItem(it._key)}
-                              title="Remove line"
-                              className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                            >
-                              Del
-                            </button>
-                          </td>
-                        </tr>
+                            <td className="px-2 py-2 text-right">
+                              <button
+                                type="button"
+                                onClick={() => removeItem(it._key)}
+                                title="Remove line"
+                                className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              >
+                                Del
+                              </button>
+                            </td>
+                          </tr>
+                          <tr className="border-t-0">
+                            <td colSpan={8} className="px-2 pb-2 pt-0">
+                              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                Description
+                              </label>
+                              <textarea
+                                value={it.lineNote}
+                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                                placeholder="Scope/details for this line"
+                                rows={2}
+                                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-sm text-slate-700 outline-none focus:border-teal-400"
+                              />
+                            </td>
+                          </tr>
+                        </Fragment>
                       )
                     })}
                   </tbody>

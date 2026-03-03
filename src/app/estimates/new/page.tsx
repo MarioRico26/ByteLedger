@@ -58,7 +58,7 @@ export default async function NewEstimatePage({
   }))
 
   return (
-    <div className="mx-auto max-w-5xl space-y-4 p-6">
+    <div className="mx-auto max-w-[1440px] space-y-4 p-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900">New Estimate</h1>
         <p className="mt-1 text-sm text-slate-500">Create a premium quote and send it in seconds.</p>
