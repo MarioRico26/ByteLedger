@@ -1,7 +1,6 @@
 // byteledger/src/app/sales/[id]/page.tsx
 import { prisma } from "@/lib/prisma"
 import { requireOrgId } from "@/lib/auth"
-import PrintButton from "./invoice/PrintButton"
 import SendInvoiceModal from "./SendInvoiceModal"
 
 function money(v: any) {
@@ -140,7 +139,12 @@ export default async function InvoicePage({
             >
               Edit Invoice
             </a>
-            <PrintButton />
+            <a
+              href={`/sales/${sale.id}/invoice`}
+              className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400"
+            >
+              Print Invoice
+            </a>
           </div>
         </div>
 
@@ -292,7 +296,7 @@ export default async function InvoicePage({
         </div>
 
         {/* Activity */}
-        <div className="mt-10">
+        <div className="mt-10 print:hidden">
           <div className="text-sm font-semibold">Activity Timeline</div>
           <div className="mt-3 space-y-4">
             {activity.length === 0 ? (
