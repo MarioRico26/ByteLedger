@@ -140,10 +140,12 @@ export default async function InvoicePage({
               Edit Invoice
             </a>
             <a
-              href={`/sales/${sale.id}/invoice`}
+              href={`/api/sales/${sale.id}/pdf`}
+              target="_blank"
+              rel="noreferrer"
               className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400"
             >
-              Print Invoice
+              Invoice PDF
             </a>
           </div>
         </div>

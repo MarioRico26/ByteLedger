@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma"
 import { requireOrgId } from "@/lib/auth"
-import PrintButton from "./PrintButton"
 import SendInvoiceModal from "../SendInvoiceModal"
 
 function money(v: any) {
@@ -93,7 +92,14 @@ export default async function InvoicePage({
 
           <div className="flex flex-col items-end gap-2 print:hidden">
             <SendInvoiceModal saleId={sale.id} defaultTo={sale.customer.email || ""} />
-            <PrintButton />
+            <a
+              href={`/api/sales/${sale.id}/pdf`}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400"
+            >
+              Download / Print PDF
+            </a>
           </div>
         </div>
 
@@ -288,7 +294,7 @@ export default async function InvoicePage({
           </div>
         </div>
 
-        <div className="mt-10 border-t border-slate-200 pt-6 text-sm text-slate-600">
+        <div className="mt-10 border-t border-slate-200 pt-6 text-sm text-slate-600 print:hidden">
           <div className="font-semibold text-slate-700">Thank you for your business.</div>
           <div className="mt-1">
             Powered by <span className="font-semibold">Byte Networks</span>
