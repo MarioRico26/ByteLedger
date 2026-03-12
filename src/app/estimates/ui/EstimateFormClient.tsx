@@ -1,6 +1,6 @@
 "use client"
 
-import { Fragment, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import LineDetailsModal from "@/components/ui/LineDetailsModal"
 
 type ProductType = "PRODUCT" | "SERVICE"
@@ -301,7 +301,24 @@ export default function EstimateFormClient({
 
   function removeItem(key: string) {
     if (detailsItemKey === key) setDetailsItemKey(null)
-    setItems((prev) => (prev.length <= 1 ? prev : prev.filter((it: any) => it._key !== key)))
+    setItems((prev) => {
+      if (prev.length <= 1) {
+        return [
+          {
+            _key: uid(),
+            productId: null,
+            name: "",
+            lineNote: "",
+            type: "SERVICE",
+            taxable: false,
+            quantityStr: "1",
+            unitPriceStr: "0.00",
+            manualUnitPriceStr: "0.00",
+          },
+        ]
+      }
+      return prev.filter((it: any) => it._key !== key)
+    })
   }
 
   function lineSubtotal(it: FormItem) {
@@ -449,14 +466,14 @@ export default function EstimateFormClient({
                 <table className="w-full table-fixed border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
-                      <th className="w-[22%] px-2 py-2">Catalog</th>
+                      <th className="w-[20%] px-2 py-2">Catalog</th>
                       <th className="w-[24%] px-2 py-2">Item</th>
                       <th className="w-[12%] px-2 py-2">Type</th>
                       <th className="w-[8%] px-2 py-2 text-right">Qty</th>
                       <th className="w-[12%] px-2 py-2 text-right">Rate</th>
-                      <th className="w-[14%] px-2 py-2 text-right">Amount</th>
+                      <th className="w-[12%] px-2 py-2 text-right">Amount</th>
                       <th className="w-[4%] px-2 py-2 text-center">Tax</th>
-                      <th className="w-[4%] px-2 py-2 text-right"></th>
+                      <th className="w-[8%] px-2 py-2 text-right">Actions</th>
                     </tr>
                   </thead>
 
@@ -464,8 +481,7 @@ export default function EstimateFormClient({
                     {items.map((it: any, idx: number) => {
                       const line = lineSubtotal(it)
                       return (
-                        <Fragment key={it._key}>
-                          <tr key={`${it._key}-main`} className="border-t border-slate-200">
+                        <tr key={it._key} className="border-t border-slate-200">
                             <td className="px-2 py-2">
                               <select
                                 value={it.productId ?? ""}
@@ -556,28 +572,25 @@ export default function EstimateFormClient({
                             </td>
 
                             <td className="px-2 py-2 text-right">
-                              <button
-                                type="button"
-                                onClick={() => removeItem(it._key)}
-                                title="Remove line"
-                                className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                              >
-                                Del
-                              </button>
+                              <div className="flex items-center justify-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setDetailsItemKey(it._key)}
+                                  className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                >
+                                  {String(it.lineNote ?? "").trim() ? "Edit" : "Note"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeItem(it._key)}
+                                  title="Remove line"
+                                  className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                >
+                                  Del
+                                </button>
+                              </div>
                             </td>
                           </tr>
-                          <tr className="border-t-0">
-                            <td colSpan={8} className="px-2 pb-3 pt-0">
-                              <textarea
-                                value={it.lineNote}
-                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
-                                placeholder="Description / scope for this line item..."
-                                rows={2}
-                                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
-                              />
-                            </td>
-                          </tr>
-                        </Fragment>
                       )
                     })}
                   </tbody>
