@@ -26,6 +26,7 @@ type Customer = {
 
 type Item = {
   name: string
+  lineNote?: string | null
   type: string
   quantity: number
   unitPrice: any
@@ -355,16 +356,22 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
   const itemFontSize = 10
 
   for (const it of sale.items || []) {
-    ensureSpace(52)
+    ensureSpace(74)
 
     const approxChars = Math.max(18, Math.floor((colItemRight - colItemLeft) / 5.2))
-    const nameLines = wrapText(it.name || "", approxChars)
-    const rowLines = Math.max(1, Math.min(3, nameLines.length))
+    const nameLines = wrapText(it.name || "", approxChars).slice(0, 2)
+    const note = String(it.lineNote ?? "").trim()
+    const noteLines = note ? wrapText(note, approxChars).slice(0, 3) : []
+    const rowLines = Math.max(1, nameLines.length) + noteLines.length
     const rowHeight = 12 * rowLines + 14
 
     let yy = y
-    for (const ln of nameLines.slice(0, 3)) {
-      text(page, ln, colItemLeft, yy, itemFontSize, false, rgb(0.12, 0.12, 0.12))
+    for (const ln of nameLines) {
+      text(page, ln, colItemLeft, yy, itemFontSize, true, rgb(0.12, 0.12, 0.12))
+      yy -= 12
+    }
+    for (const ln of noteLines) {
+      text(page, ln, colItemLeft, yy, 9, false, rgb(0.4, 0.4, 0.4))
       yy -= 12
     }
 

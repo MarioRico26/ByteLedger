@@ -272,7 +272,14 @@ export default async function InvoicePage({
               <tbody>
                 {sale.items.map((i: any) => (
                   <tr key={i.id} className="border-t border-slate-200">
-                    <td className="px-4 py-3 font-medium">{i.name}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{i.name}</div>
+                      {String(i.lineNote ?? "").trim() ? (
+                        <div className="mt-0.5 whitespace-pre-wrap text-xs text-slate-500">
+                          {String(i.lineNote).trim()}
+                        </div>
+                      ) : null}
+                    </td>
                     <td className="px-4 py-3 text-slate-700">{i.type}</td>
                     <td className="px-4 py-3 text-right">{i.quantity}</td>
                     <td className="px-4 py-3 text-right">{fmtMoney(i.unitPrice)}</td>
