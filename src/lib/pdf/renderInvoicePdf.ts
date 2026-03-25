@@ -152,7 +152,7 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
   const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold)
 
   const LETTER = { w: 612, h: 792 }
-  const margin = 48
+  const margin = 40
 
   const text = (
     page: any,
@@ -224,14 +224,14 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
     })
   }
   text(page, (orgDisplayName(org) || "ORGANIZATION").toUpperCase(), margin, y, 9, false, rgb(0.45, 0.45, 0.45))
-  y -= 18
+  y -= 15
   text(page, orgDisplayName(org) || "ByteLedger", margin, y, 18, true)
-  y -= 18
+  y -= 14
 
   const orgLines = orgAddressLines(org)
   for (const l of orgLines) {
     text(page, l, margin, y, 10, false, rgb(0.25, 0.25, 0.25))
-    y -= 14
+    y -= 12
   }
 
   const meta = [
@@ -241,38 +241,38 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
   ].filter(Boolean) as string[]
   for (const m of meta) {
     text(page, m, margin, y, 10, false, rgb(0.25, 0.25, 0.25))
-    y -= 14
+    y -= 12
   }
 
-  y -= 10
+  y -= 8
   line(page, margin, y, LETTER.w - margin, y)
-  y -= 22
+  y -= 16
 
   // Invoice meta
   text(page, "INVOICE", margin, y, 10, true, rgb(0.35, 0.35, 0.35))
-  y -= 18
-  text(page, sale.description || "Invoice", margin, y, 14, true)
   y -= 14
+  text(page, sale.description || "Invoice", margin, y, 14, true)
+  y -= 12
   text(page, `#${sale.id.slice(0, 8)}`, margin, y, 10, false, rgb(0.45, 0.45, 0.45))
 
   const rightX = LETTER.w - margin
   textRight(page, `Invoice #: ${invoiceNumber}`, rightX, y + 28, 10, false, rgb(0.25, 0.25, 0.25))
   textRight(page, `Created: ${fmtDate(sale.createdAt)}`, rightX, y + 14, 10, false, rgb(0.25, 0.25, 0.25))
   textRight(page, `Due: ${fmtDate(sale.dueDate)}`, rightX, y, 10, false, rgb(0.25, 0.25, 0.25))
-  y -= 18
-  textRight(page, `PO Number: ${sale.poNumber?.trim() || "—"}`, rightX, y, 10, false, rgb(0.25, 0.25, 0.25))
   y -= 14
+  textRight(page, `PO Number: ${sale.poNumber?.trim() || "—"}`, rightX, y, 10, false, rgb(0.25, 0.25, 0.25))
+  y -= 12
   textRight(page, `Status: ${sale.status}`, rightX, y, 10, false, rgb(0.25, 0.25, 0.25))
 
-  y -= 22
+  y -= 16
   line(page, margin, y, LETTER.w - margin, y)
-  y -= 22
+  y -= 16
 
   // Bill To
   text(page, "BILL TO", margin, y, 10, true, rgb(0.35, 0.35, 0.35))
-  y -= 18
+  y -= 15
   text(page, cust.fullName || "Customer", margin, y, 12, true)
-  y -= 16
+  y -= 13
 
   const blocks = customerBlocks(cust, sale.serviceAddress)
   for (const b of blocks) {
@@ -281,9 +281,9 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
     const lines = wrapText(b.value, 70)
     for (const ln of lines) {
       text(page, ln, margin, y, 10, false, rgb(0.15, 0.15, 0.15))
-      y -= 12
+      y -= 11
     }
-    y -= 6
+    y -= 4
   }
 
   const custMeta = [
@@ -292,14 +292,14 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
   ].filter(Boolean) as string[]
   if (custMeta.length) {
     text(page, custMeta.join("  •  "), margin, y, 10, false, rgb(0.25, 0.25, 0.25))
-    y -= 18
+    y -= 14
   }
 
   // Details
   if ((sale.description ?? "").trim() || (sale.notes ?? "").trim()) {
     y -= 6
     text(page, "DETAILS", margin, y, 10, true, rgb(0.35, 0.35, 0.35))
-    y -= 16
+    y -= 14
 
     if ((sale.description ?? "").trim()) {
       text(page, "Description:", margin, y, 10, true, rgb(0.25, 0.25, 0.25))
@@ -310,9 +310,9 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
           continue
         }
         text(page, ln, margin, y, 10, false, rgb(0.15, 0.15, 0.15))
-        y -= 12
+        y -= 11
       }
-      y -= 6
+      y -= 4
     }
 
     if ((sale.notes ?? "").trim()) {
@@ -324,14 +324,14 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
           continue
         }
         text(page, ln, margin, y, 10, false, rgb(0.15, 0.15, 0.15))
-        y -= 12
+        y -= 11
       }
-      y -= 6
+      y -= 4
     }
 
-    y -= 10
+    y -= 8
     line(page, margin, y, LETTER.w - margin, y)
-    y -= 22
+    y -= 16
   }
 
   // Items table
@@ -339,10 +339,10 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
   const tableRight = LETTER.w - margin
   const gap = 10
 
-  const totalW = 92
-  const priceW = 78
-  const qtyW = 46
-  const typeW = 86
+  const totalW = 76
+  const priceW = 68
+  const qtyW = 32
+  const typeW = 64
 
   const colTotalRight = tableRight
   const colTotalLeft = colTotalRight - totalW
@@ -374,9 +374,9 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
     textRight(page, "PRICE", colPriceRight, y, headerSize, true, rgb(0.35, 0.35, 0.35))
     textRight(page, "LINE TOTAL", colTotalRight, y, headerSize, true, rgb(0.35, 0.35, 0.35))
 
-    y -= 12
+    y -= 10
     line(page, tableLeft, y, tableRight, y)
-    y -= 14
+    y -= 12
   }
 
   drawItemsHeader()
@@ -389,7 +389,7 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
     const note = String(it.lineNote ?? "").trim()
     const noteLines = note ? wrapTextWithBreaks(note, approxChars) : []
     const rowLines = Math.max(1, nameLines.length) + noteLines.length
-    const rowHeight = 12 * rowLines + 14
+    const rowHeight = 11 * rowLines + 12
 
     ensureSpace(rowHeight + 18)
     if (y >= LETTER.h - margin - 0.001) {
@@ -399,15 +399,15 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
     let yy = y
     for (const ln of nameLines) {
       text(page, ln, colItemLeft, yy, itemFontSize, true, rgb(0.12, 0.12, 0.12))
-      yy -= 12
+      yy -= 11
     }
     for (const ln of noteLines) {
       if (!ln) {
-        yy -= 7
+        yy -= 5
         continue
       }
-      text(page, ln, colItemLeft, yy, 9.5, false, rgb(0.26, 0.26, 0.26))
-      yy -= 12
+      text(page, ln, colItemLeft, yy, 9, false, rgb(0.26, 0.26, 0.26))
+      yy -= 11
     }
 
     const typeStr = String(it.type || "")
@@ -421,7 +421,7 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
 
     y -= rowHeight
     line(page, tableLeft, y, tableRight, y)
-    y -= 12
+    y -= 10
   }
 
   // Totals

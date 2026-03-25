@@ -231,11 +231,11 @@ export default async function InvoicePage({
             <table className="w-full table-fixed text-left text-sm">
               <thead className="bg-slate-50 text-xs text-slate-600">
                 <tr>
-                  <th className="w-[52%] px-4 py-3">Item</th>
-                  <th className="w-[14%] px-4 py-3">Type</th>
-                  <th className="w-[10%] px-4 py-3 text-right">Qty</th>
-                  <th className="w-[12%] px-4 py-3 text-right">Unit</th>
-                  <th className="w-[12%] px-4 py-3 text-right">Total</th>
+                  <th className="w-[60%] px-4 py-3">Item</th>
+                  <th className="w-[12%] px-4 py-3">Type</th>
+                  <th className="w-[8%] px-4 py-3 text-right">Qty</th>
+                  <th className="w-[10%] px-4 py-3 text-right">Unit</th>
+                  <th className="w-[10%] px-4 py-3 text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
