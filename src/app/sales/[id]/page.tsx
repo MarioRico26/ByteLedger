@@ -217,7 +217,14 @@ export default async function InvoicePage({
               </div>
             )}
 
-            {sale.notes && <div className="mt-2 text-sm text-slate-600">Notes: {sale.notes}</div>}
+            {sale.notes ? (
+              <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</div>
+                <div className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">
+                  {sale.notes}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-xl border border-slate-200 p-4">
@@ -265,31 +272,33 @@ export default async function InvoicePage({
         <div className="mt-8">
           <div className="text-sm font-semibold">Items</div>
           <div className="mt-2 overflow-hidden rounded-xl border border-slate-200">
-            <table className="w-full text-left text-sm">
+            <table className="w-full table-fixed text-left text-sm">
               <thead className="bg-slate-50 text-xs text-slate-600">
                 <tr>
-                  <th className="px-4 py-3">Item</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3 text-right">Qty</th>
-                  <th className="px-4 py-3 text-right">Unit</th>
-                  <th className="px-4 py-3 text-right">Total</th>
+                  <th className="w-[52%] px-4 py-3">Item</th>
+                  <th className="w-[14%] px-4 py-3">Type</th>
+                  <th className="w-[10%] px-4 py-3 text-right">Qty</th>
+                  <th className="w-[12%] px-4 py-3 text-right">Unit</th>
+                  <th className="w-[12%] px-4 py-3 text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {sale.items.map((i: any) => (
                   <tr key={i.id} className="border-t border-slate-200">
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{i.name}</div>
+                    <td className="px-4 py-3 align-top">
+                      <div className="break-words whitespace-pre-wrap font-medium leading-relaxed text-slate-900">
+                        {i.name}
+                      </div>
                       {String(i.lineNote ?? "").trim() ? (
-                        <div className="mt-0.5 whitespace-pre-wrap text-xs text-slate-500">
+                        <div className="mt-2 break-words whitespace-pre-wrap rounded-md bg-slate-100 px-2 py-1.5 text-[13px] leading-relaxed text-slate-700">
                           {String(i.lineNote).trim()}
                         </div>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3 text-slate-700">{i.type}</td>
-                    <td className="px-4 py-3 text-right">{i.quantity}</td>
-                    <td className="px-4 py-3 text-right">{fmtMoney(i.unitPrice)}</td>
-                    <td className="px-4 py-3 text-right font-semibold">{fmtMoney(i.lineTotal)}</td>
+                    <td className="px-4 py-3 align-top text-slate-700">{i.type}</td>
+                    <td className="px-4 py-3 align-top text-right">{i.quantity}</td>
+                    <td className="px-4 py-3 align-top text-right">{fmtMoney(i.unitPrice)}</td>
+                    <td className="px-4 py-3 align-top text-right font-semibold">{fmtMoney(i.lineTotal)}</td>
                   </tr>
                 ))}
               </tbody>

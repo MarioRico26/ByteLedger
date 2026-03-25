@@ -118,6 +118,22 @@ function wrapText(text: string, maxChars: number) {
   return lines
 }
 
+function wrapTextWithBreaks(text: string, maxChars: number) {
+  const rawLines = String(text || "").replace(/\r/g, "").split("\n")
+  const out: string[] = []
+
+  for (const raw of rawLines) {
+    const trimmed = raw.trim()
+    if (!trimmed) {
+      out.push("")
+      continue
+    }
+    out.push(...wrapText(trimmed, maxChars))
+  }
+
+  return out
+}
+
 async function embedLogo(pdf: PDFDocument, logoUrl?: string | null) {
   if (!logoUrl) return null
   const match = logoUrl.match(/^data:(image\/png|image\/jpeg);base64,(.+)$/)
@@ -288,7 +304,11 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
     if ((sale.description ?? "").trim()) {
       text(page, "Description:", margin, y, 10, true, rgb(0.25, 0.25, 0.25))
       y -= 12
-      for (const ln of wrapText(String(sale.description), 95)) {
+      for (const ln of wrapTextWithBreaks(String(sale.description), 95)) {
+        if (!ln) {
+          y -= 7
+          continue
+        }
         text(page, ln, margin, y, 10, false, rgb(0.15, 0.15, 0.15))
         y -= 12
       }
@@ -298,7 +318,11 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
     if ((sale.notes ?? "").trim()) {
       text(page, "Notes:", margin, y, 10, true, rgb(0.25, 0.25, 0.25))
       y -= 12
-      for (const ln of wrapText(String(sale.notes), 95)) {
+      for (const ln of wrapTextWithBreaks(String(sale.notes), 95)) {
+        if (!ln) {
+          y -= 7
+          continue
+        }
         text(page, ln, margin, y, 10, false, rgb(0.15, 0.15, 0.15))
         y -= 12
       }
@@ -343,27 +367,34 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
   }
 
   const headerSize = 8
-  text(page, "ITEM", colItemLeft, y, headerSize, true, rgb(0.35, 0.35, 0.35))
-  text(page, "TYPE", colTypeLeft, y, headerSize, true, rgb(0.35, 0.35, 0.35))
-  textRight(page, "QTY", colQtyRight, y, headerSize, true, rgb(0.35, 0.35, 0.35))
-  textRight(page, "PRICE", colPriceRight, y, headerSize, true, rgb(0.35, 0.35, 0.35))
-  textRight(page, "LINE TOTAL", colTotalRight, y, headerSize, true, rgb(0.35, 0.35, 0.35))
+  const drawItemsHeader = () => {
+    text(page, "ITEM", colItemLeft, y, headerSize, true, rgb(0.35, 0.35, 0.35))
+    text(page, "TYPE", colTypeLeft, y, headerSize, true, rgb(0.35, 0.35, 0.35))
+    textRight(page, "QTY", colQtyRight, y, headerSize, true, rgb(0.35, 0.35, 0.35))
+    textRight(page, "PRICE", colPriceRight, y, headerSize, true, rgb(0.35, 0.35, 0.35))
+    textRight(page, "LINE TOTAL", colTotalRight, y, headerSize, true, rgb(0.35, 0.35, 0.35))
 
-  y -= 12
-  line(page, tableLeft, y, tableRight, y)
-  y -= 14
+    y -= 12
+    line(page, tableLeft, y, tableRight, y)
+    y -= 14
+  }
+
+  drawItemsHeader()
 
   const itemFontSize = 10
 
   for (const it of sale.items || []) {
-    ensureSpace(74)
-
     const approxChars = Math.max(18, Math.floor((colItemRight - colItemLeft) / 5.2))
-    const nameLines = wrapText(it.name || "", approxChars).slice(0, 2)
+    const nameLines = wrapTextWithBreaks(it.name || "", approxChars)
     const note = String(it.lineNote ?? "").trim()
-    const noteLines = note ? wrapText(note, approxChars).slice(0, 3) : []
+    const noteLines = note ? wrapTextWithBreaks(note, approxChars) : []
     const rowLines = Math.max(1, nameLines.length) + noteLines.length
     const rowHeight = 12 * rowLines + 14
+
+    ensureSpace(rowHeight + 18)
+    if (y >= LETTER.h - margin - 0.001) {
+      drawItemsHeader()
+    }
 
     let yy = y
     for (const ln of nameLines) {
@@ -371,7 +402,11 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
       yy -= 12
     }
     for (const ln of noteLines) {
-      text(page, ln, colItemLeft, yy, 9, false, rgb(0.4, 0.4, 0.4))
+      if (!ln) {
+        yy -= 7
+        continue
+      }
+      text(page, ln, colItemLeft, yy, 9.5, false, rgb(0.26, 0.26, 0.26))
       yy -= 12
     }
 
