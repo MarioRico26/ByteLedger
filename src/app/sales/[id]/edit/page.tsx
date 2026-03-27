@@ -66,6 +66,8 @@ export default async function SaleEditPage({
       id: it.id,
       productId: it.productId ?? null,
       name: it.name,
+      lineNote: it.lineNote ?? "",
+      taxable: typeof it.taxable === "boolean" ? it.taxable : it.type === "PRODUCT",
       type: it.type,
       quantity: it.quantity,
       unitPrice: it.unitPrice?.toString?.() ?? "0",

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import SearchableSelect, { SearchableOption } from "@/components/SearchableSelect"
 import LineDetailsModal from "@/components/ui/LineDetailsModal"
 
@@ -366,13 +366,13 @@ export default function SaleEditClient({
                 <table className="w-full table-fixed border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
-                      <th className="w-[18%] px-2 py-2">Catalog</th>
-                      <th className="w-[30%] px-2 py-2">Name / detail</th>
+                      <th className="w-[22%] px-2 py-2">Catalog</th>
+                      <th className="w-[34%] px-2 py-2">Name</th>
                       <th className="w-[10%] px-2 py-2">Type</th>
-                      <th className="w-[10%] px-2 py-2">Taxable</th>
-                      <th className="w-[8%] px-2 py-2 text-right">Qty</th>
-                      <th className="w-[10%] px-2 py-2 text-right">Price</th>
-                      <th className="w-[12%] px-2 py-2 text-right">Subtotal</th>
+                      <th className="w-[9%] px-2 py-2">Taxable</th>
+                      <th className="w-[7%] px-2 py-2 text-right">Qty</th>
+                      <th className="w-[8%] px-2 py-2 text-right">Price</th>
+                      <th className="w-[8%] px-2 py-2 text-right">Subtotal</th>
                       <th className="w-[2%] px-2 py-2 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -381,92 +381,85 @@ export default function SaleEditClient({
                     {items.map((it: any, idx: number) => {
                       const line = lineSubtotal(it)
                       return (
-                        <tr key={`${it._key}-main`} className="border-t border-slate-200">
-                          <td className="px-2 py-2">
-                            <SearchableSelect
-                              value={it.productId ?? ""}
-                              onChange={(v) => pickProduct(it._key, v)}
-                              options={productOptions}
-                              placeholder="Search catalog..."
-                              portal
-                            />
-                          </td>
-
-                          <td className="px-2 py-2 align-top">
-                            <input
-                              value={it.name}
-                              onChange={(e) => updateItem(it._key, { name: e.target.value })}
-                              placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
-                            <textarea
-                              value={String(it.lineNote ?? "")}
-                              onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
-                              rows={2}
-                              placeholder="Line detail (optional)"
-                              className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
-                            />
-                          </td>
-
-                          <td className="px-2 py-2">
-                            <select
-                              value={it.type}
-                              onChange={(e) => {
-                                const nextType = e.target.value as "PRODUCT" | "SERVICE"
-                                updateItem(it._key, {
-                                  type: nextType,
-                                  taxable: nextType === "PRODUCT",
-                                  ...(nextType === "SERVICE" ? { productId: null } : {}),
-                                })
-                              }}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                            >
-                              <option value="PRODUCT">Product</option>
-                              <option value="SERVICE">Service</option>
-                            </select>
-                          </td>
-
-                          <td className="px-2 py-2">
-                            <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700">
-                              <input
-                                type="checkbox"
-                                checked={Boolean(it.taxable)}
-                                onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                        <Fragment key={`${it._key}-main`}>
+                          <tr className="border-t border-slate-200">
+                            <td className="px-2 py-2 align-top">
+                              <SearchableSelect
+                                value={it.productId ?? ""}
+                                onChange={(v) => pickProduct(it._key, v)}
+                                options={productOptions}
+                                placeholder="Search catalog..."
+                                portal
                               />
-                              Tax
-                            </label>
-                          </td>
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <input
-                              inputMode="numeric"
-                              value={it.quantityStr}
-                              onFocus={(e) => e.currentTarget.select()}
-                              onChange={(e) => updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })}
-                              onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
-                          </td>
+                            <td className="px-2 py-2 align-top">
+                              <input
+                                value={it.name}
+                                onChange={(e) => updateItem(it._key, { name: e.target.value })}
+                                placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <input
-                              inputMode="decimal"
-                              value={it.unitPriceStr}
-                              onFocus={(e) => e.currentTarget.select()}
-                              onChange={(e) => updateItem(it._key, { unitPriceStr: formatDecimalInput(e.target.value, 2) })}
-                              onBlur={(e) => updateItem(it._key, { unitPriceStr: normalizeMoneyInput(e.target.value) })}
-                              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                            />
-                          </td>
+                            <td className="px-2 py-2 align-top">
+                              <select
+                                value={it.type}
+                                onChange={(e) => {
+                                  const nextType = e.target.value as "PRODUCT" | "SERVICE"
+                                  updateItem(it._key, {
+                                    type: nextType,
+                                    taxable: nextType === "PRODUCT",
+                                    ...(nextType === "SERVICE" ? { productId: null } : {}),
+                                  })
+                                }}
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              >
+                                <option value="PRODUCT">Product</option>
+                                <option value="SERVICE">Service</option>
+                              </select>
+                            </td>
 
-                          <td className="px-2 py-2">
-                            <div className="flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-slate-700">
-                              {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
-                            </div>
-                          </td>
+                            <td className="px-2 py-2 align-top">
+                              <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700">
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(it.taxable)}
+                                  onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                                />
+                                Tax
+                              </label>
+                            </td>
 
-                          <td className="px-2 py-2 text-right">
-                            <div className="flex items-center justify-end gap-1">
+                            <td className="px-2 py-2 align-top">
+                              <input
+                                inputMode="numeric"
+                                value={it.quantityStr}
+                                onFocus={(e) => e.currentTarget.select()}
+                                onChange={(e) => updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })}
+                                onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                            </td>
+
+                            <td className="px-2 py-2 align-top">
+                              <input
+                                inputMode="decimal"
+                                value={it.unitPriceStr}
+                                onFocus={(e) => e.currentTarget.select()}
+                                onChange={(e) => updateItem(it._key, { unitPriceStr: formatDecimalInput(e.target.value, 2) })}
+                                onBlur={(e) => updateItem(it._key, { unitPriceStr: normalizeMoneyInput(e.target.value) })}
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                              />
+                            </td>
+
+                            <td className="px-2 py-2 align-top">
+                              <div className="flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-slate-700">
+                                {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
+                              </div>
+                            </td>
+
+                            <td className="px-2 py-2 text-right align-top">
                               <button
                                 type="button"
                                 onClick={() => removeLine(it._key)}
@@ -475,9 +468,26 @@ export default function SaleEditClient({
                               >
                                 Remove
                               </button>
-                            </div>
-                          </td>
-                        </tr>
+                            </td>
+                          </tr>
+
+                          <tr className="border-b border-slate-200 bg-slate-50/35">
+                            <td className="px-2 pb-3 pt-0 align-top">
+                              <div className="px-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                Detail
+                              </div>
+                            </td>
+                            <td colSpan={7} className="px-2 pb-3 pt-0">
+                              <textarea
+                                value={String(it.lineNote ?? "")}
+                                onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                                rows={2}
+                                placeholder="Line detail (optional)"
+                                className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
+                              />
+                            </td>
+                          </tr>
+                        </Fragment>
                       )
                     })}
                   </tbody>
