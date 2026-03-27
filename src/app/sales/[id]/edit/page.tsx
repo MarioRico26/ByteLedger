@@ -85,7 +85,7 @@ export default async function SaleEditPage({
   }))
 
   return (
-    <div className="mx-auto max-w-5xl p-6 space-y-4">
+    <div className="mx-auto max-w-[1680px] p-6 space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Edit Invoice</h1>
