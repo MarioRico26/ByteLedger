@@ -362,18 +362,18 @@ export default function SaleEditClient({
 
             {/* Desktop table */}
             <div className="mt-2 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
-              <div className="overflow-x-auto">
-                <table className="min-w-[1040px] w-full border-collapse text-sm">
+              <div className="overflow-x-hidden">
+                <table className="w-full table-fixed border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
-                      <th className="px-3 py-2 min-w-[190px]">Catalog</th>
-                      <th className="px-3 py-2 min-w-[240px]">Name</th>
-                      <th className="px-3 py-2 w-[130px]">Type</th>
-                      <th className="px-3 py-2 w-[110px]">Taxable</th>
-                      <th className="px-3 py-2 w-[110px]">Qty</th>
-                      <th className="px-3 py-2 w-[140px]">Price</th>
-                      <th className="px-3 py-2 w-[160px]">Subtotal</th>
-                      <th className="px-3 py-2 w-[110px]"></th>
+                      <th className="w-[18%] px-2 py-2">Catalog</th>
+                      <th className="w-[30%] px-2 py-2">Name / detail</th>
+                      <th className="w-[10%] px-2 py-2">Type</th>
+                      <th className="w-[10%] px-2 py-2">Taxable</th>
+                      <th className="w-[8%] px-2 py-2 text-right">Qty</th>
+                      <th className="w-[10%] px-2 py-2 text-right">Price</th>
+                      <th className="w-[12%] px-2 py-2 text-right">Subtotal</th>
+                      <th className="w-[2%] px-2 py-2 text-right">Actions</th>
                     </tr>
                   </thead>
 
@@ -382,7 +382,7 @@ export default function SaleEditClient({
                       const line = lineSubtotal(it)
                       return (
                         <tr key={`${it._key}-main`} className="border-t border-slate-200">
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <SearchableSelect
                               value={it.productId ?? ""}
                               onChange={(v) => pickProduct(it._key, v)}
@@ -392,16 +392,23 @@ export default function SaleEditClient({
                             />
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2 align-top">
                             <input
                               value={it.name}
                               onChange={(e) => updateItem(it._key, { name: e.target.value })}
                               placeholder={idx === 0 ? "e.g. Installation labor" : ""}
                               className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
                             />
+                            <textarea
+                              value={String(it.lineNote ?? "")}
+                              onChange={(e) => updateItem(it._key, { lineNote: e.target.value })}
+                              rows={2}
+                              placeholder="Line detail (optional)"
+                              className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-teal-400"
+                            />
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <select
                               value={it.type}
                               onChange={(e) => {
@@ -419,7 +426,7 @@ export default function SaleEditClient({
                             </select>
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700">
                               <input
                                 type="checkbox"
@@ -430,7 +437,7 @@ export default function SaleEditClient({
                             </label>
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <input
                               inputMode="numeric"
                               value={it.quantityStr}
@@ -441,7 +448,7 @@ export default function SaleEditClient({
                             />
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <input
                               inputMode="decimal"
                               value={it.unitPriceStr}
@@ -452,24 +459,18 @@ export default function SaleEditClient({
                             />
                           </td>
 
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2">
                             <div className="flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-slate-700">
                               {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
                             </div>
                           </td>
 
-                          <td className="px-3 py-2 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setDetailsItemKey(it._key)}
-                                className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                              >
-                                {String(it.lineNote ?? "").trim() ? "Details" : "+ Details"}
-                              </button>
+                          <td className="px-2 py-2 text-right">
+                            <div className="flex items-center justify-end gap-1">
                               <button
                                 type="button"
                                 onClick={() => removeLine(it._key)}
+                                title="Remove line"
                                 className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
                               >
                                 Remove

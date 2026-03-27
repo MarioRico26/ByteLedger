@@ -1,10 +1,16 @@
 "use client"
 
+import { usePathname } from "next/navigation"
 import Sidebar from "./Sidebar"
 import Topbar from "./Topbar"
 import MobileNav from "./MobileNav"
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const extraWideWorkspace =
+    pathname?.startsWith("/sales") || pathname?.startsWith("/estimates")
+  const shellWidthClass = extraWideWorkspace ? "max-w-[1760px]" : "max-w-[1600px]"
+
   return (
     <div className="app-shell-bg relative min-h-screen text-slate-900 print:bg-white">
       <div className="pointer-events-none absolute inset-0 app-shell-grid print:hidden" />
@@ -21,13 +27,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Topbar />
           </div>
 
-          <main className="mx-auto max-w-6xl p-4 pb-24 md:p-6 md:pb-6 print:p-0">
+          <main className={`mx-auto ${shellWidthClass} p-4 pb-24 md:p-6 md:pb-6 print:p-0`}>
             <div className="app-panel app-panel-strong relative rounded-3xl p-4 md:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0 print:shadow-none">
               <div className="pointer-events-none absolute left-6 right-6 top-0 h-1 rounded-b-full bg-gradient-to-r from-blue-600 via-sky-400 via-amber-400 to-orange-400 opacity-85 print:hidden" />
               <div className="relative">{children}</div>
             </div>
 
-            <div className="mx-auto mt-6 max-w-6xl px-1 text-xs text-slate-500 print:hidden">
+            <div className={`mx-auto mt-6 ${shellWidthClass} px-1 text-xs text-slate-500 print:hidden`}>
               Powered by <span className="font-semibold text-slate-700">Byte Networks</span>
             </div>
           </main>
