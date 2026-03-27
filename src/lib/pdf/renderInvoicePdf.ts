@@ -296,37 +296,53 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
   }
 
   // Details
-  if ((sale.description ?? "").trim() || (sale.notes ?? "").trim()) {
+  if ((sale.notes ?? "").trim()) {
     y -= 6
     text(page, "DETAILS", margin, y, 10, true, rgb(0.35, 0.35, 0.35))
     y -= 14
 
-    if ((sale.description ?? "").trim()) {
-      text(page, "Description:", margin, y, 10, true, rgb(0.25, 0.25, 0.25))
-      y -= 12
-      for (const ln of wrapTextWithBreaks(String(sale.description), 95)) {
-        if (!ln) {
-          y -= 7
-          continue
-        }
-        text(page, ln, margin, y, 10, false, rgb(0.15, 0.15, 0.15))
-        y -= 11
-      }
-      y -= 4
-    }
+    text(page, "Notes:", margin, y, 10, true, rgb(0.25, 0.25, 0.25))
+    y -= 12
 
-    if ((sale.notes ?? "").trim()) {
-      text(page, "Notes:", margin, y, 10, true, rgb(0.25, 0.25, 0.25))
-      y -= 12
-      for (const ln of wrapTextWithBreaks(String(sale.notes), 95)) {
+    const noteLines = wrapTextWithBreaks(String(sale.notes), 46)
+    if (noteLines.length > 8) {
+      const mid = Math.ceil(noteLines.length / 2)
+      const leftLines = noteLines.slice(0, mid)
+      const rightLines = noteLines.slice(mid)
+      const leftX = margin
+      const rightColumnWidth = 236
+      const rightX = LETTER.w - margin - rightColumnWidth
+      let leftY = y
+      let rightY = y
+
+      for (const ln of leftLines) {
         if (!ln) {
-          y -= 7
+          leftY -= 5
           continue
         }
-        text(page, ln, margin, y, 10, false, rgb(0.15, 0.15, 0.15))
-        y -= 11
+        text(page, ln, leftX, leftY, 9, false, rgb(0.15, 0.15, 0.15))
+        leftY -= 10
       }
-      y -= 4
+
+      for (const ln of rightLines) {
+        if (!ln) {
+          rightY -= 5
+          continue
+        }
+        text(page, ln, rightX, rightY, 9, false, rgb(0.15, 0.15, 0.15))
+        rightY -= 10
+      }
+
+      y = Math.min(leftY, rightY) - 2
+    } else {
+      for (const ln of noteLines) {
+        if (!ln) {
+          y -= 5
+          continue
+        }
+        text(page, ln, margin, y, 9, false, rgb(0.15, 0.15, 0.15))
+        y -= 10
+      }
     }
 
     y -= 8
