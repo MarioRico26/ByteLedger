@@ -18,6 +18,8 @@ export async function GET() {
         session.user.memberships?.[0]?.organization?.name ||
         null,
       isSuperAdmin: Boolean(session.user.isSuperAdmin),
+      role: session.role ?? null,
+      canAccessExpenses: Boolean(session.canAccessExpenses),
       isEnabled: Boolean(session.user.isEnabled),
       accessStartsAt: session.user.accessStartsAt ?? null,
       accessEndsAt: session.user.accessEndsAt ?? null,

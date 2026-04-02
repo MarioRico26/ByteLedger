@@ -39,6 +39,8 @@ model Organization {
   saleItems     SaleItem[]
   estimates     Estimate[]
   estimateItems EstimateItem[]
+  expenseCategories ExpenseCategory[]
+  expenses          Expense[]
 
   emailLogs EmailLog[]
 }
@@ -69,6 +71,7 @@ model Membership {
   user         User         @relation(fields: [userId], references: [id])
 
   role      Role     @default(STAFF)
+  canAccessExpenses Boolean @default(false)
   createdAt DateTime @default(now())
 
   @@unique([organizationId, userId])
@@ -200,6 +203,52 @@ model Payment {
   notes  String?
 
   createdAt DateTime @default(now())
+}
+
+model ExpenseCategory {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name      String
+  color     String? @default("#2563eb")
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expenses Expense[]
+
+  @@index([organizationId])
+  @@unique([organizationId, name])
+}
+
+model Expense {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   ExpenseCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  title         String
+  vendor        String?
+  description   String?
+  reference     String?
+  notes         String?
+  amount        Decimal            @db.Decimal(10, 2)
+  expenseDate   DateTime           @default(now())
+  dueDate       DateTime?
+  status        ExpenseStatus      @default(PAID)
+  paymentMethod ExpensePaymentMethod @default(OTHER)
+  createdByUserId String?
+  createdByName   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([categoryId])
+  @@index([expenseDate])
+  @@index([status])
 }
 
 model Product {
@@ -343,4 +392,19 @@ enum PaymentMethod {
 enum EmailStatus {
   SENT
   FAILED
+}
+
+enum ExpenseStatus {
+  PENDING
+  PAID
+  SCHEDULED
+}
+
+enum ExpensePaymentMethod {
+  ACH
+  CARD
+  CASH
+  CHECK
+  WIRE
+  OTHER
 }

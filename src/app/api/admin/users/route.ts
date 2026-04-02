@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     const organizationId = String(body.organizationId || "").trim()
     const role = ROLE_VALUES.includes(body.role) ? (body.role as Role) : "STAFF"
     const isEnabled = body.isEnabled === false ? false : true
+    const canAccessExpenses = body.canAccessExpenses === true
     const accessStartsAt = parseDateInput(body.accessStartsAt)
     const accessEndsAt = parseDateInput(body.accessEndsAt)
 
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
           create: {
             organizationId,
             role,
+            canAccessExpenses,
           },
         },
       },

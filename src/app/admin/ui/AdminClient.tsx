@@ -19,7 +19,7 @@ type User = {
   isEnabled?: boolean
   accessStartsAt?: string | null
   accessEndsAt?: string | null
-  memberships?: { organization?: Org | null; role?: string }[]
+  memberships?: { organization?: Org | null; role?: string; canAccessExpenses?: boolean }[]
 }
 
 type OrgBenchmark = {
@@ -66,6 +66,7 @@ export default function AdminClient({
     organizationId: orgs[0]?.id ?? "",
     role: "STAFF",
     isEnabled: true,
+    canAccessExpenses: false,
     accessStartsAt: "",
     accessEndsAt: "",
   })
@@ -194,6 +195,7 @@ export default function AdminClient({
         organizationId: orgOptions[0]?.id ?? "",
         role: "STAFF",
         isEnabled: true,
+        canAccessExpenses: false,
         accessStartsAt: "",
         accessEndsAt: "",
       })
@@ -208,6 +210,7 @@ export default function AdminClient({
     userId: string,
     payload: {
       isEnabled?: boolean
+      canAccessExpenses?: boolean
       accessStartsAt?: string
       accessEndsAt?: string
     }
@@ -489,6 +492,22 @@ export default function AdminClient({
                 className="h-4 w-4"
               />
             </label>
+            <label className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+              <div>
+                <div className="text-xs text-slate-500">Expenses module</div>
+                <div className="text-[11px] text-slate-400">
+                  Owners/Admins inherit access automatically.
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={userForm.canAccessExpenses}
+                onChange={(e) =>
+                  setUserForm((p) => ({ ...p, canAccessExpenses: e.target.checked }))
+                }
+                className="h-4 w-4"
+              />
+            </label>
             <label className="grid gap-1">
               <span className="text-xs text-slate-500">Access start (optional)</span>
               <input
@@ -569,6 +588,11 @@ export default function AdminClient({
               const membership = u.memberships?.[0]
               const emailStatus = emailStatusByUserId[u.id]
               const enabled = u.isEnabled !== false
+              const expensesEnabled =
+                Boolean(u.isSuperAdmin) ||
+                membership?.role === "OWNER" ||
+                membership?.role === "ADMIN" ||
+                Boolean(membership?.canAccessExpenses)
               const start = toDateInput(u.accessStartsAt)
               const end = toDateInput(u.accessEndsAt)
               return (
@@ -592,6 +616,15 @@ export default function AdminClient({
                         }`}
                       >
                         {enabled ? "ENABLED" : "DISABLED"}
+                      </span>
+                      <span
+                        className={`rounded-full border px-2 py-0.5 text-[10px] ${
+                          expensesEnabled
+                            ? "border-blue-200 bg-blue-50 text-blue-700"
+                            : "border-slate-200 bg-white text-slate-600"
+                        }`}
+                      >
+                        {expensesEnabled ? "EXPENSES ON" : "EXPENSES OFF"}
                       </span>
                       {start ? (
                         <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-600">
@@ -624,6 +657,19 @@ export default function AdminClient({
                       className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:text-slate-900 disabled:opacity-60"
                     >
                       {accessBusyId === u.id ? "Updating..." : enabled ? "Disable" : "Enable"}
+                    </button>
+                    <button
+                      onClick={() =>
+                        updateUserAccess(u.id, { canAccessExpenses: !Boolean(membership?.canAccessExpenses) })
+                      }
+                      disabled={accessBusyId === u.id || membership?.role === "OWNER" || membership?.role === "ADMIN"}
+                      className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:border-blue-300 hover:text-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {membership?.role === "OWNER" || membership?.role === "ADMIN"
+                        ? "Expenses included"
+                        : Boolean(membership?.canAccessExpenses)
+                          ? "Remove expenses"
+                          : "Grant expenses"}
                     </button>
                     <input
                       type="date"

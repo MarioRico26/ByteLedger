@@ -366,8 +366,8 @@ export default function SaleEditClient({
                 <table className="w-full table-fixed border-collapse text-sm">
                   <thead className="bg-slate-50">
                     <tr className="text-left text-xs text-slate-500">
-                      <th className="w-[22%] px-2 py-2">Catalog</th>
-                      <th className="w-[34%] px-2 py-2">Name</th>
+                      <th className="w-[18%] px-2 py-2">Catalog</th>
+                      <th className="w-[38%] px-2 py-2">Name</th>
                       <th className="w-[10%] px-2 py-2">Type</th>
                       <th className="w-[9%] px-2 py-2">Taxable</th>
                       <th className="w-[7%] px-2 py-2 text-right">Qty</th>
@@ -394,11 +394,12 @@ export default function SaleEditClient({
                             </td>
 
                             <td className="px-2 py-2 align-top">
-                              <input
+                              <textarea
                                 value={it.name}
                                 onChange={(e) => updateItem(it._key, { name: e.target.value })}
                                 placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                rows={2}
+                                className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-relaxed text-slate-900 outline-none focus:border-teal-400"
                               />
                             </td>
 

@@ -1,4 +1,9 @@
-export type NavItem = { label: string; href: string; requiresSuperAdmin?: boolean }
+export type NavItem = {
+  label: string
+  href: string
+  requiresSuperAdmin?: boolean
+  requiresExpenseAccess?: boolean
+}
 export type NavGroup = { label: string; items: NavItem[] }
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -12,6 +17,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Estimates", href: "/estimates" },
       { label: "Sales", href: "/sales" },
       { label: "Payments", href: "/payments" },
+      { label: "Expenses", href: "/expenses", requiresExpenseAccess: true },
       { label: "Reports", href: "/reports" },
     ],
   },

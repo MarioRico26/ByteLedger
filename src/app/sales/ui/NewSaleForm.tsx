@@ -436,12 +436,12 @@ export default function NewSaleForm({
                           <thead className="bg-slate-50">
                             <tr className="text-left text-xs text-slate-500">
                               <th className="w-[18%] px-2 py-2">Catalog</th>
-                              <th className="w-[30%] px-2 py-2">Name / detail</th>
+                              <th className="w-[38%] px-2 py-2">Name / detail</th>
                               <th className="w-[10%] px-2 py-2">Type</th>
                               <th className="w-[10%] px-2 py-2">Taxable</th>
                               <th className="w-[8%] px-2 py-2 text-right">Qty</th>
-                              <th className="w-[10%] px-2 py-2 text-right">Price</th>
-                              <th className="w-[12%] px-2 py-2 text-right">Subtotal</th>
+                              <th className="w-[7%] px-2 py-2 text-right">Price</th>
+                              <th className="w-[7%] px-2 py-2 text-right">Subtotal</th>
                               <th className="w-[2%] px-2 py-2 text-right">Actions</th>
                             </tr>
                           </thead>
@@ -462,11 +462,12 @@ export default function NewSaleForm({
                                   </td>
 
                                   <td className="px-2 py-2 align-top">
-                                    <input
+                                    <textarea
                                       value={l.name}
                                       onChange={(e) => updateLine(idx, { name: e.target.value })}
                                       placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                                      rows={2}
+                                      className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-relaxed text-slate-900 outline-none focus:border-teal-400"
                                     />
                                     <textarea
                                       value={String(l.lineNote ?? "")}

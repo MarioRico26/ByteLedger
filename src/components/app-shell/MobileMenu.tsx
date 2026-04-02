@@ -20,6 +20,7 @@ export default function MobileMenu() {
     name?: string | null
     email?: string | null
     organizationName?: string | null
+    canAccessExpenses?: boolean | null
   } | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -64,10 +65,14 @@ export default function MobileMenu() {
     return NAV_GROUPS.map((group: any) => ({
       ...group,
       items: group.items.filter((item: any) =>
-        item.requiresSuperAdmin ? Boolean(isSuperAdmin) : true
+        item.requiresSuperAdmin
+          ? Boolean(isSuperAdmin)
+          : item.requiresExpenseAccess
+            ? Boolean(profile?.canAccessExpenses) || Boolean(isSuperAdmin)
+            : true
       ),
     })).filter((group: any) => group.items.length > 0)
-  }, [isSuperAdmin])
+  }, [isSuperAdmin, profile?.canAccessExpenses])
 
   return (
     <>

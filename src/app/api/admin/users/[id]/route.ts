@@ -24,12 +24,19 @@ export async function PATCH(req: Request, ctx: Ctx) {
     const body = await req.json().catch(() => ({}))
     const isEnabled =
       typeof body.isEnabled === "boolean" ? body.isEnabled : undefined
+    const canAccessExpenses =
+      typeof body.canAccessExpenses === "boolean" ? body.canAccessExpenses : undefined
     const accessStartsAt =
       body.accessStartsAt !== undefined ? parseDateInput(body.accessStartsAt) : undefined
     const accessEndsAt =
       body.accessEndsAt !== undefined ? parseDateInput(body.accessEndsAt) : undefined
 
-    if (isEnabled === undefined && accessStartsAt === undefined && accessEndsAt === undefined) {
+    if (
+      isEnabled === undefined &&
+      canAccessExpenses === undefined &&
+      accessStartsAt === undefined &&
+      accessEndsAt === undefined
+    ) {
       return NextResponse.json({ error: "No changes provided" }, { status: 400 })
     }
 
@@ -55,15 +62,29 @@ export async function PATCH(req: Request, ctx: Ctx) {
       )
     }
 
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...(isEnabled !== undefined ? { isEnabled } : {}),
-        ...(accessStartsAt !== undefined ? { accessStartsAt } : {}),
-        ...(accessEndsAt !== undefined ? { accessEndsAt } : {}),
-      },
-      include: { memberships: { include: { organization: true } } },
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          ...(isEnabled !== undefined ? { isEnabled } : {}),
+          ...(accessStartsAt !== undefined ? { accessStartsAt } : {}),
+          ...(accessEndsAt !== undefined ? { accessEndsAt } : {}),
+        },
+      })
+
+      if (canAccessExpenses !== undefined && existing.memberships[0]?.id) {
+        await tx.membership.update({
+          where: { id: existing.memberships[0].id },
+          data: { canAccessExpenses },
+        })
+      }
+
+      return tx.user.findUnique({
+        where: { id: userId },
+        include: { memberships: { include: { organization: true } } },
+      })
     })
+    if (!updated) return NextResponse.json({ error: "User not found" }, { status: 404 })
 
     return NextResponse.json(updated)
   } catch (error: any) {

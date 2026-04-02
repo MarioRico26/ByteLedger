@@ -147,13 +147,30 @@ export async function getSession() {
   }
 
   const membership = session.user.memberships[0] || null
+  const canAccessExpenses =
+    Boolean(session.user.isSuperAdmin) ||
+    membership?.role === "OWNER" ||
+    membership?.role === "ADMIN" ||
+    Boolean(membership?.canAccessExpenses)
 
   return {
     session,
     user: session.user,
     orgId: membership?.organizationId ?? null,
     role: membership?.role ?? null,
+    canAccessExpenses,
   }
+}
+
+export function canAccessExpenses(session: {
+  user?: { isSuperAdmin?: boolean | null } | null
+  role?: string | null
+  canAccessExpenses?: boolean | null
+}) {
+  if (!session) return false
+  if (session.user?.isSuperAdmin) return true
+  if (session.role === "OWNER" || session.role === "ADMIN") return true
+  return Boolean(session.canAccessExpenses)
 }
 
 export async function getOrgIdOrNull() {
@@ -183,6 +200,13 @@ export async function requireSuperAdmin() {
   const session = await requireSession()
   if (session.user?.mustChangePassword) throw new Error("PASSWORD_CHANGE_REQUIRED")
   if (!session.user?.isSuperAdmin) throw new Error("FORBIDDEN")
+  return session
+}
+
+export async function requireExpenseAccess() {
+  const session = await requireSession()
+  if (session.user?.mustChangePassword) throw new Error("PASSWORD_CHANGE_REQUIRED")
+  if (!session.orgId || !canAccessExpenses(session)) throw new Error("FORBIDDEN")
   return session
 }
 
