@@ -17,31 +17,52 @@ type SearchParams = {
   range?: string
 }
 
+function startOfDay(d: Date) {
+  const next = new Date(d)
+  next.setHours(0, 0, 0, 0)
+  return next
+}
+
+function endOfDay(d: Date) {
+  const next = new Date(d)
+  next.setHours(23, 59, 59, 999)
+  return next
+}
+
+function addDays(d: Date, days: number) {
+  const next = new Date(d)
+  next.setDate(next.getDate() + days)
+  return next
+}
+
 function getRangeStart(range: string, now: Date) {
+  const today = startOfDay(now)
   if (range === "last7") {
-    const d = new Date(now)
-    d.setDate(now.getDate() - 7)
-    return d
+    return addDays(today, -6)
   }
   if (range === "last90") {
-    const d = new Date(now)
-    d.setDate(now.getDate() - 90)
-    return d
+    return addDays(today, -89)
   }
   if (range === "ytd") {
     return new Date(now.getFullYear(), 0, 1)
   }
   // default last 30
-  const d = new Date(now)
-  d.setDate(now.getDate() - 30)
-  return d
+  return addDays(today, -29)
 }
 
-export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams> | SearchParams
+}) {
   const orgId = await requireOrgId()
   const now = new Date()
-  const range = searchParams.range || "last30"
+  const resolvedSearchParams = await Promise.resolve(searchParams)
+  const range = resolvedSearchParams?.range || "last30"
   const rangeStart = getRangeStart(range, now)
+  const rangeEnd = endOfDay(now)
+  const todayStart = startOfDay(now)
+  const upcomingEnd = endOfDay(addDays(now, 14))
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
 
   const [
@@ -57,11 +78,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   ] =
     await Promise.all([
       prisma.sale.aggregate({
-        where: { organizationId: orgId, saleDate: { gte: rangeStart } },
+        where: { organizationId: orgId, saleDate: { gte: rangeStart, lte: rangeEnd } },
         _sum: { totalAmount: true, taxAmount: true },
       }),
       prisma.payment.aggregate({
-        where: { organizationId: orgId, paidAt: { gte: rangeStart } },
+        where: { organizationId: orgId, paidAt: { gte: rangeStart, lte: rangeEnd } },
         _sum: { amount: true },
       }),
       prisma.sale.aggregate({
@@ -72,7 +93,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         where: {
           organizationId: orgId,
           balanceAmount: { gt: 0 },
-          dueDate: { lt: now },
+          dueDate: { lt: todayStart },
         },
       }),
       prisma.sale.findMany({
@@ -112,7 +133,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         },
       }),
       prisma.sale.findMany({
-        where: { organizationId: orgId, saleDate: { gte: rangeStart } },
+        where: { organizationId: orgId, saleDate: { gte: rangeStart, lte: rangeEnd } },
         orderBy: { saleDate: "desc" },
         select: {
           id: true,
@@ -240,7 +261,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     where: {
       organizationId: orgId,
       balanceAmount: { gt: 0 },
-      dueDate: { gte: now, lt: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 15) },
+      dueDate: { gte: todayStart, lte: upcomingEnd },
     },
     orderBy: { dueDate: "asc" },
     take: 6,
