@@ -393,7 +393,7 @@ export default function EstimateFormClient({
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="space-y-6">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
           {/* Header */}
           <div className="grid gap-4 md:grid-cols-2">
@@ -460,142 +460,142 @@ export default function EstimateFormClient({
               </button>
             </div>
 
-            {/* Desktop table */}
-            <div className="mt-2 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
-              <div className="overflow-x-hidden">
-                <table className="w-full table-fixed border-collapse text-sm">
-                  <thead className="bg-slate-50">
-                    <tr className="text-left text-xs text-slate-500">
-                      <th className="w-[20%] px-2 py-2">Catalog</th>
-                      <th className="w-[24%] px-2 py-2">Item</th>
-                      <th className="w-[12%] px-2 py-2">Type</th>
-                      <th className="w-[8%] px-2 py-2 text-right">Qty</th>
-                      <th className="w-[12%] px-2 py-2 text-right">Rate</th>
-                      <th className="w-[12%] px-2 py-2 text-right">Amount</th>
-                      <th className="w-[4%] px-2 py-2 text-center">Tax</th>
-                      <th className="w-[8%] px-2 py-2 text-right">Actions</th>
-                    </tr>
-                  </thead>
+            {/* Desktop rows */}
+            <div className="mt-3 hidden gap-3 md:grid">
+              {items.map((it: any, idx: number) => {
+                const line = lineSubtotal(it)
+                return (
+                  <div
+                    key={it._key}
+                    className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
+                  >
+                    <div className="mb-2 grid grid-cols-[1.1fr_1.5fr_130px_90px_120px_130px] gap-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                      <div>Catalog</div>
+                      <div>Item</div>
+                      <div>Type</div>
+                      <div className="text-right">Qty</div>
+                      <div className="text-right">Rate</div>
+                      <div className="text-right">Amount</div>
+                    </div>
 
-                  <tbody>
-                    {items.map((it: any, idx: number) => {
-                      const line = lineSubtotal(it)
-                      return (
-                        <tr key={it._key} className="border-t border-slate-200">
-                            <td className="px-2 py-2">
-                              <select
-                                value={it.productId ?? ""}
-                                onChange={(e) => onPickProduct(it._key, e.target.value)}
-                                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                              >
-                                <option value="">Custom item…</option>
-                                {products.map((p: any) => (
-                                  <option key={p.id} value={p.id}>
-                                    {p.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
+                    <div className="grid grid-cols-[1.1fr_1.5fr_130px_90px_120px_130px] gap-3">
+                      <select
+                        value={it.productId ?? ""}
+                        onChange={(e) => onPickProduct(it._key, e.target.value)}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                      >
+                        <option value="">Custom item…</option>
+                        {products.map((p: any) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
 
-                            <td className="px-2 py-2">
-                              <input
-                                value={it.name}
-                                onChange={(e) => updateItem(it._key, { name: e.target.value })}
-                                placeholder={idx === 0 ? "e.g. Installation labor" : ""}
-                                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                              />
-                            </td>
+                      <input
+                        value={it.name}
+                        onChange={(e) => updateItem(it._key, { name: e.target.value })}
+                        placeholder={idx === 0 ? "e.g. Installation labor" : ""}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                      />
 
-                            <td className="px-2 py-2">
-                              <select
-                                value={it.type}
-                                onChange={(e) => {
-                                  const nextType = e.target.value as ProductType
-                                  updateItem(it._key, {
-                                    type: nextType,
-                                    taxable: nextType === "PRODUCT",
-                                    ...(nextType === "SERVICE" ? { productId: null } : {}),
-                                  })
-                                }}
-                                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                              >
-                                <option value="PRODUCT">Product</option>
-                                <option value="SERVICE">Service</option>
-                              </select>
-                            </td>
+                      <select
+                        value={it.type}
+                        onChange={(e) => {
+                          const nextType = e.target.value as ProductType
+                          updateItem(it._key, {
+                            type: nextType,
+                            taxable: nextType === "PRODUCT",
+                            ...(nextType === "SERVICE" ? { productId: null } : {}),
+                          })
+                        }}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                      >
+                        <option value="PRODUCT">Product</option>
+                        <option value="SERVICE">Service</option>
+                      </select>
 
-                            <td className="px-2 py-2">
-                              <input
-                                inputMode="numeric"
-                                value={it.quantityStr}
-                                onFocus={(e) => e.currentTarget.select()}
-                                onChange={(e) => updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })}
-                                onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
-                                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
-                              />
-                            </td>
+                      <input
+                        inputMode="numeric"
+                        value={it.quantityStr}
+                        onFocus={(e) => e.currentTarget.select()}
+                        onChange={(e) =>
+                          updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })
+                        }
+                        onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
+                      />
 
-                            <td className="px-2 py-2">
-                              <input
-                                inputMode="decimal"
-                                value={it.unitPriceStr}
-                                onFocus={(e) => e.currentTarget.select()}
-                                onChange={(e) =>
-                                  updateItem(it._key, {
-                                    unitPriceStr: formatDecimalInput(e.target.value, 2),
-                                    manualUnitPriceStr: e.target.value,
-                                  })
-                                }
-                                onBlur={(e) =>
-                                  updateItem(it._key, {
-                                    unitPriceStr: normalizeMoneyInput(e.target.value),
-                                    manualUnitPriceStr: normalizeMoneyInput(e.target.value),
-                                  })
-                                }
-                                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
-                              />
-                            </td>
+                      <input
+                        inputMode="decimal"
+                        value={it.unitPriceStr}
+                        onFocus={(e) => e.currentTarget.select()}
+                        onChange={(e) =>
+                          updateItem(it._key, {
+                            unitPriceStr: formatDecimalInput(e.target.value, 2),
+                            manualUnitPriceStr: e.target.value,
+                          })
+                        }
+                        onBlur={(e) =>
+                          updateItem(it._key, {
+                            unitPriceStr: normalizeMoneyInput(e.target.value),
+                            manualUnitPriceStr: normalizeMoneyInput(e.target.value),
+                          })
+                        }
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
+                      />
 
-                            <td className="px-2 py-2">
-                              <div className="flex h-10 items-center justify-end rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm text-slate-700">
-                                {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
-                              </div>
-                            </td>
+                      <div className="flex h-11 items-center justify-end rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700">
+                        {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
+                      </div>
+                    </div>
 
-                            <td className="px-2 py-2 text-center">
-                              <input
-                                type="checkbox"
-                                checked={Boolean(it.taxable)}
-                                onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
-                                className="h-4 w-4 accent-blue-600"
-                              />
-                            </td>
+                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)_110px_190px] gap-3">
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                            Line details
+                          </div>
+                          {String(it.lineNote ?? "").trim() ? (
+                            <div className="truncate text-xs text-slate-500">
+                              {String(it.lineNote).trim()}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-slate-400">No details yet</div>
+                          )}
+                        </div>
+                      </div>
 
-                            <td className="px-2 py-2 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => setDetailsItemKey(it._key)}
-                                  className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                                >
-                                  {String(it.lineNote ?? "").trim() ? "Edit" : "Note"}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => removeItem(it._key)}
-                                  title="Remove line"
-                                  className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                                >
-                                  Del
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                      <label className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(it.taxable)}
+                          onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                          className="h-4 w-4 accent-blue-600"
+                        />
+                        Taxable
+                      </label>
+
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDetailsItemKey(it._key)}
+                          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                        >
+                          {String(it.lineNote ?? "").trim() ? "Edit details" : "Add details"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(it._key)}
+                          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
             {/* Mobile cards */}
@@ -735,9 +735,9 @@ export default function EstimateFormClient({
           </div>
         </div>
         {/* Summary */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm xl:sticky xl:top-6 xl:self-start">
           <div className="text-xs uppercase tracking-widest text-slate-400">Summary</div>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="mt-4 grid gap-4">
             <div className="grid gap-3">
               <div>
                 <label className="text-xs text-slate-500">Tax rate (%)</label>
