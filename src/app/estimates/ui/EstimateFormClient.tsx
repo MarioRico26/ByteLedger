@@ -393,7 +393,7 @@ export default function EstimateFormClient({
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="space-y-6">
         <div className="space-y-5">
           {/* Header */}
           <div className="grid gap-4 md:grid-cols-2">
@@ -501,112 +501,118 @@ export default function EstimateFormClient({
                       </div>
                     </div>
 
-                    <div className="mt-3 grid gap-3 xl:grid-cols-[140px_90px_130px_150px_170px_190px] 2xl:grid-cols-[150px_100px_140px_160px_180px_210px]">
-                      <div>
-                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                          Type
+                    <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
+                      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        <div>
+                          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                            Type
+                          </div>
+                          <select
+                            value={it.type}
+                            onChange={(e) => {
+                              const nextType = e.target.value as ProductType
+                              updateItem(it._key, {
+                                type: nextType,
+                                taxable: nextType === "PRODUCT",
+                                ...(nextType === "SERVICE" ? { productId: null } : {}),
+                              })
+                            }}
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
+                          >
+                            <option value="PRODUCT">Product</option>
+                            <option value="SERVICE">Service</option>
+                          </select>
                         </div>
-                        <select
-                          value={it.type}
-                          onChange={(e) => {
-                            const nextType = e.target.value as ProductType
-                            updateItem(it._key, {
-                              type: nextType,
-                              taxable: nextType === "PRODUCT",
-                              ...(nextType === "SERVICE" ? { productId: null } : {}),
-                            })
-                          }}
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-teal-400"
-                        >
-                          <option value="PRODUCT">Product</option>
-                          <option value="SERVICE">Service</option>
-                        </select>
-                      </div>
 
-                      <div>
-                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 text-right">
-                          Qty
-                        </div>
-                        <input
-                          inputMode="numeric"
-                          value={it.quantityStr}
-                          onFocus={(e) => e.currentTarget.select()}
-                          onChange={(e) =>
-                            updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })
-                          }
-                          onBlur={(e) => updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })}
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 text-right">
-                          Rate
-                        </div>
-                        <input
-                          inputMode="decimal"
-                          value={it.unitPriceStr}
-                          onFocus={(e) => e.currentTarget.select()}
-                          onChange={(e) =>
-                            updateItem(it._key, {
-                              unitPriceStr: formatDecimalInput(e.target.value, 2),
-                              manualUnitPriceStr: e.target.value,
-                            })
-                          }
-                          onBlur={(e) =>
-                            updateItem(it._key, {
-                              unitPriceStr: normalizeMoneyInput(e.target.value),
-                              manualUnitPriceStr: normalizeMoneyInput(e.target.value),
-                            })
-                          }
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 text-right">
-                          Amount
-                        </div>
-                        <div className="flex h-11 items-center justify-end rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700">
-                          {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                          Tax
-                        </div>
-                        <label className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700">
+                        <div>
+                          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 text-right">
+                            Qty
+                          </div>
                           <input
-                            type="checkbox"
-                            checked={Boolean(it.taxable)}
-                            onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
-                            className="h-4 w-4 accent-blue-600"
+                            inputMode="numeric"
+                            value={it.quantityStr}
+                            onFocus={(e) => e.currentTarget.select()}
+                            onChange={(e) =>
+                              updateItem(it._key, { quantityStr: formatIntegerInput(e.target.value) })
+                            }
+                            onBlur={(e) =>
+                              updateItem(it._key, { quantityStr: normalizeQtyInput(e.target.value) })
+                            }
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
                           />
-                          Taxable
-                        </label>
+                        </div>
+
+                        <div>
+                          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 text-right">
+                            Rate
+                          </div>
+                          <input
+                            inputMode="decimal"
+                            value={it.unitPriceStr}
+                            onFocus={(e) => e.currentTarget.select()}
+                            onChange={(e) =>
+                              updateItem(it._key, {
+                                unitPriceStr: formatDecimalInput(e.target.value, 2),
+                                manualUnitPriceStr: e.target.value,
+                              })
+                            }
+                            onBlur={(e) =>
+                              updateItem(it._key, {
+                                unitPriceStr: normalizeMoneyInput(e.target.value),
+                                manualUnitPriceStr: normalizeMoneyInput(e.target.value),
+                              })
+                            }
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-right text-sm text-slate-900 outline-none focus:border-teal-400"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 text-right">
+                            Amount
+                          </div>
+                          <div className="flex h-11 items-center justify-end rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700">
+                            {line.toLocaleString(undefined, { style: "currency", currency: "USD" })}
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
-                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 text-right">
-                          Actions
+                      <div className="grid gap-3 md:grid-cols-[120px_minmax(0,1fr)] xl:grid-cols-1">
+                        <div>
+                          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                            Tax
+                          </div>
+                          <label className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(it.taxable)}
+                              onChange={(e) => updateItem(it._key, { taxable: e.target.checked })}
+                              className="h-4 w-4 accent-blue-600"
+                            />
+                            Taxable
+                          </label>
                         </div>
-                        <div className="flex items-end justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setDetailsItemKey(it._key)}
-                          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                        >
-                          {String(it.lineNote ?? "").trim() ? "Edit details" : "Add details"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeItem(it._key)}
-                          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                        >
-                          Remove
-                        </button>
-                      </div>
+
+                        <div>
+                          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 xl:text-right">
+                            Actions
+                          </div>
+                          <div className="flex gap-2 xl:justify-end">
+                            <button
+                              type="button"
+                              onClick={() => setDetailsItemKey(it._key)}
+                              className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                            >
+                              {String(it.lineNote ?? "").trim() ? "Edit details" : "Add details"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeItem(it._key)}
+                              className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
