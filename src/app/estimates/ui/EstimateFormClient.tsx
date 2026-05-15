@@ -501,7 +501,7 @@ export default function EstimateFormClient({
                       </div>
                     </div>
 
-                    <div className="mt-3 grid gap-3 xl:grid-cols-[150px_100px_130px_140px_minmax(0,1fr)]">
+                    <div className="mt-3 grid gap-3 xl:grid-cols-[140px_90px_130px_150px_170px_190px] 2xl:grid-cols-[150px_100px_140px_160px_180px_210px]">
                       <div>
                         <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                           Type
@@ -572,7 +572,10 @@ export default function EstimateFormClient({
                         </div>
                       </div>
 
-                      <div className="flex items-end justify-end gap-2">
+                      <div>
+                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                          Tax
+                        </div>
                         <label className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700">
                           <input
                             type="checkbox"
@@ -582,7 +585,13 @@ export default function EstimateFormClient({
                           />
                           Taxable
                         </label>
+                      </div>
 
+                      <div>
+                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 text-right">
+                          Actions
+                        </div>
+                        <div className="flex items-end justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => setDetailsItemKey(it._key)}
@@ -597,6 +606,7 @@ export default function EstimateFormClient({
                         >
                           Remove
                         </button>
+                      </div>
                       </div>
                     </div>
 
