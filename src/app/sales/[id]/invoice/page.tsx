@@ -66,11 +66,13 @@ export default async function InvoicePage({
         <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6">
           <div className="flex items-start gap-4">
             {org.logoUrl ? (
-              <img
-                src={org.logoUrl}
-                alt={`${orgName} logo`}
-                className="h-24 w-24 rounded-2xl border border-slate-200 bg-white object-contain"
-              />
+              <div className="flex h-24 w-36 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white px-3 py-2">
+                <img
+                  src={org.logoUrl}
+                  alt={`${orgName} logo`}
+                  className="max-h-full w-auto max-w-full object-contain"
+                />
+              </div>
             ) : null}
             <div>
               <div className="text-xs uppercase tracking-widest text-slate-500">{orgName}</div>

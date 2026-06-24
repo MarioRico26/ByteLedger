@@ -190,15 +190,18 @@ export async function renderReceiptPdfBuffer(receipt: ReceiptForPdf): Promise<Bu
     .toUpperCase()}`
 
   // Header
+  let logoBottomY: number | null = null
   if (logoImage) {
-    const maxW = 200
-    const maxH = 80
+    const maxW = 180
+    const maxH = 72
     const scale = Math.min(maxW / logoImage.width, maxH / logoImage.height, 1)
     const w = logoImage.width * scale
     const h = logoImage.height * scale
+    const logoY = LETTER.h - margin - h + 6
+    logoBottomY = logoY
     page.drawImage(logoImage, {
       x: LETTER.w - margin - w,
-      y: LETTER.h - margin - h + 6,
+      y: logoY,
       width: w,
       height: h,
     })
@@ -224,6 +227,7 @@ export async function renderReceiptPdfBuffer(receipt: ReceiptForPdf): Promise<Bu
     y -= 14
   }
 
+  if (logoBottomY !== null) y = Math.min(y, logoBottomY - 16)
   y -= 10
   line(page, margin, y, LETTER.w - margin, y)
   y -= 22

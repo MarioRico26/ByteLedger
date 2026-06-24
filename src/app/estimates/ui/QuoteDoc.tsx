@@ -128,11 +128,13 @@ export default function QuoteDoc({ estimate }: { estimate: QuoteDocEstimate }) {
           {/* Org */}
           <div className="flex items-start gap-4">
             {org.logoUrl ? (
-              <img
-                src={org.logoUrl}
-                alt={`${orgDisplayName(org) || "Organization"} logo`}
-                className="h-24 w-24 rounded-2xl border border-zinc-200 bg-white object-contain"
-              />
+              <div className="flex h-24 w-36 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-zinc-200 bg-white px-3 py-2">
+                <img
+                  src={org.logoUrl}
+                  alt={`${orgDisplayName(org) || "Organization"} logo`}
+                  className="max-h-full w-auto max-w-full object-contain"
+                />
+              </div>
             ) : null}
             <div className="min-w-0">
               <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
