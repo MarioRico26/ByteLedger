@@ -30,15 +30,16 @@ function priceToNumber(v: any): number | null {
 export default async function NewEstimatePage({
   searchParams,
 }: {
-  searchParams?: { customerId?: string }
+  searchParams?: Promise<{ customerId?: string }> | { customerId?: string }
 }) {
+  const resolvedSearchParams = await Promise.resolve(searchParams)
   const orgId = await requireOrgId()
 
   const [customers, products, organization] = await Promise.all([
     prisma.customer.findMany({
       where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
-      select: { id: true, fullName: true, email: true, phone: true },
+      select: { id: true, fullName: true, email: true, phone: true, workAddress: true, homeAddress: true },
     }),
     prisma.product.findMany({
       where: { organizationId: orgId },
@@ -67,7 +68,7 @@ export default async function NewEstimatePage({
         mode="create"
         customers={customers}
         products={cleanProducts as any}
-        initialCustomerId={searchParams?.customerId}
+        initialCustomerId={resolvedSearchParams?.customerId}
         defaultTaxRate={organization?.defaultTaxRate?.toString?.() ?? "0"}
       />
     </div>

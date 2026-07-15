@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { requireOrgId } from "@/lib/auth"
+import PrintStatementButton from "./PrintStatementButton"
 
 function money(v: any) {
   const n = Number(v)
@@ -32,7 +33,6 @@ export default async function CustomerStatementPage({
           payments: { orderBy: { paidAt: "asc" } },
         },
       },
-      organization: true,
     },
   })
 
@@ -92,12 +92,7 @@ export default async function CustomerStatementPage({
               {customer.phone ? ` • ${customer.phone}` : ""}
             </div>
           </div>
-          <button
-            onClick={() => window.print()}
-            className="rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400"
-          >
-            Print
-          </button>
+          <PrintStatementButton />
         </div>
 
         <div className="hidden border-b border-slate-200 pb-6 print:block">

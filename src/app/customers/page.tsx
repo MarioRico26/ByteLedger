@@ -5,7 +5,7 @@ import NewCustomerForm from "./ui/NewCustomerForm"
 
 export default async function CustomersPage() {
   const orgId = await requireOrgId()
-  const [customers, estimates, sales] = await Promise.all([
+  const [customers, estimates, sales, payments] = await Promise.all([
     prisma.customer.findMany({
       where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
@@ -18,9 +18,27 @@ export default async function CustomersPage() {
     }),
     prisma.sale.findMany({
       where: { organizationId: orgId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { saleDate: "desc" },
       take: 200,
-      select: { id: true, customerId: true, createdAt: true, totalAmount: true, status: true },
+      select: { id: true, customerId: true, createdAt: true, saleDate: true, totalAmount: true, status: true, description: true },
+    }),
+    prisma.payment.findMany({
+      where: { organizationId: orgId },
+      orderBy: { paidAt: "desc" },
+      take: 300,
+      select: {
+        id: true,
+        amount: true,
+        paidAt: true,
+        method: true,
+        sale: {
+          select: {
+            id: true,
+            customerId: true,
+            description: true,
+          },
+        },
+      },
     }),
   ])
 
@@ -41,6 +59,17 @@ export default async function CustomersPage() {
     if (list.length < 2) {
       list.push(s)
       salesByCustomer.set(s.customerId, list)
+    }
+  }
+
+  const paymentsByCustomer = new Map<string, typeof payments>()
+  for (const payment of payments) {
+    const customerId = payment.sale?.customerId
+    if (!customerId) continue
+    const list = paymentsByCustomer.get(customerId) || []
+    if (list.length < 4) {
+      list.push(payment)
+      paymentsByCustomer.set(customerId, list)
     }
   }
 
@@ -66,10 +95,20 @@ export default async function CustomersPage() {
       (s: (typeof sales)[number]) => ({
       id: s.id,
       createdAt: s.createdAt.toISOString(),
+      saleDate: s.saleDate?.toISOString?.() ?? null,
       totalAmount: s.totalAmount?.toString?.() ?? "0",
       status: s.status,
+      description: s.description ?? null,
     })
     ),
+    recentPayments: (paymentsByCustomer.get(c.id) || []).map((payment: (typeof payments)[number]) => ({
+      id: payment.id,
+      amount: payment.amount?.toString?.() ?? "0",
+      paidAt: payment.paidAt.toISOString(),
+      method: payment.method,
+      saleId: payment.sale?.id ?? null,
+      saleDescription: payment.sale?.description ?? null,
+    })),
   }))
 
   return (

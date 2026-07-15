@@ -4,6 +4,18 @@ import { useMemo, useState } from "react"
 import EditCustomerModal from "./EditCustomerModal"
 import type { CustomerDTO } from "./CustomersClient"
 
+function formatDate(value?: string | null) {
+  if (!value) return "—"
+  const d = new Date(value)
+  if (Number.isNaN(d.valueOf())) return "—"
+  return d.toLocaleDateString()
+}
+
+function money(value: string) {
+  const n = Number(value)
+  return Number.isFinite(n) ? n.toLocaleString(undefined, { style: "currency", currency: "USD" }) : "$0.00"
+}
+
 export default function CustomerCard({
   customer,
   onUpdated,
@@ -14,6 +26,7 @@ export default function CustomerCard({
   onDeleted: (id: string) => void
 }) {
   const [showDetails, setShowDetails] = useState(false)
+  const [showActivity, setShowActivity] = useState(false)
 
   const contactLine = useMemo(() => {
     const parts = [
@@ -23,12 +36,43 @@ export default function CustomerCard({
     return parts.length ? parts.join(" • ") : "No email or phone"
   }, [customer.email, customer.phone])
 
+  const timeline = useMemo(() => {
+    const estimateRows = customer.recentEstimates.map((item) => ({
+      id: `estimate-${item.id}`,
+      at: item.createdAt,
+      label: "Estimate",
+      amount: money(item.totalAmount),
+      detail: item.status,
+      href: `/estimates/${item.id}/quote`,
+    }))
+    const saleRows = customer.recentSales.map((item) => ({
+      id: `sale-${item.id}`,
+      at: item.saleDate || item.createdAt,
+      label: "Invoice",
+      amount: money(item.totalAmount),
+      detail: item.description || item.status,
+      href: `/sales/${item.id}/invoice`,
+    }))
+    const paymentRows = customer.recentPayments.map((item) => ({
+      id: `payment-${item.id}`,
+      at: item.paidAt,
+      label: "Payment",
+      amount: money(item.amount),
+      detail: item.saleDescription || item.method,
+      href: item.saleId ? `/payments/${item.id}/receipt` : `/payments`,
+    }))
+    return [...estimateRows, ...saleRows, ...paymentRows]
+      .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+      .slice(0, 6)
+  }, [customer.recentEstimates, customer.recentPayments, customer.recentSales])
+
   const recentSummary = useMemo(() => {
     const est = customer.recentEstimates.length
     const sal = customer.recentSales.length
-    if (est === 0 && sal === 0) return "Recent: none"
-    return `Recent: ${est} estimate${est === 1 ? "" : "s"} • ${sal} invoice${sal === 1 ? "" : "s"}`
-  }, [customer.recentEstimates.length, customer.recentSales.length])
+    const pay = customer.recentPayments.length
+    if (est === 0 && sal === 0 && pay == 0) return "Recent: none"
+    return `Recent: ${est} estimate${est === 1 ? "" : "s"} • ${sal} invoice${sal === 1 ? "" : "s"} • ${pay} payment${pay === 1 ? "" : "s"}`
+  }, [customer.recentEstimates.length, customer.recentPayments.length, customer.recentSales.length])
 
   async function remove() {
     if (!confirm("Delete this customer? This can fail if it has sales/estimates.")) return
@@ -115,34 +159,50 @@ export default function CustomerCard({
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:col-span-1 lg:col-span-2">
-            <div className="text-[11px] text-slate-500">Recent activity</div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {customer.recentEstimates.map((e: any) => (
-                <a
-                  key={e.id}
-                  href={`/estimates/${e.id}/quote`}
-                  className="rounded-full border border-slate-200 bg-white px-2 py-1 text-[10px] text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                >
-                  Quote #{e.id.slice(0, 6)} •{" "}
-                  {Number(e.totalAmount).toLocaleString(undefined, { style: "currency", currency: "USD" })}
-                </a>
-              ))}
-              {customer.recentSales.map((s: any) => (
-                <a
-                  key={s.id}
-                  href={`/sales/${s.id}/invoice`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full border border-slate-200 bg-white px-2 py-1 text-[10px] text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                >
-                  Invoice #{s.id.slice(0, 6)} •{" "}
-                  {Number(s.totalAmount).toLocaleString(undefined, { style: "currency", currency: "USD" })}
-                </a>
-              ))}
-              {customer.recentEstimates.length === 0 && customer.recentSales.length === 0 ? (
-                <span className="text-[11px] text-slate-400">No recent activity</span>
-              ) : null}
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowActivity((v) => !v)}
+              className="flex w-full items-center justify-between text-left"
+            >
+              <div>
+                <div className="text-[11px] text-slate-500">Recent transactions</div>
+                <div className="mt-1 text-xs text-slate-400">Latest estimates, invoices, and payments</div>
+              </div>
+              <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600">
+                {showActivity ? "Hide" : "Show"}
+              </span>
+            </button>
+
+            {showActivity ? (
+              <div className="mt-3 space-y-2">
+                {timeline.length === 0 ? (
+                  <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-400">
+                    No recent activity
+                  </div>
+                ) : (
+                  timeline.map((entry: any) => (
+                    <a
+                      key={entry.id}
+                      href={entry.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 hover:border-slate-300"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                            {entry.label}
+                          </span>
+                          <span className="text-[11px] text-slate-400">{formatDate(entry.at)}</span>
+                        </div>
+                        <div className="mt-1 truncate text-xs text-slate-600">{entry.detail}</div>
+                      </div>
+                      <div className="shrink-0 text-xs font-semibold text-slate-900">{entry.amount}</div>
+                    </a>
+                  ))
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}

@@ -1,11 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import LineDetailsModal from "@/components/ui/LineDetailsModal"
 
 type ProductType = "PRODUCT" | "SERVICE"
 
-type Customer = { id: string; fullName: string; email: string | null; phone: string | null }
+type Customer = { id: string; fullName: string; email: string | null; phone: string | null; workAddress?: string | null; homeAddress?: string | null }
 type Product = { id: string; name: string; type: ProductType; price: number | null }
 
 type FormItem = {
@@ -186,6 +186,14 @@ export default function EstimateFormClient({
     ]
   })
   const [detailsItemKey, setDetailsItemKey] = useState<string | null>(null)
+
+  const selectedCustomer = useMemo(() => customers.find((c) => c.id === customerId) ?? null, [customers, customerId])
+
+  useEffect(() => {
+    if (!isCreate) return
+    if (!initialCustomerId) return
+    setCustomerId((prev) => prev || initialCustomerId)
+  }, [initialCustomerId, isCreate])
 
   const taxRate = toMoneyNumber(taxRateStr, 0)
   const discountInputNum = Math.max(toMoneyNumber(discountStr, 0), 0)

@@ -22,8 +22,18 @@ export type CustomerDTO = {
   recentSales: {
     id: string
     createdAt: string
+    saleDate: string | null
     totalAmount: string
     status: string
+    description: string | null
+  }[]
+  recentPayments: {
+    id: string
+    amount: string
+    paidAt: string
+    method: string
+    saleId: string | null
+    saleDescription: string | null
   }[]
 }
 
