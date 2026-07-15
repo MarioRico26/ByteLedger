@@ -3,6 +3,18 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getOrgIdOrNull } from "@/lib/auth"
 
+function parseDateOnlyToUTC(v: unknown): Date | null {
+  const s = String(v ?? "").trim()
+  if (!s) return null
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const d = Number(m[3])
+  if (!y || !mo || !d) return null
+  return new Date(Date.UTC(y, mo - 1, d, 12, 0, 0))
+}
+
 export async function POST(req: Request) {
   try {
     const orgId = await getOrgIdOrNull()
@@ -16,7 +28,7 @@ export async function POST(req: Request) {
     type PaymentMethod = (typeof PAYMENT_METHODS)[number]
     const method: PaymentMethod = PAYMENT_METHODS.includes(body.method) ? body.method : "CASH"
     const notes = body.notes ? String(body.notes).trim() : null
-    const paidAt = body.paidAt ? new Date(body.paidAt) : new Date()
+    const paidAt = body.paidAt ? parseDateOnlyToUTC(body.paidAt) ?? new Date() : new Date()
 
     if (!saleId) {
       return NextResponse.json({ error: "saleId is required" }, { status: 400 })

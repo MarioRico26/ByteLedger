@@ -106,6 +106,7 @@ export default function SaleEditClient({
   const [poNumber, setPoNumber] = useState(sale?.poNumber ?? "")
   const [serviceAddress, setServiceAddress] = useState(sale?.serviceAddress ?? "")
   const [notes, setNotes] = useState(sale?.notes ?? "")
+  const [saleDate, setSaleDate] = useState(toDateInputValue(sale?.saleDate ?? null))
   const [dueDate, setDueDate] = useState(toDateInputValue(sale?.dueDate ?? null))
   const [taxRateStr, setTaxRateStr] = useState(fmtPercent(toMoneyNumber(sale?.taxRate, 0)))
   const [discountType, setDiscountType] = useState<"amount" | "percent">("amount")
@@ -255,6 +256,7 @@ export default function SaleEditClient({
       poNumber: poNumber.trim() ? poNumber.trim() : null,
       serviceAddress: serviceAddress.trim() ? serviceAddress.trim() : null,
       notes: notes.trim() ? notes.trim() : null,
+      saleDate: saleDate || null,
       dueDate: dueDate || null,
       taxRate: Math.max(0, toMoneyNumber(taxRateStr, 0)),
       discountAmount: Math.max(0, discountAmount),
@@ -317,7 +319,17 @@ export default function SaleEditClient({
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
+            <div>
+              <label className="text-xs text-slate-500">Sale date</label>
+              <input
+                type="date"
+                value={saleDate}
+                onChange={(e) => setSaleDate(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+              />
+            </div>
+
             <div>
               <label className="text-xs text-slate-500">PO Number</label>
               <input

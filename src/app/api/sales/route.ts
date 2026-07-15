@@ -11,6 +11,18 @@ function clamp(n: number, min: number, max: number) {
   return Math.min(Math.max(n, min), max)
 }
 
+function parseDateOnlyToUTC(v: unknown): Date | null {
+  const s = String(v ?? "").trim()
+  if (!s) return null
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const d = Number(m[3])
+  if (!y || !mo || !d) return null
+  return new Date(Date.UTC(y, mo - 1, d, 12, 0, 0))
+}
+
 export async function GET() {
   try {
     const orgId = await getOrgIdOrNull()
@@ -19,7 +31,7 @@ export async function GET() {
     const sales = await prisma.sale.findMany({
       where: { organizationId: orgId },
       include: { customer: true, items: true, payments: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: { saleDate: "desc" },
       take: 100,
     })
 
@@ -42,7 +54,8 @@ export async function POST(req: Request) {
     const poNumber = body.poNumber ? String(body.poNumber).trim() : null
     const serviceAddress = body.serviceAddress ? String(body.serviceAddress).trim() : null
     const notes = body.notes ? String(body.notes).trim() : null
-    const dueDate = body.dueDate ? new Date(body.dueDate) : null
+    const saleDate = body.saleDate ? parseDateOnlyToUTC(body.saleDate) ?? new Date() : new Date()
+    const dueDate = body.dueDate ? parseDateOnlyToUTC(body.dueDate) : null
 
     const discountRaw =
       body.discountAmount !== undefined && body.discountAmount !== null
@@ -113,7 +126,8 @@ export async function POST(req: Request) {
         poNumber,
         serviceAddress,
         notes,
-        dueDate,
+        saleDate,
+        ...(dueDate ? { dueDate } : {}),
 
         subtotalAmount: subtotal,
         discountAmount: appliedDiscount,

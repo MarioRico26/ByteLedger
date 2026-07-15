@@ -1,6 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import React from "react"
+import { useMemo } from "react"
+import EditPaymentModal from "./EditPaymentModal"
 
 export type PaymentRow = {
   id: string
@@ -11,6 +13,7 @@ export type PaymentRow = {
   saleId: string | null
   saleDescription: string | null
   saleCreatedAt: string | null
+  saleDate: string | null
   customerName: string | null
   customerEmail: string | null
 }
@@ -45,12 +48,12 @@ function dateAtEnd(value: string) {
 }
 
 export default function PaymentsTableClient({ initialPayments }: Props) {
-  const [q, setQ] = useState("")
-  const [method, setMethod] = useState<string>("ALL")
-  const [from, setFrom] = useState("")
-  const [to, setTo] = useState("")
-  const [groupBy, setGroupBy] = useState<GroupKey>("none")
-  const [chartRange, setChartRange] = useState<ChartRange>(6)
+  const [q, setQ] = React.useState("")
+  const [method, setMethod] = React.useState<string>("ALL")
+  const [from, setFrom] = React.useState("")
+  const [to, setTo] = React.useState("")
+  const [groupBy, setGroupBy] = React.useState<GroupKey>("none")
+  const [chartRange, setChartRange] = React.useState<ChartRange>(6)
 
   const methodOptions = useMemo(() => {
     const set = new Set<string>()
@@ -395,7 +398,7 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
                             </span>
                             {paidAt ? (
                               <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-500">
-                                {paidAt}
+                                Paid: {paidAt}
                               </span>
                             ) : null}
                           </div>
@@ -433,6 +436,10 @@ export default function PaymentsTableClient({ initialPayments }: Props) {
                         <td className="px-4 py-4">
                           <div className="flex justify-end">
                             <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2 py-1">
+                              <EditPaymentModal
+                                payment={p}
+                                onSaved={() => window.location.reload()}
+                              />
                               <a
                                 href={`/payments/${p.id}/receipt`}
                                 target="_blank"

@@ -84,6 +84,14 @@ export default function CustomerCard({
           >
             New Sale
           </a>
+          <a
+            href={`/customers/${customer.id}/statement`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+          >
+            Statement
+          </a>
           <EditCustomerModal customer={customer} onSaved={onUpdated} />
           <button
             onClick={remove}

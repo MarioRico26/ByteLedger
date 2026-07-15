@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import SearchableSelect, { SearchableOption } from "@/components/SearchableSelect"
 import LineDetailsModal from "@/components/ui/LineDetailsModal"
 
-type CustomerOption = { id: string; fullName: string; email?: string | null }
+type CustomerOption = { id: string; fullName: string; email?: string | null; workAddress?: string | null; homeAddress?: string | null }
 type ProductOption = {
   id: string
   name: string
@@ -85,6 +85,12 @@ function normalizePercentInput(value: string) {
   return fmtPercent(n)
 }
 
+function todayInputValue() {
+  const now = new Date()
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 10)
+}
+
 export default function NewSaleForm({
   customers,
   products,
@@ -106,6 +112,7 @@ export default function NewSaleForm({
   const [poNumber, setPoNumber] = useState("")
   const [serviceAddress, setServiceAddress] = useState("")
   const [notes, setNotes] = useState("")
+  const [saleDate, setSaleDate] = useState(todayInputValue())
   const [dueDate, setDueDate] = useState("")
 
   // Optional pricing extras
@@ -164,6 +171,17 @@ export default function NewSaleForm({
       })),
     ]
   }, [products])
+
+  const selectedCustomer = useMemo(() => {
+    return (customers ?? []).find((c: any) => c.id === customerId) ?? null
+  }, [customers, customerId])
+
+  useEffect(() => {
+    if (!selectedCustomer) return
+    if (serviceAddress.trim()) return
+    const preferredAddress = selectedCustomer.workAddress || selectedCustomer.homeAddress || ""
+    if (preferredAddress) setServiceAddress(preferredAddress)
+  }, [selectedCustomer, serviceAddress])
 
   const subtotal = useMemo(() => {
     return (lines ?? []).reduce((sum: number, l: any) => {
@@ -305,6 +323,7 @@ export default function NewSaleForm({
           poNumber: poNumber.trim() ? poNumber.trim() : null,
           serviceAddress: serviceAddress.trim() ? serviceAddress.trim() : null,
           notes: notes.trim() ? notes.trim() : null,
+          saleDate: saleDate || null,
           dueDate: dueDate || null,
           discountAmount: discountAmount || 0,
           taxRate: taxRateNum || 0,
@@ -321,6 +340,7 @@ export default function NewSaleForm({
       setPoNumber("")
       setServiceAddress("")
       setNotes("")
+      setSaleDate(todayInputValue())
       setDueDate("")
       setDiscountType("amount")
       setDiscount("0.00")
@@ -387,7 +407,16 @@ export default function NewSaleForm({
                     </Field>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <Field label="Sale date">
+                      <input
+                        type="date"
+                        value={saleDate}
+                        onChange={(e) => setSaleDate(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                      />
+                    </Field>
+
                     <Field label="PO Number">
                       <input
                         value={poNumber}

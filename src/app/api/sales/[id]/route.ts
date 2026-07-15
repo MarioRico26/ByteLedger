@@ -108,6 +108,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     const serviceAddress =
       body.serviceAddress === undefined ? undefined : (String(body.serviceAddress ?? "").trim() || null)
     const notes = body.notes === undefined ? undefined : (String(body.notes ?? "").trim() || null)
+    const saleDate = body.saleDate === undefined ? undefined : (parseDateOnlyToUTC(body.saleDate) ?? existing.saleDate)
     const dueDate = body.dueDate === undefined ? undefined : parseDateOnlyToUTC(body.dueDate)
 
     const discountRaw =
@@ -192,6 +193,7 @@ export async function PUT(req: Request, ctx: Ctx) {
         ...(poNumber !== undefined ? { poNumber } : {}),
         ...(serviceAddress !== undefined ? { serviceAddress } : {}),
         ...(notes !== undefined ? { notes } : {}),
+        ...(saleDate !== undefined ? { saleDate } : {}),
         ...(dueDate !== undefined ? { dueDate } : {}),
         taxRate,
         discountAmount: appliedDiscount,

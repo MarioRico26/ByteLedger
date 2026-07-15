@@ -127,7 +127,7 @@ export default async function InvoicePage({
             </div>
 
             <div className="text-sm text-slate-700">
-              Date: <span className="font-semibold">{sale.createdAt.toLocaleDateString()}</span>
+              Sale Date: <span className="font-semibold">{(sale.saleDate || sale.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
 

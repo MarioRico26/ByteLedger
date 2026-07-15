@@ -1,91 +1,64 @@
 "use client"
 
-import { useMemo, useState } from "react"
-type Props = {
-  saleId: string
-  saleDescription: string
-  remaining: number
-  onPaid: (updatedSale: any) => void
-  buttonClassName?: string
-  buttonLabel?: string
-}
+import { useState } from "react"
+import type { PaymentRow } from "./PaymentsTableClient"
 
 const METHODS = ["CASH", "ZELLE", "CARD", "CHECK", "OTHER"] as const
 
-function todayInputValue() {
+function todayInputValue(iso?: string | null) {
+  if (iso) {
+    const d = new Date(iso)
+    if (!Number.isNaN(d.valueOf())) {
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+      return local.toISOString().slice(0, 10)
+    }
+  }
   const now = new Date()
   const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
   return local.toISOString().slice(0, 10)
 }
 
-export default function AddPaymentModal({
-  saleId,
-  saleDescription,
-  remaining,
-  onPaid,
-  buttonClassName,
-  buttonLabel,
-}: Props) {
+export default function EditPaymentModal({
+  payment,
+  onSaved,
+}: {
+  payment: PaymentRow
+  onSaved: () => void
+}) {
   const [open, setOpen] = useState(false)
-  const [amount, setAmount] = useState<string>("")
-  const [method, setMethod] = useState<(typeof METHODS)[number]>("CASH")
-  const [paidAt, setPaidAt] = useState(todayInputValue())
-  const [notes, setNotes] = useState("")
+  const [amount, setAmount] = useState(String(payment.amount || "0"))
+  const [method, setMethod] = useState<(typeof METHODS)[number]>((METHODS.includes(payment.method as any) ? payment.method : "CASH") as (typeof METHODS)[number])
+  const [paidAt, setPaidAt] = useState(todayInputValue(payment.paidAt))
+  const [notes, setNotes] = useState(payment.notes ?? "")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const remainingFixed = useMemo(() => {
-    const r = Number.isFinite(remaining) ? remaining : Number(remaining || 0)
-    return Math.max(r, 0)
-  }, [remaining])
-
-  const isPaidOff = remainingFixed <= 0
-  const triggerLabel = isPaidOff ? "Paid" : buttonLabel ?? "Add Payment"
-  const triggerClass =
-    buttonClassName ??
-    "rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900 disabled:opacity-50"
-
   async function submit() {
     setError(null)
-
     const amt = Number(amount)
     if (!Number.isFinite(amt) || amt <= 0) {
       setError("Amount must be greater than 0.")
       return
     }
-    if (amt > remainingFixed) {
-      setError(`Amount exceeds remaining balance ($${remainingFixed.toFixed(2)}).`)
-      return
-    }
 
     setLoading(true)
     try {
-      const res = await fetch("/api/payments", {
-        method: "POST",
+      const res = await fetch(`/api/payments/${payment.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          saleId,
           amount: amt,
           method,
           paidAt: paidAt || null,
           notes: notes.trim() ? notes.trim() : null,
         }),
       })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data?.error || "Failed to add payment")
-      }
-
-      onPaid(data)
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || "Failed to update payment")
       setOpen(false)
-      setAmount("")
-      setMethod("CASH")
-      setPaidAt(todayInputValue())
-      setNotes("")
+      onSaved()
     } catch (e: any) {
-      setError(e?.message || "Something went wrong")
+      setError(e?.message || "Failed to update payment")
     } finally {
       setLoading(false)
     }
@@ -94,31 +67,25 @@ export default function AddPaymentModal({
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
-        disabled={isPaidOff}
-        className={triggerClass}
+        className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
       >
-        {triggerLabel}
+        Edit
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto modal-overlay">
-          <div className="modal-panel card-stripe w-full max-w-lg max-h-[90vh] overflow-y-auto p-5">
-            <div className="flex items-start justify-between gap-4">
+      {open ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+          <div className="modal-panel card-stripe w-full max-w-md p-5">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-sm text-slate-500">Add payment to</div>
-                <div className="mt-1 text-lg font-semibold text-slate-900">
-                  {saleDescription}
-                </div>
+                <div className="text-lg font-semibold text-slate-900">Edit Payment</div>
                 <div className="mt-1 text-sm text-slate-500">
-                  Remaining:{" "}
-                  <span className="font-semibold text-slate-700">
-                    {remainingFixed.toLocaleString(undefined, { style: "currency", currency: "USD" })}
-                  </span>
+                  {payment.customerName || payment.saleDescription || payment.id}
                 </div>
               </div>
-
               <button
+                type="button"
                 onClick={() => setOpen(false)}
                 className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
               >
@@ -132,19 +99,14 @@ export default function AddPaymentModal({
                 <input
                   type="number"
                   min="0"
-                  max={remainingFixed}
                   step="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="e.g. 100"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                 />
-                <div className="text-[11px] text-slate-500">
-                  Max: {remainingFixed.toLocaleString(undefined, { style: "currency", currency: "USD" })}
-                </div>
               </div>
 
-              <div className="grid gap-1 sm:grid-cols-2 sm:gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="grid gap-1">
                   <label className="text-xs text-slate-500">Payment date</label>
                   <input
@@ -157,56 +119,57 @@ export default function AddPaymentModal({
 
                 <div className="grid gap-1">
                   <label className="text-xs text-slate-500">Method</label>
-                <select
-                  value={method}
-                  onChange={(e) => setMethod(e.target.value as any)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
-                >
-                  {METHODS.map((m: any) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={method}
+                    onChange={(e) => setMethod(e.target.value as (typeof METHODS)[number])}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
+                  >
+                    {METHODS.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
               <div className="grid gap-1">
-                <label className="text-xs text-slate-500">Notes (optional)</label>
-                <input
+                <label className="text-xs text-slate-500">Notes</label>
+                <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="deposit / partial / etc..."
+                  rows={3}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-400"
                 />
               </div>
 
-              {error && (
+              {error ? (
                 <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
                   {error}
                 </div>
-              )}
+              ) : null}
 
               <div className="mt-2 flex items-center justify-end gap-2">
                 <button
+                  type="button"
                   onClick={() => setOpen(false)}
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
                 >
                   Cancel
                 </button>
-
                 <button
-                  disabled={loading || isPaidOff}
+                  type="button"
+                  disabled={loading}
                   onClick={submit}
                   className="rounded-xl bg-teal-500 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-400 disabled:opacity-50"
                 >
-                  {loading ? "Saving..." : "Save Payment"}
+                  {loading ? "Saving..." : "Save changes"}
                 </button>
               </div>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   )
 }

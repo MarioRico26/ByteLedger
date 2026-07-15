@@ -15,6 +15,7 @@ export default async function PaymentsPage() {
           id: true,
           description: true,
           createdAt: true,
+          saleDate: true,
           customer: { select: { fullName: true, email: true } },
         },
       },
@@ -30,6 +31,7 @@ export default async function PaymentsPage() {
     saleId: p.sale?.id ?? null,
     saleDescription: p.sale?.description ?? null,
     saleCreatedAt: p.sale?.createdAt ? p.sale.createdAt.toISOString() : null,
+    saleDate: p.sale?.saleDate ? p.sale.saleDate.toISOString() : null,
     customerName: p.sale?.customer?.fullName ?? null,
     customerEmail: p.sale?.customer?.email ?? null,
   }))

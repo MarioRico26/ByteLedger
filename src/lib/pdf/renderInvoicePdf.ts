@@ -45,6 +45,7 @@ type SaleForPdf = {
   description: string | null
   notes: string | null
   createdAt: Date
+  saleDate: Date | null
   dueDate: Date | null
   poNumber: string | null
   serviceAddress: string | null
@@ -261,7 +262,7 @@ export async function renderInvoicePdfBuffer(sale: SaleForPdf): Promise<Buffer> 
 
   const rightX = LETTER.w - margin
   textRight(page, `Invoice #: ${invoiceNumber}`, rightX, y + 28, 10, false, rgb(0.25, 0.25, 0.25))
-  textRight(page, `Created: ${fmtDate(sale.createdAt)}`, rightX, y + 14, 10, false, rgb(0.25, 0.25, 0.25))
+  textRight(page, `Sale Date: ${fmtDate(sale.saleDate || sale.createdAt)}`, rightX, y + 14, 10, false, rgb(0.25, 0.25, 0.25))
   textRight(page, `Due: ${fmtDate(sale.dueDate)}`, rightX, y, 10, false, rgb(0.25, 0.25, 0.25))
   y -= 14
   textRight(page, `PO Number: ${sale.poNumber?.trim() || "—"}`, rightX, y, 10, false, rgb(0.25, 0.25, 0.25))

@@ -7,14 +7,15 @@ import SalesTableClient, { type SaleRow } from "./ui/SalesTableClient"
 export default async function SalesPage({
   searchParams,
 }: {
-  searchParams?: { customerId?: string; new?: string }
+  searchParams?: Promise<{ customerId?: string; new?: string }> | { customerId?: string; new?: string }
 }) {
+  const resolvedSearchParams = await Promise.resolve(searchParams)
   const orgId = await requireOrgId()
   const [customers, products, sales, organization] = await Promise.all([
     prisma.customer.findMany({
       where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
-      select: { id: true, fullName: true },
+      select: { id: true, fullName: true, email: true, workAddress: true, homeAddress: true },
     }),
 
     prisma.product.findMany({
@@ -30,7 +31,7 @@ export default async function SalesPage({
         items: true,
         payments: { orderBy: { paidAt: "desc" } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { saleDate: "desc" },
       take: 50,
     }),
     prisma.organization.findUnique({
@@ -87,8 +88,8 @@ export default async function SalesPage({
         <NewSaleForm
           customers={customers}
           products={productsClean}
-          initialCustomerId={searchParams?.customerId}
-          initialOpen={searchParams?.new === "1" || searchParams?.new === "true"}
+          initialCustomerId={resolvedSearchParams?.customerId}
+          initialOpen={resolvedSearchParams?.new === "1" || resolvedSearchParams?.new === "true"}
           defaultTaxRate={organization?.defaultTaxRate?.toString?.() ?? "0"}
         />
       </div>

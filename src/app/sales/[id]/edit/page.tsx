@@ -32,7 +32,7 @@ export default async function SaleEditPage({
     prisma.customer.findMany({
       where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
-      select: { id: true, fullName: true, email: true },
+      select: { id: true, fullName: true, email: true, workAddress: true, homeAddress: true },
     }),
     prisma.product.findMany({
       where: { organizationId: orgId },
@@ -57,6 +57,7 @@ export default async function SaleEditPage({
     poNumber: sale.poNumber ?? "",
     serviceAddress: sale.serviceAddress ?? "",
     notes: sale.notes ?? "",
+    saleDate: sale.saleDate ? sale.saleDate.toISOString() : null,
     dueDate: sale.dueDate ? sale.dueDate.toISOString() : null,
     taxRate: sale.taxRate?.toString?.() ?? "0",
     discountAmount: sale.discountAmount?.toString?.() ?? "0",
